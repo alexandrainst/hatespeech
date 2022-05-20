@@ -149,11 +149,11 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     # Remove NaN values
     df.dropna(inplace=True)
 
-    # Clean the `account` column
-    df.account = df.account.progress_apply(clean_account)
-
     # Clean the `text` column
     df.text = df.text.progress_apply(clean_text)
+
+    # Clean the `account` column
+    df.account = df.account.progress_apply(clean_account)
 
     # Remove NaN values again
     df.dropna(inplace=True)
