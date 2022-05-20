@@ -1,7 +1,4 @@
-# Data
-*.csv
-*.parquet
-
+# VS Code
 .vscode
 
 # Byte-compiled / optimized / DLL files
@@ -133,3 +130,19 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# VIm
+.vim
+**/*.swp
+**/*.swo
+
+# MacOS
+.DS_Store
+
+# Data
+**/*.csv
+**/*.tsv
+**/*.parquet
+**/*.json
+**/*.jsonl
+!data/raw/test_data.csv

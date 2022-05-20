@@ -1,2 +1,3 @@
-# DR_Hatespeech
-Hatespeech detection for DR Facebook data
+# DR Hatespeech Detection
+
+Hatespeech detection for DR Facebook data.
