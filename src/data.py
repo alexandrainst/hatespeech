@@ -5,6 +5,11 @@ from pathlib import Path
 import re
 from unicodedata import normalize
 from typing import Union
+from tqdm.auto import tqdm
+
+
+# Enable `progress_apply` method for DataFrame objects
+tqdm.pandas()
 
 
 def clean_account(account: str) -> str:
