@@ -80,8 +80,8 @@ def clean_text(text: str) -> Union[str, None]:
     # Replace newlines with spaces
     text = re.sub("\n", " ", text)
 
-    # Replace hyperlinks with [LINK]
-    text = re.sub(r"http[.\/?&a-zA-Z0-9\-\:=]+", "[LINK]", text)
+    # Replace hyperlinks with " [LINK] "
+    text = re.sub(r"http[.\/?&a-zA-Z0-9\-\:\=\%\_]+", " [LINK] ", text)
 
     # Remove duplicate whitespace
     text = re.sub(" +", " ", text)
