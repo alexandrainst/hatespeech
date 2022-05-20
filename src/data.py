@@ -158,7 +158,8 @@ def process_data(data_dir: Union[str, Path] = 'data'):
     df = df.astype(dict(account='category', action='category'))
 
     # Save the dataframe as a parquet file
-    df.to_parquet(processed_dir / f'{raw_path.stem}_processed.parquet')
+    processed_path = processed_dir / f'{raw_path.stem}_processed.parquet'
+    df.to_parquet(processed_path)
 
 
 def load_data(data_dir: Union[str, Path] = 'data') -> pd.DataFrame:
