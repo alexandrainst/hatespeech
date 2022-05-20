@@ -77,9 +77,6 @@ def clean_text(text: str) -> Union[str, None]:
     # Remove the \x1a character
     text = text.replace("\x1a", "")
 
-    # Replace the \x93 and \x94 characters with quotes
-    text = text.replace("[\x93\x94]", '"')
-
     # Replace newlines with spaces
     text = text.replace("\n", " ")
 
