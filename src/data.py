@@ -51,7 +51,7 @@ def clean_account(account: str) -> str:
         parts[idx] = part
 
     # Remove the parentheses
-    parts = [re.sub('\(.*\)', '', part).strip() for part in parts]
+    parts = [re.sub(r'\(.*\)', '', part).strip() for part in parts]
 
     return ' '.join(parts)
 
