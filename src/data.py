@@ -138,7 +138,7 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
 
     # Read the CSV file
     cols = ["account", "text", "date", "action"]
-    df = pd.read_csv(raw_paths[0], encoding="latin_1", usecols=cols, low_memory=False)
+    df = pd.read_csv(raw_paths[0], encoding="windows-1252", usecols=cols, low_memory=False)
 
     # Replace the NaN values in `action` by 'none'
     df.action.fillna(value="none", inplace=True)
