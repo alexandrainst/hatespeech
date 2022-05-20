@@ -1,7 +1,4 @@
-# Data
-*.csv
-*.parquet
-
+# VS Code
 .vscode
 
 # Byte-compiled / optimized / DLL files
@@ -148,3 +145,4 @@ dmypy.json
 **/*.parquet
 **/*.json
 **/*.jsonl
+!data/raw/test_data.csv

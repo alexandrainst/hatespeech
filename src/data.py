@@ -99,12 +99,14 @@ def clean_text(text: str) -> Union[str, None]:
     return text
 
 
-def process_data(data_dir: Union[str, Path] = "data"):
+def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     """Process the raw data and store the processed data.
 
     Args:
         data_dir (str or Path, optional):
             The path to the data directory. Defaults to 'data'.
+        test (bool, optional):
+            Whether to process the test data. Defaults to False.
     """
     # Ensure that `data_dir` is a Path object
     data_dir = Path(data_dir)
@@ -125,11 +127,20 @@ def process_data(data_dir: Union[str, Path] = "data"):
     processed_dir.mkdir(parents=True, exist_ok=True)
 
     # Get the path to the raw data file
-    raw_path = next(raw_dir.glob("*.csv"))
+    if test:
+        raw_paths = [
+            path for path in raw_dir.glob("*.csv")
+            if path.name.startswith('test_')
+        ]
+    else:
+        raw_paths = [
+            path for path in raw_dir.glob("*.csv")
+            if not path.name.startswith('test_')
+        ]
 
     # Read the CSV file
     cols = ["account", "text", "date", "action"]
-    df = pd.read_csv(raw_path, encoding="latin_1", usecols=cols, low_memory=False)
+    df = pd.read_csv(raw_paths[0], encoding="latin_1", usecols=cols, low_memory=False)
 
     # Replace the NaN values in `action` by 'none'
     df.action.fillna(value="none", inplace=True)
@@ -153,11 +164,13 @@ def process_data(data_dir: Union[str, Path] = "data"):
     df = df.astype(dict(account="category", action="category"))
 
     # Save the dataframe as a parquet file
-    processed_path = processed_dir / f"{raw_path.stem}_processed.parquet"
+    processed_path = processed_dir / f"{raw_paths[0].stem}_processed.parquet"
     df.to_parquet(processed_path)
 
 
-def load_data(data_dir: Union[str, Path] = "data") -> pd.DataFrame:
+def load_data(
+        data_dir: Union[str, Path] = "data",
+        test: bool = False) -> pd.DataFrame:
     """Load the processed data.
 
     If the data has not been processed then first process it.
@@ -165,6 +178,8 @@ def load_data(data_dir: Union[str, Path] = "data") -> pd.DataFrame:
     Args:
         data_dir (str or Path, optional):
             The path to the data directory. Defaults to 'data'.
+        test (bool, optional):
+            Whether to load the test data. Defaults to False.
 
     Returns:
         pd.DataFrame:
@@ -183,12 +198,30 @@ def load_data(data_dir: Union[str, Path] = "data") -> pd.DataFrame:
     processed_dir.mkdir(parents=True, exist_ok=True)
 
     # Get the list of parquet files in the processed data directory
-    parquet_paths = list(processed_dir.glob("*.parquet"))
+    if test:
+        parquet_paths = [
+            path for path in processed_dir.glob("*.parquet")
+            if path.name.startswith('test_')
+        ]
+    else:
+        parquet_paths = [
+            path for path in processed_dir.glob("*.parquet")
+            if not path.name.startswith('test_')
+        ]
 
     # If there are no parquet files then process the data
     if len(parquet_paths) == 0:
-        process_data(data_dir=data_dir)
-        parquet_paths = list(processed_dir.glob("*.parquet"))
+        process_data(data_dir=data_dir, test=test)
+        if test:
+            parquet_paths = [
+                path for path in processed_dir.glob("*.parquet")
+                if path.name.startswith('test_')
+            ]
+        else:
+            parquet_paths = [
+                path for path in processed_dir.glob("*.parquet")
+                if not path.name.startswith('test_')
+            ]
 
     # Read the parquet file
     df = pd.read_parquet(parquet_paths[0])
