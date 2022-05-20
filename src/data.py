@@ -75,16 +75,16 @@ def clean_text(text: str) -> Union[str, None]:
     text = normalize("NFKC", text)
 
     # Remove the \x1a character
-    text = text.replace("\x1a", "")
+    text = re.sub("\x1a", "", text)
 
     # Replace newlines with spaces
-    text = text.replace("\n", " ")
+    text = re.sub("\n", " ", text)
 
     # Replace hyperlinks with [LINK]
     text = re.sub(r"http[.\/?&a-zA-Z0-9\-\:=]+", "[LINK]", text)
 
     # Remove duplicate whitespace
-    text = text.replace(" +", " ")
+    text = re.sub(" +", " ", text)
 
     # Strip trailing whitespace
     text = text.strip()
