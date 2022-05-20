@@ -129,13 +129,11 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     # Get the path to the raw data file
     if test:
         raw_paths = [
-            path for path in raw_dir.glob("*.csv")
-            if path.name.startswith('test_')
+            path for path in raw_dir.glob("*.csv") if path.name.startswith("test_")
         ]
     else:
         raw_paths = [
-            path for path in raw_dir.glob("*.csv")
-            if not path.name.startswith('test_')
+            path for path in raw_dir.glob("*.csv") if not path.name.startswith("test_")
         ]
 
     # Read the CSV file
@@ -168,9 +166,7 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     df.to_parquet(processed_path)
 
 
-def load_data(
-        data_dir: Union[str, Path] = "data",
-        test: bool = False) -> pd.DataFrame:
+def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.DataFrame:
     """Load the processed data.
 
     If the data has not been processed then first process it.
@@ -200,13 +196,15 @@ def load_data(
     # Get the list of parquet files in the processed data directory
     if test:
         parquet_paths = [
-            path for path in processed_dir.glob("*.parquet")
-            if path.name.startswith('test_')
+            path
+            for path in processed_dir.glob("*.parquet")
+            if path.name.startswith("test_")
         ]
     else:
         parquet_paths = [
-            path for path in processed_dir.glob("*.parquet")
-            if not path.name.startswith('test_')
+            path
+            for path in processed_dir.glob("*.parquet")
+            if not path.name.startswith("test_")
         ]
 
     # If there are no parquet files then process the data
@@ -214,13 +212,15 @@ def load_data(
         process_data(data_dir=data_dir, test=test)
         if test:
             parquet_paths = [
-                path for path in processed_dir.glob("*.parquet")
-                if path.name.startswith('test_')
+                path
+                for path in processed_dir.glob("*.parquet")
+                if path.name.startswith("test_")
             ]
         else:
             parquet_paths = [
-                path for path in processed_dir.glob("*.parquet")
-                if not path.name.startswith('test_')
+                path
+                for path in processed_dir.glob("*.parquet")
+                if not path.name.startswith("test_")
             ]
 
     # Read the parquet file

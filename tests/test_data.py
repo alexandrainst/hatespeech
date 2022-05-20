@@ -22,4 +22,4 @@ class TestData:
         assert data.dtypes.map(str).tolist() == dtypes
 
     def test_accounts(self, data):
-        assert data.account.unique().tolist() == ['dr nyheder']
+        assert data.account.unique().tolist() == ["dr nyheder"]
