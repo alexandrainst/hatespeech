@@ -84,7 +84,7 @@ def clean_text(text: str) -> Union[str, None]:
     text = text.replace('\n', ' ')
 
     # Replace hyperlinks with [LINK]
-    text = re.sub('http[.\/?&a-zA-Z0-9\-\:=]+', '[LINK]', text)
+    text = re.sub(r'http[.\/?&a-zA-Z0-9\-\:=]+', '[LINK]', text)
 
     # Remove duplicate whitespace
     text = text.replace(' +', ' ')
