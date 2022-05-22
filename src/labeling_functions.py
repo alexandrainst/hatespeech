@@ -66,7 +66,7 @@ def contains_offensive_word(record) -> int:
 
     # Mark document as offensive if it contains an offensive word, and abstain
     # otherwise
-    if (not is_dr_answer(doc) and
+    if (not is_dr_answer(record) and
             any(re.search(regex, doc.lower()) for regex in offensive_words)):
         return OFFENSIVE
     else:
@@ -97,7 +97,7 @@ def is_mention(record) -> int:
 
     # Get the PER label indices
     per_indices = [(dct['start'], dct['end']) for dct in ner(doc)
-                   if dct['entity_group'] == 'PER']
+                   if 'entity_group' in dct and dct['entity_group'] == 'PER']
 
     # Sort the indices, so that the latest mention is first
     per_indices = sorted(per_indices, key=lambda x: x[0], reverse=True)
