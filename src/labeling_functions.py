@@ -17,7 +17,7 @@ pipe_params = dict(truncation=True, max_length=512)
 
 
 # Load models
-ner = pipeline(model='saattrupdan/nbailab-base-ner-scandi', task='ner')
+ner = pipeline(model='saattrupdan/nbailab-base-ner-scandi')
 sent = pipeline(model='DaNLP/da-bert-tone-sentiment-polarity')
 guscode_model = pipeline(model='Guscode/DKbert-hatespeech-detection')
 danlp_electra_model = pipeline(model='DaNLP/da-electra-hatespeech-detection')
@@ -106,7 +106,7 @@ def is_mention(record) -> int:
     doc = record.text
 
     # Get the PER label indices
-    per_indices = [(dct['start'], dct['end']) for dct in ner(doc, **pipe_params)
+    per_indices = [(dct['start'], dct['end']) for dct in ner(doc, aggregation_strategy='first')
                    if 'entity_group' in dct and dct['entity_group'] == 'PER']
 
     # Sort the indices, so that the latest mention is first
@@ -323,8 +323,8 @@ def sentiment(record) -> int:
 
     This will mark the document as offensive if the predicted sentiment is
     negative with a confidence of at least 0.99, and will mark it as not
-    offensive if the predicted sentiment is positive with a confidence of at
-    least 0.99, and otherwise abstain.
+    offensive if the predicted sentiment is positive or neutral, and otherwise
+    abstain.
 
     Args:
         record:
@@ -342,11 +342,10 @@ def sentiment(record) -> int:
     # Get the prediction
     prediction = sent(doc, **pipe_params)[0]
 
-    # If the predicted label is positive and the confidence is at least 0.99,
-    # then mark the document as not offensive. If the predicted label is
-    # negative and the confidence is at least 0.99, then mark the document as
-    # offensive. Otherwise abstain.
-    if prediction['label'] == 'positive' and prediction['score'] >= 0.99:
+    # If the predicted label is positive or neutral then mark the document as
+    # not offensive. If the predicted label is negative and the confidence is
+    # at least 0.99, then mark the document as offensive. Otherwise abstain.
+    if prediction['label'] in ['positive', 'neutral']:
         return NOT_OFFENSIVE
     elif prediction['label'] == 'negative' and prediction['score'] >= 0.99:
         return OFFENSIVE
