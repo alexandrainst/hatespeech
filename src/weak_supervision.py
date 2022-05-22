@@ -9,10 +9,10 @@ from labeling_functions import (
     contains_offensive_word,
     is_mention,
     is_dr_answer,
-    guscode_model,
-    danlp_electra_model,
-    danlp_dabert_model,
-    tfidf_model,
+    use_guscode_model,
+    use_danlp_electra_model,
+    use_danlp_dabert_model,
+    use_tfidf_model,
     has_been_moderated,
     sentiment
 )
@@ -43,10 +43,10 @@ def main(data_dir: Union[str, Path] = "data"):
         contains_offensive_word,
         is_mention,
         is_dr_answer,
-        guscode_model,
-        danlp_electra_model,
-        danlp_dabert_model,
-        tfidf_model,
+        use_guscode_model,
+        use_danlp_electra_model,
+        use_danlp_dabert_model,
+        use_tfidf_model,
         has_been_moderated,
         sentiment
     ]
