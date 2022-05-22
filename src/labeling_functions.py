@@ -4,6 +4,7 @@ from snorkel.labeling import labeling_function
 from transformers import pipeline
 import re
 import joblib
+import torch
 
 
 # Create label names
@@ -16,12 +17,16 @@ OFFENSIVE = 1
 pipe_params = dict(truncation=True, max_length=512)
 
 
+# Get device
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
 # Load models
-ner = pipeline(model='saattrupdan/nbailab-base-ner-scandi')
-sent = pipeline(model='DaNLP/da-bert-tone-sentiment-polarity')
-guscode_model = pipeline(model='Guscode/DKbert-hatespeech-detection')
-danlp_electra_model = pipeline(model='DaNLP/da-electra-hatespeech-detection')
-danlp_dabert_model = pipeline(model='DaNLP/da-bert-hatespeech-detection')
+ner = pipeline(model='saattrupdan/nbailab-base-ner-scandi', device=device)
+sent = pipeline(model='DaNLP/da-bert-tone-sentiment-polarity', device=device)
+guscode_model = pipeline(model='Guscode/DKbert-hatespeech-detection', device=device)
+danlp_electra_model = pipeline(model='DaNLP/da-electra-hatespeech-detection', device=device)
+danlp_dabert_model = pipeline(model='DaNLP/da-bert-hatespeech-detection', device=device)
 tfidf = joblib.load('models/tfidf_model.bin')
 
 
