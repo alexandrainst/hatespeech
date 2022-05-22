@@ -81,7 +81,7 @@ def clean_text(text: str) -> Union[str, None]:
     text = re.sub("\n", " ", text)
 
     # Replace hyperlinks with " [LINK] "
-    text = re.sub(r"http[.\/?&a-zA-Z0-9\-\:\=\%\_]+", " [LINK] ", text)
+    text = re.sub(r"(http|www\.)[.\/?&a-zA-Z0-9\-\:\=\%\_]+", " [LINK] ", text)
 
     # Remove duplicate whitespace
     text = re.sub(" +", " ", text)
@@ -107,9 +107,6 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     """
     # Ensure that `data_dir` is a Path object
     data_dir = Path(data_dir)
-
-    # Ensure that `data_dir` exists
-    data_dir.mkdir(parents=True, exist_ok=True)
 
     # Create the path to the raw data directory
     raw_dir = data_dir / "raw"
@@ -182,9 +179,6 @@ def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.Dat
     """
     # Ensure that `data_dir` is a Path object
     data_dir = Path(data_dir)
-
-    # Ensure that `data_dir` exists
-    data_dir.mkdir(parents=True, exist_ok=True)
 
     # Create the path to the processed data directory
     processed_dir = data_dir / "processed"
