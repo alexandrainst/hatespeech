@@ -220,3 +220,7 @@ def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.Dat
     df = pd.read_parquet(parquet_paths[0])
 
     return df
+
+
+if __name__ == "__main__":
+    load_data()
