@@ -12,6 +12,19 @@ NOT_OFFENSIVE = 0
 OFFENSIVE = 1
 
 
+# Set up parameters for `transformers` pipelines
+pipe_params = dict(truncation=True, max_length=512)
+
+
+# Load models
+ner = pipeline(model='saattrupdan/nbailab-base-ner-scandi', task='ner')
+sent = pipeline(model='DaNLP/da-bert-tone-sentiment-polarity')
+guscode_model = pipeline(model='Guscode/DKbert-hatespeech-detection')
+danlp_electra_model = pipeline(model='DaNLP/da-electra-hatespeech-detection')
+danlp_dabert_model = pipeline(model='DaNLP/da-bert-hatespeech-detection')
+tfidf = joblib.load('models/tfidf_model.bin')
+
+
 @labeling_function()
 def contains_offensive_word(record) -> int:
     '''Check if the document contains an offensive word.
@@ -92,11 +105,8 @@ def is_mention(record) -> int:
     # Extract the document
     doc = record.text
 
-    # Load the NER model
-    ner = pipeline(model='saattrupdan/nbailab-base-ner-scandi', task='ner')
-
     # Get the PER label indices
-    per_indices = [(dct['start'], dct['end']) for dct in ner(doc)
+    per_indices = [(dct['start'], dct['end']) for dct in ner(doc, **pipe_params)
                    if 'entity_group' in dct and dct['entity_group'] == 'PER']
 
     # Sort the indices, so that the latest mention is first
@@ -153,7 +163,7 @@ def is_dr_answer(record) -> int:
 
 
 @labeling_function()
-def guscode_model(record) -> int:
+def use_guscode_model(record) -> int:
     '''Apply the Guscode/DKbert-hatespeech-detection model.
 
     This will mark the document as offensive if the model classifies it as
@@ -173,11 +183,8 @@ def guscode_model(record) -> int:
     # Extract the document
     doc = record.text
 
-    # Load the model
-    model = pipeline(model='Guscode/DKbert-hatespeech-detection')
-
     # Get the prediction
-    predicted_label = model(doc)[0]['label']
+    predicted_label = guscode_model(doc, **pipe_params)[0]['label']
 
     # If the predicted label is 'LABEL_0' then it is not offensive, otherwise
     # it is offensive
@@ -188,7 +195,7 @@ def guscode_model(record) -> int:
 
 
 @labeling_function()
-def danlp_electra_model(record) -> int:
+def use_danlp_electra_model(record) -> int:
     '''Apply the DaNLP/Electra-hatespeech-detection model.
 
     This will mark the document as offensive if the model classifies it as
@@ -208,11 +215,8 @@ def danlp_electra_model(record) -> int:
     # Extract the document
     doc = record.text
 
-    # Load the model
-    model = pipeline(model='DaNLP/da-electra-hatespeech-detection')
-
     # Get the prediction
-    predicted_label = model(doc)[0]['label']
+    predicted_label = danlp_electra_model(doc, **pipe_params)[0]['label']
 
     # If the predicted label is 'not offensive' then it is not offensive,
     # otherwise it is offensive
@@ -223,7 +227,7 @@ def danlp_electra_model(record) -> int:
 
 
 @labeling_function()
-def danlp_dabert_model(record) -> int:
+def use_danlp_dabert_model(record) -> int:
     '''Apply the DaNLP/da-bert-hatespeech-detection model.
 
     This will mark the document as offensive if the model classifies it as
@@ -243,11 +247,8 @@ def danlp_dabert_model(record) -> int:
     # Extract the document
     doc = record.text
 
-    # Load the model
-    model = pipeline(model='DaNLP/da-bert-hatespeech-detection')
-
     # Get the prediction
-    predicted_label = model(doc)[0]['label']
+    predicted_label = danlp_dabert_model(doc, **pipe_params)[0]['label']
 
     # If the predicted label is 'not offensive' then it is not offensive,
     # otherwise it is offensive
@@ -258,7 +259,7 @@ def danlp_dabert_model(record) -> int:
 
 
 @labeling_function()
-def tfidf_model(record) -> int:
+def use_tfidf_model(record) -> int:
     '''Apply the TF-IDF offensive speech detection model.
 
     This will mark the document as offensive if the model classifies it as
@@ -278,11 +279,8 @@ def tfidf_model(record) -> int:
     # Extract the document
     doc = record.text
 
-    # Load the model
-    pipeline = joblib.load('models/tfidf_model.bin')
-
     # Get the prediction
-    predicted_label = pipeline.predict([doc])[0]
+    predicted_label = tfidf.predict([doc])[0]
 
     # If the predicted label is 'not offensive' then it is not offensive,
     # otherwise it is offensive
@@ -341,11 +339,8 @@ def sentiment(record) -> int:
     # Extract the document
     doc = record.text
 
-    # Load the model
-    model = pipeline(model='DaNLP/da-bert-tone-sentiment-polarity')
-
     # Get the prediction
-    prediction = model(doc)[0]
+    prediction = sent(doc, **pipe_params)[0]
 
     # If the predicted label is positive and the confidence is at least 0.99,
     # then mark the document as not offensive. If the predicted label is
