@@ -146,3 +146,6 @@ dmypy.json
 **/*.json
 **/*.jsonl
 !data/raw/test_data.csv
+
+# Models
+models/
