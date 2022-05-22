@@ -57,7 +57,7 @@ def main(data_dir: Union[str, Path] = "data"):
 
     # Train the label model
     label_model = LabelModel(cardinality=2)
-    label_model.fit(train, n_epochs=500, log_freq=50, seed=4242)
+    label_model.fit(train, n_epochs=100, log_freq=50, seed=4242)
 
     # Compute the training labels and add them to the dataframe
     df_train["label"] = label_model.predict(L=train, tie_break_policy="abstain")
