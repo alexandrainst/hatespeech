@@ -4,7 +4,7 @@ import pandas as pd
 from pathlib import Path
 import re
 from unicodedata import normalize
-from typing import Union
+from typing import Union, Optional
 from tqdm.auto import tqdm
 
 
@@ -96,6 +96,80 @@ def clean_text(text: str) -> Union[str, None]:
     return text
 
 
+def get_post_id(url: Optional[str]) -> Union[int, None]:
+    '''Extracts the post ID from the URL.
+
+    Args:
+        url (str or None):
+            The URL of the post.
+
+    Returns:
+        int:
+            The post ID if the URL is not None, otherwise None.
+    '''
+    if url is None:
+        return None
+
+    # Extract the URL parts
+    parts = url.split('/')
+
+    # Case 1: We extract the post ID through the "fbid" GET parameter
+    if len(parts) == 4:
+        get_args_list = [get_arg.split('=') for get_arg in url.split('?')[-1].split('&')]
+        get_args = {key: val for key, val in get_args_list}
+        return int(get_args['fbid'])
+
+    # Case 2: The post ID is the last number before the GET parameters
+    else:
+        core_url = re.split(r'/?\?', url)[0]
+        post_id = [part for part in core_url.split('/') if part != ''][-1]
+        return int(post_id)
+
+
+def get_comment_id(url: Optional[str]) -> Union[int, None]:
+    '''Extracts the comment ID from the URL.
+
+    Args:
+        url (str or None):
+            The URL of the comment.
+
+    Returns:
+        int:
+            The comment ID if the post is a comment and the URL is not None,
+            otherwise None.
+    '''
+    if url is None or 'comment_id' not in url:
+        return None
+    else:
+        matches = re.search(r'(?<=comment_id=)\d+', url)
+        if matches is None:
+            return None
+        else:
+            return int(matches[0])
+
+
+def get_reply_comment_id(url: Optional[str]) -> Union[int, None]:
+    '''Extracts the reply comment ID from the URL.
+
+    Args:
+        url (str or None):
+            The URL of the comment.
+
+    Returns:
+        int:
+            The comment ID if the post is a reply and the URL is not None,
+            otherwise None.
+    '''
+    if url is None or 'reply_comment_id' not in url:
+        return None
+    else:
+        matches = re.search(r'(?<=reply_comment_id=)\d+', url)
+        if matches is None:
+            return None
+        else:
+            return int(matches[0])
+
+
 def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     """Process the raw data and store the processed data.
 
@@ -131,7 +205,7 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
         ]
 
     # Read the CSV file
-    cols = ["account", "text", "date", "action"]
+    cols = ["account", "url", "text", "date", "action"]
     df = pd.read_csv(
         raw_paths[0], encoding="windows-1252", usecols=cols, low_memory=False
     )
@@ -143,7 +217,7 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     df.date = pd.to_datetime(df.date)
 
     # Remove NaN values
-    df.dropna(inplace=True)
+    df.dropna(subset=['text', 'account'], inplace=True)
 
     # Clean the `text` column
     df.text = df.text.progress_apply(clean_text)
@@ -152,7 +226,16 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     df.account = df.account.progress_apply(clean_account)
 
     # Remove NaN values again
-    df.dropna(inplace=True)
+    df.dropna(subset=['text', 'account'], inplace=True)
+
+    # Extract post_id, comment_id and reply_comment_id from the url
+    df['post_id'] = df.url.progress_apply(get_post_id)
+    df['comment_id'] = df.url.progress_apply(get_comment_id)
+    df['reply_comment_id'] = df.url.progress_apply(get_reply_comment_id)
+
+    # Remove duplicates
+    df.drop_duplicates(subset='text', inplace=True)
+    df.drop_duplicates(subset='reply_comment_id', inplace=True)
 
     # Cast `account` and `action` columns as categories
     df = df.astype(dict(account="category", action="category"))
@@ -190,13 +273,13 @@ def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.Dat
     if test:
         parquet_paths = [
             path
-            for path in processed_dir.glob("*.parquet")
+            for path in processed_dir.glob("*_processed.parquet")
             if path.name.startswith("test_")
         ]
     else:
         parquet_paths = [
             path
-            for path in processed_dir.glob("*.parquet")
+            for path in processed_dir.glob("*_processed.parquet")
             if not path.name.startswith("test_")
         ]
 
@@ -206,13 +289,13 @@ def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.Dat
         if test:
             parquet_paths = [
                 path
-                for path in processed_dir.glob("*.parquet")
+                for path in processed_dir.glob("*_processed.parquet")
                 if path.name.startswith("test_")
             ]
         else:
             parquet_paths = [
                 path
-                for path in processed_dir.glob("*.parquet")
+                for path in processed_dir.glob("*_processed.parquet")
                 if not path.name.startswith("test_")
             ]
 
