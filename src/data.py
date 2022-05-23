@@ -75,19 +75,16 @@ def clean_text(text: str) -> Union[str, None]:
     text = normalize("NFKC", text)
 
     # Remove the \x1a character
-    text = text.replace("\x1a", "")
-
-    # Replace the \x93 and \x94 characters with quotes
-    text = text.replace("[\x93\x94]", '"')
+    text = re.sub("\x1a", "", text)
 
     # Replace newlines with spaces
-    text = text.replace("\n", " ")
+    text = re.sub("\n", " ", text)
 
-    # Replace hyperlinks with [LINK]
-    text = re.sub(r"http[.\/?&a-zA-Z0-9\-\:=]+", "[LINK]", text)
+    # Replace hyperlinks with " [LINK] "
+    text = re.sub(r"http[.\/?&a-zA-Z0-9\-\:\=\%\_]+", " [LINK] ", text)
 
     # Remove duplicate whitespace
-    text = text.replace(" +", " ")
+    text = re.sub(" +", " ", text)
 
     # Strip trailing whitespace
     text = text.strip()
@@ -138,7 +135,9 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
 
     # Read the CSV file
     cols = ["account", "text", "date", "action"]
-    df = pd.read_csv(raw_paths[0], encoding="latin_1", usecols=cols, low_memory=False)
+    df = pd.read_csv(
+        raw_paths[0], encoding="windows-1252", usecols=cols, low_memory=False
+    )
 
     # Replace the NaN values in `action` by 'none'
     df.action.fillna(value="none", inplace=True)
@@ -149,11 +148,11 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     # Remove NaN values
     df.dropna(inplace=True)
 
-    # Clean the `account` column
-    df.account = df.account.progress_apply(clean_account)
-
     # Clean the `text` column
     df.text = df.text.progress_apply(clean_text)
+
+    # Clean the `account` column
+    df.account = df.account.progress_apply(clean_account)
 
     # Remove NaN values again
     df.dropna(inplace=True)
