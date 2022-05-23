@@ -262,7 +262,7 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     # Save the dataframe as a parquet file
     processed_path = processed_dir / f"{raw_paths[0].stem}_cleaned.parquet"
     df.to_parquet(processed_path)
-    logger.info(f'Saved processed data to {processed_path}')
+    logger.info(f'Saved processed data with {len(df):,} rows to {processed_path}')
 
 
 def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.DataFrame:
