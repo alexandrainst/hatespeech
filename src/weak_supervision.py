@@ -65,10 +65,10 @@ def main(data_dir: Union[str, Path] = "data", test: bool = False):
     # Save the dataframe
     path_str = [
         str(path)
-        for path in processed_dir.glob("*_processed.parquet")
+        for path in processed_dir.glob("*_cleaned.parquet")
         if not path.name.startswith("test_")
     ][0]
-    path = Path(path_str.replace("_processed", "_weakly_supervised"))
+    path = Path(path_str.replace("_cleaned", "_weakly_supervised"))
     df_train.to_parquet(path)
 
 
