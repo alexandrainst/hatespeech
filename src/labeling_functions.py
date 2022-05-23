@@ -266,6 +266,7 @@ def use_tfidf_model(record) -> int:
     else:
         return ABSTAIN
 
+
 @labeling_function()
 def has_been_moderated(record) -> int:
     """Check if a document has already been moderated.

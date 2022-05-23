@@ -14,51 +14,50 @@ from labeling_functions import (
     sentiment,
     ABSTAIN,
     NOT_OFFENSIVE,
-    OFFENSIVE
+    OFFENSIVE,
 )
 
 
 class TestLabelingFunctions:
-
-    @pytest.fixture(scope='class')
+    @pytest.fixture(scope="class")
     def fatsvag_record(self):
         data_dict = dict(
-            account='dr nyheder',
-            url='https://www.facebook.com/123',
-            text='Din fuck lort! Er du fatsvag eller hvad?',
+            account="dr nyheder",
+            url="https://www.facebook.com/123",
+            text="Din fuck lort! Er du fatsvag eller hvad?",
             date=dt.datetime(2020, 1, 1, 12, 0, 0),
-            action='deleted',
+            action="deleted",
             post_id=123,
             comment_id=np.nan,
-            reply_comment_id=np.nan
+            reply_comment_id=np.nan,
         )
         yield pd.Series(data_dict)
 
-    @pytest.fixture(scope='class')
+    @pytest.fixture(scope="class")
     def mention_record(self):
         data_dict = dict(
-            account='dr nyheder',
-            url='https://www.facebook.com/123',
-            text='Hans Christian',
+            account="dr nyheder",
+            url="https://www.facebook.com/123",
+            text="Hans Christian",
             date=dt.datetime(2020, 1, 1, 12, 0, 0),
-            action='none',
+            action="none",
             post_id=123,
             comment_id=np.nan,
-            reply_comment_id=np.nan
+            reply_comment_id=np.nan,
         )
         yield pd.Series(data_dict)
 
-    @pytest.fixture(scope='class')
+    @pytest.fixture(scope="class")
     def dr_answer_record(self):
         data_dict = dict(
-            account='dr nyheder',
-            url='https://www.facebook.com/123',
-            text='Hej. Vi har slettet din kommentar [fatsvage kælling] // Michael, DR',
+            account="dr nyheder",
+            url="https://www.facebook.com/123",
+            text="Hej. Vi har slettet din kommentar [fatsvage kælling] // Michael, DR",
             date=dt.datetime(2020, 1, 1, 12, 0, 0),
-            action='deleted',
+            action="deleted",
             post_id=123,
             comment_id=np.nan,
-            reply_comment_id=np.nan
+            reply_comment_id=np.nan,
         )
         yield pd.Series(data_dict)
 
