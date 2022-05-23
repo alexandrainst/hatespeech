@@ -1,4 +1,4 @@
-'''Weak supervision module to create labels in an unsupervised setting.'''
+"""Weak supervision module to create labels in an unsupervised setting."""
 
 from snorkel.labeling.model import LabelModel
 from snorkel.labeling import PandasLFApplier
@@ -14,18 +14,17 @@ from labeling_functions import (
     use_danlp_dabert_model,
     use_tfidf_model,
     has_been_moderated,
-    sentiment
+    sentiment,
 )
 
 
-
 def main(data_dir: Union[str, Path] = "data"):
-    '''Generate weakly supervised labels for the data.
+    """Generate weakly supervised labels for the data.
 
     Args:
         data_dir (str or Path, optional):
             The path to the data directory. Defaults to 'data'.
-    '''
+    """
     # Ensure that `data_dir` is a Path object
     data_dir = Path(data_dir)
 
@@ -48,7 +47,7 @@ def main(data_dir: Union[str, Path] = "data"):
         use_danlp_dabert_model,
         use_tfidf_model,
         has_been_moderated,
-        sentiment
+        sentiment,
     ]
 
     # Apply the LFs to the unlabeled training data
@@ -66,9 +65,12 @@ def main(data_dir: Union[str, Path] = "data"):
     df_train = df_train[df_train.label != -1]
 
     # Save the dataframe
-    path_str = [str(path) for path in processed_dir.glob('*_processed.parquet')
-            if not path.name.startswith('test_')][0]
-    path = Path(path_str.replace('_processed', '_weakly_supervised'))
+    path_str = [
+        str(path)
+        for path in processed_dir.glob("*_processed.parquet")
+        if not path.name.startswith("test_")
+    ][0]
+    path = Path(path_str.replace("_processed", "_weakly_supervised"))
     df_train.to_parquet(path)
 
 
