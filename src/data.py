@@ -93,7 +93,7 @@ def clean_text(text: str) -> Union[str, None]:
     )
 
     # CPR number
-    text = re.sub(r"(?<![\w.+-])\d{6}-?\d{4}\b", " [CPR] ", text)
+    text = re.sub(r"(?<![\w.+-])(0[1-9]|[1-2]\d|30|31)(0\d|1[0-2])\d{2}-?\d{4}\b", " [CPR] ", text)
 
     # E-mail
     text = re.sub(r"\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b", " [EMAIL] ", text)
