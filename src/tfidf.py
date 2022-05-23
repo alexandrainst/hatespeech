@@ -52,9 +52,6 @@ def train_tfidf_model(output_path: Union[str, Path] = "models/tfidf_model.bin"):
     print(f"Train score: {train_score}")
     print(f"Test score: {test_score}")
 
-    # Save the model
-    joblib.dump(pipeline, output_path)
-
     # Save the pipeline
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
