@@ -254,7 +254,6 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     # Remove duplicates
     num_rows = len(df)
     df.drop_duplicates(subset='text', inplace=True)
-    df.drop_duplicates(subset='reply_comment_id', inplace=True)
     logger.info(f'Removed {num_rows - len(df):,} duplicates')
 
     # Cast `account` and `action` columns as categories
