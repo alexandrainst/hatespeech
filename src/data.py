@@ -83,7 +83,7 @@ def clean_text(text: str) -> Union[str, None]:
     text = re.sub("\n", " ", text)
 
     # Replace hyperlinks with " [LINK] "
-    text = re.sub(r"http[.\/?&a-zA-Z0-9\-\:\=\%\_]+", " [LINK] ", text)
+    text = re.sub(r"http[.\/?&a-zA-Z0-9\-\:\=\%\_\;]+", " [LINK] ", text)
 
     # Telephone number with international prefix, limited to Europe
     text = re.sub(
