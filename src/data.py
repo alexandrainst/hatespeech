@@ -138,7 +138,7 @@ def get_comment_id(url: Optional[str]) -> Union[int, None]:
             The comment ID if the post is a comment and the URL is not None,
             otherwise None.
     '''
-    if url is None or 'comment_id' not in url:
+    if url is None or not isinstance(url, str) or 'comment_id' not in url:
         return None
     else:
         matches = re.search(r'(?<=comment_id=)\d+', url)
@@ -160,7 +160,7 @@ def get_reply_comment_id(url: Optional[str]) -> Union[int, None]:
             The comment ID if the post is a reply and the URL is not None,
             otherwise None.
     '''
-    if url is None or 'reply_comment_id' not in url:
+    if url is None or not isinstance(url, str) or 'reply_comment_id' not in url:
         return None
     else:
         matches = re.search(r'(?<=reply_comment_id=)\d+', url)
