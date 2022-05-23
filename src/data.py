@@ -60,7 +60,9 @@ def clean_text(text: str) -> Union[str, None]:
     """Clean a Facebook post.
 
     This will NFKC normalize the text, remove unwanted symbols, replace
-    hyperlinks with '[LINK]' and remove superfluous whitespace.
+    hyperlinks with '[LINK]', replace phone numbers with '[PHONE]',
+    replace CPR-numbers with '[CPR]', replace mail adresses with '[EMAIL]',
+    and remove superfluous whitespace.
 
     Args:
         text (str):
