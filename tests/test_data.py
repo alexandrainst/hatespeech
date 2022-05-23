@@ -33,8 +33,8 @@ class TestData:
             "object",
             "datetime64[ns]",
             "category",
-            "object",
-            "object",
+            "int64",
+            "int64",
             "object",
         ]
         assert data.dtypes.map(str).tolist() == dtypes
