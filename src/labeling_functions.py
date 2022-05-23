@@ -1,7 +1,7 @@
 """Labeling functions used for weak supervision."""
 
 from snorkel.labeling import labeling_function
-from transformers import pipeline
+from transformers.pipelines import pipeline
 import re
 import joblib
 import torch
