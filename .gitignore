@@ -148,4 +148,5 @@ dmypy.json
 !data/raw/test_data.csv
 
 # Models
-models/
+models/*
+!models/tfidf_model.bin
