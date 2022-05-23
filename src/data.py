@@ -241,7 +241,7 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     df = df.astype(dict(account="category", action="category"))
 
     # Save the dataframe as a parquet file
-    processed_path = processed_dir / f"{raw_paths[0].stem}_processed.parquet"
+    processed_path = processed_dir / f"{raw_paths[0].stem}_cleaned.parquet"
     df.to_parquet(processed_path)
 
 
@@ -273,13 +273,13 @@ def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.Dat
     if test:
         parquet_paths = [
             path
-            for path in processed_dir.glob("*_processed.parquet")
+            for path in processed_dir.glob("*_cleaned.parquet")
             if path.name.startswith("test_")
         ]
     else:
         parquet_paths = [
             path
-            for path in processed_dir.glob("*_processed.parquet")
+            for path in processed_dir.glob("*_cleaned.parquet")
             if not path.name.startswith("test_")
         ]
 
@@ -289,13 +289,13 @@ def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.Dat
         if test:
             parquet_paths = [
                 path
-                for path in processed_dir.glob("*_processed.parquet")
+                for path in processed_dir.glob("*_cleaned.parquet")
                 if path.name.startswith("test_")
             ]
         else:
             parquet_paths = [
                 path
-                for path in processed_dir.glob("*_processed.parquet")
+                for path in processed_dir.glob("*_cleaned.parquet")
                 if not path.name.startswith("test_")
             ]
 
