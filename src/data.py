@@ -227,9 +227,11 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     logger.info(f'Removed {num_rows - len(df):,} rows with NaN values')
 
     # Clean the `text` column
+    tqdm.pandas(desc='Cleaning text')
     df.text = df.text.progress_apply(clean_text)
 
     # Clean the `account` column
+    tqdm.pandas(desc='Cleaning account')
     df.account = df.account.progress_apply(clean_account)
 
     # Remove NaN values again from the `text` and `account` columns
@@ -237,9 +239,16 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     df.dropna(subset=['text', 'account'], inplace=True)
     logger.info(f'Removed {num_rows - len(df):,} rows with NaN values')
 
-    # Extract post_id, comment_id and reply_comment_id from the url
+    # Extract post_id from the url
+    tqdm.pandas(desc='Extracting post_id')
     df['post_id'] = df.url.progress_apply(get_post_id)
+
+    # Extract comment_id from the url
+    tqdm.pandas(desc='Extracting comment_id')
     df['comment_id'] = df.url.progress_apply(get_comment_id)
+
+    # Extract reply_comment_id from the url
+    tqdm.pandas(desc='Extracting reply_comment_id')
     df['reply_comment_id'] = df.url.progress_apply(get_reply_comment_id)
 
     # Remove duplicates
