@@ -100,7 +100,7 @@ def clean_text(text: str) -> Union[str, None]:
 
 
 def get_post_id(url: Optional[str]) -> Union[int, None]:
-    '''Extracts the post ID from the URL.
+    """Extracts the post ID from the URL.
 
     Args:
         url (str or None):
@@ -109,28 +109,30 @@ def get_post_id(url: Optional[str]) -> Union[int, None]:
     Returns:
         int:
             The post ID if the URL is not None, otherwise None.
-    '''
+    """
     if url is None or not isinstance(url, str):
         return None
 
-    # Extract the URL parts
-    parts = url.split('/')
+    # Extract the URL parts
+    parts = url.split("/")
 
     # Case 1: We extract the post ID through the "fbid" GET parameter
     if len(parts) == 4:
-        get_args_list = [get_arg.split('=') for get_arg in url.split('?')[-1].split('&')]
+        get_args_list = [
+            get_arg.split("=") for get_arg in url.split("?")[-1].split("&")
+        ]
         get_args = {key: val for key, val in get_args_list}
-        return int(get_args['fbid'])
+        return int(get_args["fbid"])
 
-    # Case 2: The post ID is the last number before the GET parameters
+    # Case 2: The post ID is the last number before the GET parameters
     else:
-        core_url = re.split(r'/?\?', url)[0]
-        post_id = [part for part in core_url.split('/') if part != ''][-1]
+        core_url = re.split(r"/?\?", url)[0]
+        post_id = [part for part in core_url.split("/") if part != ""][-1]
         return int(post_id)
 
 
 def get_comment_id(url: Optional[str]) -> Union[int, None]:
-    '''Extracts the comment ID from the URL.
+    """Extracts the comment ID from the URL.
 
     Args:
         url (str or None):
@@ -140,11 +142,11 @@ def get_comment_id(url: Optional[str]) -> Union[int, None]:
         int:
             The comment ID if the post is a comment and the URL is not None,
             otherwise None.
-    '''
-    if url is None or not isinstance(url, str) or 'comment_id' not in url:
+    """
+    if url is None or not isinstance(url, str) or "comment_id" not in url:
         return None
     else:
-        matches = re.search(r'(?<=comment_id=)\d+', url)
+        matches = re.search(r"(?<=comment_id=)\d+", url)
         if matches is None:
             return None
         else:
@@ -152,7 +154,7 @@ def get_comment_id(url: Optional[str]) -> Union[int, None]:
 
 
 def get_reply_comment_id(url: Optional[str]) -> Union[int, None]:
-    '''Extracts the reply comment ID from the URL.
+    """Extracts the reply comment ID from the URL.
 
     Args:
         url (str or None):
@@ -162,11 +164,11 @@ def get_reply_comment_id(url: Optional[str]) -> Union[int, None]:
         int:
             The comment ID if the post is a reply and the URL is not None,
             otherwise None.
-    '''
-    if url is None or not isinstance(url, str) or 'reply_comment_id' not in url:
+    """
+    if url is None or not isinstance(url, str) or "reply_comment_id" not in url:
         return None
     else:
-        matches = re.search(r'(?<=reply_comment_id=)\d+', url)
+        matches = re.search(r"(?<=reply_comment_id=)\d+", url)
         if matches is None:
             return None
         else:
@@ -208,12 +210,12 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
         ]
 
     # Read the CSV file
-    logger.info(f'Loading data from {raw_paths[0]}')
+    logger.info(f"Loading data from {raw_paths[0]}")
     cols = ["account", "url", "text", "date", "action"]
     df = pd.read_csv(
         raw_paths[0], encoding="windows-1252", usecols=cols, low_memory=False
     )
-    logger.info(f'Loaded {len(df):,} rows')
+    logger.info(f"Loaded {len(df):,} rows")
 
     # Replace the NaN values in `action` by 'none'
     df.action.fillna(value="none", inplace=True)
@@ -223,38 +225,38 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
 
     # Remove NaN values from the `text` and `account` columns
     num_rows = len(df)
-    df.dropna(subset=['text', 'account'], inplace=True)
-    logger.info(f'Removed {num_rows - len(df):,} rows with NaN values')
+    df.dropna(subset=["text", "account"], inplace=True)
+    logger.info(f"Removed {num_rows - len(df):,} rows with NaN values")
 
     # Clean the `text` column
-    tqdm.pandas(desc='Cleaning text')
+    tqdm.pandas(desc="Cleaning text")
     df.text = df.text.progress_apply(clean_text)
 
     # Clean the `account` column
-    tqdm.pandas(desc='Cleaning account')
+    tqdm.pandas(desc="Cleaning account")
     df.account = df.account.progress_apply(clean_account)
 
     # Remove NaN values again from the `text` and `account` columns
     num_rows = len(df)
-    df.dropna(subset=['text', 'account'], inplace=True)
-    logger.info(f'Removed {num_rows - len(df):,} rows with NaN values')
+    df.dropna(subset=["text", "account"], inplace=True)
+    logger.info(f"Removed {num_rows - len(df):,} rows with NaN values")
 
     # Extract post_id from the url
-    tqdm.pandas(desc='Extracting post_id')
-    df['post_id'] = df.url.progress_apply(get_post_id)
+    tqdm.pandas(desc="Extracting post_id")
+    df["post_id"] = df.url.progress_apply(get_post_id)
 
     # Extract comment_id from the url
-    tqdm.pandas(desc='Extracting comment_id')
-    df['comment_id'] = df.url.progress_apply(get_comment_id)
+    tqdm.pandas(desc="Extracting comment_id")
+    df["comment_id"] = df.url.progress_apply(get_comment_id)
 
     # Extract reply_comment_id from the url
-    tqdm.pandas(desc='Extracting reply_comment_id')
-    df['reply_comment_id'] = df.url.progress_apply(get_reply_comment_id)
+    tqdm.pandas(desc="Extracting reply_comment_id")
+    df["reply_comment_id"] = df.url.progress_apply(get_reply_comment_id)
 
     # Remove duplicates
     num_rows = len(df)
-    df.drop_duplicates(subset='text', inplace=True)
-    logger.info(f'Removed {num_rows - len(df):,} duplicates')
+    df.drop_duplicates(subset="text", inplace=True)
+    logger.info(f"Removed {num_rows - len(df):,} duplicates")
 
     # Cast `account` and `action` columns as categories
     df = df.astype(dict(account="category", action="category"))
@@ -262,7 +264,7 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     # Save the dataframe as a parquet file
     processed_path = processed_dir / f"{raw_paths[0].stem}_cleaned.parquet"
     df.to_parquet(processed_path)
-    logger.info(f'Saved processed data with {len(df):,} rows to {processed_path}')
+    logger.info(f"Saved processed data with {len(df):,} rows to {processed_path}")
 
 
 def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.DataFrame:
