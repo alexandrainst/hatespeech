@@ -85,15 +85,27 @@ def clean_text(text: str) -> Union[str, None]:
     # Replace hyperlinks with " [LINK] "
     text = re.sub(r"http[.\/?&a-zA-Z0-9\-\:\=\%\_\;]+", " [LINK] ", text)
 
-    # Telephone number with international prefix, limited to Europe
+    # Replace 8 digits with " [CPR] " if they follow date format, else replace with " [PHONE] "
+    # Check if an 8 digit number is present in text
+    if re.search(r"(?<!\d)\d{8}(?!\d)", text):
+
+        # Check if 'cpr' in text
+        if "cpr" in text.lower():
+            text = re.sub(
+                r"(?<![\w.+-])(0[1-9]|[1-2]\d|30|31)(0\d|1[0-2])\d{2}-?\d{4}\b",
+                " [CPR] ",
+                text,
+            )
+        # Assume 8 digits is a phone number if 'cpr' not in text.
+        else:
+            text = re.sub(r"(?<!\\d)\\d{8}(?!\\d)", " [PHONE] ", text)
+
+    # Replace telephone number with international prefix, limited to Europe with " [PHONE] "
     text = re.sub(
         r"(?<![\w.+-])(?:[+][34]\d{1,2}[ .-]?)(?:[(]\d{1,3}[)][ .-]?)?(?:\d[ .-]?){8,13}\b",
         " [PHONE] ",
         text,
     )
-
-    # CPR number
-    text = re.sub(r"(?<![\w.+-])(0[1-9]|[1-2]\d|30|31)(0\d|1[0-2])\d{2}-?\d{4}\b", " [CPR] ", text)
 
     # E-mail
     text = re.sub(r"\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b", " [EMAIL] ", text)
