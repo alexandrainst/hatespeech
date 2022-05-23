@@ -237,8 +237,9 @@ def use_tfidf_model(record) -> int:
     """Apply the TF-IDF offensive speech detection model.
 
     This will mark the document as offensive if the model classifies it as
-    offensive, and will mark it as not offensive if the model classifies it as
-    not offensive.
+    offensive with a decision score of at least 2, it will mark it as not
+    offensive if the model classifies it as not offensive with a decision score
+    below -2, and abstains otherwise.
 
     Args:
         record:
@@ -253,16 +254,17 @@ def use_tfidf_model(record) -> int:
     # Extract the document
     doc = record.text
 
-    # Get the prediction
-    predicted_label = tfidf.predict([doc])[0]
+    # Get the prediction score
+    predicted_score = tfidf.decision_function([doc])[0]
 
-    # If the predicted label is 'not offensive' then it is not offensive,
-    # otherwise it is offensive
-    if predicted_label == "OFF":
+    # If the predictive score is above 2 then mark as offensive, if it is below
+    # 2 then mark as not offensive, and otherwise abstain
+    if predicted_score > 2:
         return OFFENSIVE
-    else:
+    elif predicted_score < 2:
         return NOT_OFFENSIVE
-
+    else:
+        return ABSTAIN
 
 @labeling_function()
 def has_been_moderated(record) -> int:
