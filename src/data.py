@@ -116,13 +116,17 @@ def get_post_id(url: Optional[str]) -> Union[int, None]:
     # Extract the URL parts
     parts = url.split("/")
 
-    # Case 1: We extract the post ID through the "fbid" GET parameter
+    # Case 1: We extract the post ID through the "fbid" GET parameter. If the
+    # URL has no GET parameters then return None.
     if len(parts) == 4:
         get_args_list = [
             get_arg.split("=") for get_arg in url.split("?")[-1].split("&")
         ]
-        get_args = {key: val for key, val in get_args_list}
-        return int(get_args["fbid"])
+        if all(len(lst) == 2 for lst in get_args_list):
+            get_args = {key: val for key, val in get_args_list}
+            return int(get_args["fbid"])
+        else:
+            return None
 
     # Case 2: The post ID is the last number before the GET parameters
     else:
