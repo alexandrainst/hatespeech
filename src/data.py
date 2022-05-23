@@ -83,14 +83,30 @@ def clean_text(text: str) -> Union[str, None]:
     # Replace hyperlinks with " [LINK] "
     text = re.sub(r"http[.\/?&a-zA-Z0-9\-\:\=\%\_]+", " [LINK] ", text)
 
+    # Telephone number with international prefix, limited to Europe
+    text = re.sub(
+        r"(?<![\w.+-])(?:[+][34]\d{1,2}[ .-]?)(?:[(]\d{1,3}[)][ .-]?)?(?:\d[ .-]?){8,13}\b",
+        " [PHONE] ",
+        text,
+    )
+
+    # CPR number
+    text = re.sub(r"(?<![\w.+-])\d{6}-?\d{4}\b", " [CPR] ", text)
+
+    # E-mail
+    text = re.sub(r"\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b", " [EMAIL] ", text)
+
     # Remove duplicate whitespace
     text = re.sub(" +", " ", text)
 
     # Strip trailing whitespace
     text = text.strip()
 
+    # Define replacement strings
+    replacement_string = ["[LINK]", "[PHONE]", "[CPR]", "[EMAIL]"]
+
     # Return None if the text is empty or if only contains a link
-    if len(text) == 0 or text == "[LINK]":
+    if len(text) == 0 or any([text == replaced for replaced in replacement_string]):
         return None
 
     return text
