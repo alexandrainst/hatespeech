@@ -107,7 +107,7 @@ def get_post_id(url: Optional[str]) -> Union[int, None]:
         int:
             The post ID if the URL is not None, otherwise None.
     '''
-    if url is None:
+    if url is None or not isinstance(url, str):
         return None
 
     # Extract the URL parts
