@@ -108,7 +108,7 @@ def clean_text(text: str) -> Union[str, None]:
     replacement_string = ["[LINK]", "[PHONE]", "[CPR]", "[EMAIL]"]
 
     # Return None if the text is empty or if only contains a link
-    if len(text) == 0 or any([text == replaced for replaced in replacement_string]):
+    if len(text) == 0 or any([text == replacement for replacement in replacement_string]):
         return None
 
     return text
