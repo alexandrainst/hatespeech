@@ -174,11 +174,16 @@ def is_dr_answer(record) -> int:
 
 
 @labeling_function()
-def use_guscode_model(record) -> int:
-    """Apply the Guscode/DKbert-hatespeech-detection model.
+def use_transformer_ensemble(record) -> int:
+    """Apply the models:
 
-    This will mark the document as offensive if the model classifies it as
-    offensive, and will mark it as not offensive if the model classifies it as
+        DaNLP/Electra-hatespeech-detection,
+        Guscode/DKbert-hatespeech-detection,
+        DaNLP/da-bert-hatespeech-detection
+
+    This will mark the document as offensive if all the model classifies it as
+    offensive, will mark it as abstain if not all the model classifies it as
+    offensive, and will mark it as not offensive if all the model classifies it as
     not offensive.
 
     Args:
@@ -195,78 +200,30 @@ def use_guscode_model(record) -> int:
     doc = record.text
 
     # Get the prediction
-    predicted_label = guscode_model(doc, **pipe_params)[0]["label"]
-
-    # If the predicted label is 'LABEL_0' then it is not offensive, otherwise
-    # it is offensive
-    if predicted_label == "LABEL_0":
-        return NOT_OFFENSIVE
-    else:
-        return OFFENSIVE
-
-
-@labeling_function()
-def use_danlp_electra_model(record) -> int:
-    """Apply the DaNLP/Electra-hatespeech-detection model.
-
-    This will mark the document as offensive if the model classifies it as
-    offensive, and will mark it as not offensive if the model classifies it as
-    not offensive.
-
-    Args:
-        record:
-            The record containing the document to be checked.
-
-    Returns:
-        int:
-            This value is 1 (offensive) if the document is classified as
-            offensive by the model, and 0 (not offensive) if the document is
-            classified as not offensive by the model.
-    """
-    # Extract the document
-    doc = record.text
-
-    # Get the prediction
-    predicted_label = danlp_electra_model(doc, **pipe_params)[0]["label"]
+    predicted_label_electra = danlp_electra_model(doc, **pipe_params)[0]["label"]
+    predicted_label_guscode = guscode_model(doc, **pipe_params)[0]["label"]
+    predicted_label_bert = danlp_dabert_model(doc, **pipe_params)[0]["label"]
 
     # If the predicted label is 'not offensive' then it is not offensive,
     # otherwise it is offensive
-    if predicted_label == "offensive":
+    if all(
+        [
+            predicted_label_electra == "offensive",
+            predicted_label_bert == "offensive",
+            predicted_label_guscode == "LABEL_1",
+        ]
+    ):
         return OFFENSIVE
-    else:
+    elif all(
+        [
+            predicted_label_electra == "not offensive",
+            predicted_label_bert == "not offensive",
+            predicted_label_guscode == "LABEL_0",
+        ]
+    ):
         return NOT_OFFENSIVE
-
-
-@labeling_function()
-def use_danlp_dabert_model(record) -> int:
-    """Apply the DaNLP/da-bert-hatespeech-detection model.
-
-    This will mark the document as offensive if the model classifies it as
-    offensive, and will mark it as not offensive if the model classifies it as
-    not offensive.
-
-    Args:
-        record:
-            The record containing the document to be checked.
-
-    Returns:
-        int:
-            This value is 1 (offensive) if the document is classified as
-            offensive by the model, and 0 (not offensive) if the document is
-            classified as not offensive by the model.
-    """
-    # Extract the document
-    doc = record.text
-
-    # Get the prediction
-    predicted_label = danlp_dabert_model(doc, **pipe_params)[0]["label"]
-
-    # If the predicted label is 'not offensive' then it is not offensive,
-    # otherwise it is offensive
-    if predicted_label == "offensive":
-        return OFFENSIVE
     else:
-        return NOT_OFFENSIVE
+        return ABSTAIN
 
 
 @labeling_function()
