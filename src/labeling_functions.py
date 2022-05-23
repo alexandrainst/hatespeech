@@ -175,16 +175,17 @@ def is_dr_answer(record) -> int:
 
 @labeling_function()
 def use_transformer_ensemble(record) -> int:
-    """Apply the models:
+    """Apply an ensemble of hatespeech detection transformer models.
 
-        DaNLP/Electra-hatespeech-detection,
-        Guscode/DKbert-hatespeech-detection,
-        DaNLP/da-bert-hatespeech-detection
+    The following models will be applied:
 
-    This will mark the document as offensive if all the model classifies it as
-    offensive, will mark it as abstain if not all the model classifies it as
-    offensive, and will mark it as not offensive if all the model classifies it as
-    not offensive.
+        - DaNLP/Electra-hatespeech-detection
+        - Guscode/DKbert-hatespeech-detection
+        - DaNLP/da-bert-hatespeech-detection
+
+    This will mark the document as offensive if all models predict the
+    document as offensive, as not offensive if all models predict the
+    document as not offensive, and abstain otherwise.
 
     Args:
         record:
@@ -193,8 +194,8 @@ def use_transformer_ensemble(record) -> int:
     Returns:
         int:
             This value is 1 (offensive) if the document is classified as
-            offensive by the model, and 0 (not offensive) if the document is
-            classified as not offensive by the model.
+            offensive by the ensemble, and 0 (not offensive) if the document is
+            classified as not offensive by the ensemble.
     """
     # Extract the document
     doc = record.text
