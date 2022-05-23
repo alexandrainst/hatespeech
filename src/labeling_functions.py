@@ -18,7 +18,7 @@ pipe_params = dict(truncation=True, max_length=512)
 
 
 # Get device
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = 0 if torch.cuda.is_available() else -1
 
 
 # Load models
