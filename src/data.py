@@ -216,7 +216,7 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     # Cast `date` column as datetime
     df.date = pd.to_datetime(df.date)
 
-    # Remove NaN values
+    # Remove NaN values from the `text` and `account` columns
     df.dropna(subset=['text', 'account'], inplace=True)
 
     # Clean the `text` column
@@ -225,7 +225,7 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     # Clean the `account` column
     df.account = df.account.progress_apply(clean_account)
 
-    # Remove NaN values again
+    # Remove NaN values again from the `text` and `account` columns
     df.dropna(subset=['text', 'account'], inplace=True)
 
     # Extract post_id, comment_id and reply_comment_id from the url
