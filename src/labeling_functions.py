@@ -5,6 +5,7 @@ from transformers import pipeline
 import re
 import joblib
 import torch
+import warnings
 
 
 # Create label names
@@ -114,11 +115,13 @@ def is_mention(record) -> int:
     doc = record.text
 
     # Get the PER label indices
-    per_indices = [
-        (dct["start"], dct["end"])
-        for dct in ner(doc, aggregation_strategy="first")
-        if "entity_group" in dct and dct["entity_group"] == "PER"
-    ]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        per_indices = [
+            (dct["start"], dct["end"])
+            for dct in ner(doc, aggregation_strategy="first")
+            if "entity_group" in dct and dct["entity_group"] == "PER"
+        ]
 
     # Sort the indices, so that the latest mention is first
     per_indices = sorted(per_indices, key=lambda x: x[0], reverse=True)
@@ -201,9 +204,11 @@ def use_transformer_ensemble(record) -> int:
     doc = record.text
 
     # Get the prediction
-    predicted_label_electra = danlp_electra_model(doc, **pipe_params)[0]["label"]
-    predicted_label_guscode = guscode_model(doc, **pipe_params)[0]["label"]
-    predicted_label_bert = danlp_dabert_model(doc, **pipe_params)[0]["label"]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        predicted_label_electra = danlp_electra_model(doc, **pipe_params)[0]["label"]
+        predicted_label_guscode = guscode_model(doc, **pipe_params)[0]["label"]
+        predicted_label_bert = danlp_dabert_model(doc, **pipe_params)[0]["label"]
 
     # If the predicted label is 'not offensive' then it is not offensive,
     # otherwise it is offensive
@@ -309,7 +314,9 @@ def sentiment(record) -> int:
     doc = record.text
 
     # Get the prediction
-    prediction = sent(doc, **pipe_params)[0]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        prediction = sent(doc, **pipe_params)[0]
 
     # If the predicted label is positive or neutral then mark the document as
     # not offensive. If the predicted label is negative and the confidence is
