@@ -16,12 +16,14 @@ from labeling_functions import (
 )
 
 
-def main(data_dir: Union[str, Path] = "data"):
+def main(data_dir: Union[str, Path] = "data", test: bool = False):
     """Generate weakly supervised labels for the data.
 
     Args:
         data_dir (str or Path, optional):
             The path to the data directory. Defaults to 'data'.
+        test (bool, optional):
+            Whether to generate labels for the test set. Defaults to False.
     """
     # Ensure that `data_dir` is a Path object
     data_dir = Path(data_dir)
@@ -33,7 +35,7 @@ def main(data_dir: Union[str, Path] = "data"):
     processed_dir.mkdir(parents=True, exist_ok=True)
 
     # Load the data
-    df_train = load_data(data_dir=data_dir)
+    df_train = load_data(data_dir=data_dir, test=test)
 
     # Define the list of labeling functions
     lfs = [
