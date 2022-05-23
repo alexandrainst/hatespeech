@@ -6,10 +6,13 @@ import re
 from unicodedata import normalize
 from typing import Union, Optional
 from tqdm.auto import tqdm
+import logging
 
 
-# Enable `progress_apply` method for DataFrame objects
-tqdm.pandas()
+# Set up logging
+fmt = "%(asctime)s [%(levelname)s] <%(name)s> %(message)s"
+logging.basicConfig(level=logging.INFO, format=fmt)
+logger = logging.getLogger(__name__)
 
 
 def clean_account(account: str) -> str:
@@ -205,10 +208,12 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
         ]
 
     # Read the CSV file
+    logger.info(f'Loading data from {raw_paths[0]}')
     cols = ["account", "url", "text", "date", "action"]
     df = pd.read_csv(
         raw_paths[0], encoding="windows-1252", usecols=cols, low_memory=False
     )
+    logger.info(f'Loaded {len(df):,} rows')
 
     # Replace the NaN values in `action` by 'none'
     df.action.fillna(value="none", inplace=True)
@@ -217,7 +222,9 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     df.date = pd.to_datetime(df.date)
 
     # Remove NaN values from the `text` and `account` columns
+    num_rows = len(df)
     df.dropna(subset=['text', 'account'], inplace=True)
+    logger.info(f'Removed {num_rows - len(df):,} rows with NaN values')
 
     # Clean the `text` column
     df.text = df.text.progress_apply(clean_text)
@@ -226,7 +233,9 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     df.account = df.account.progress_apply(clean_account)
 
     # Remove NaN values again from the `text` and `account` columns
+    num_rows = len(df)
     df.dropna(subset=['text', 'account'], inplace=True)
+    logger.info(f'Removed {num_rows - len(df):,} rows with NaN values')
 
     # Extract post_id, comment_id and reply_comment_id from the url
     df['post_id'] = df.url.progress_apply(get_post_id)
@@ -234,8 +243,10 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     df['reply_comment_id'] = df.url.progress_apply(get_reply_comment_id)
 
     # Remove duplicates
+    num_rows = len(df)
     df.drop_duplicates(subset='text', inplace=True)
     df.drop_duplicates(subset='reply_comment_id', inplace=True)
+    logger.info(f'Removed {num_rows - len(df):,} duplicates')
 
     # Cast `account` and `action` columns as categories
     df = df.astype(dict(account="category", action="category"))
@@ -243,6 +254,7 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     # Save the dataframe as a parquet file
     processed_path = processed_dir / f"{raw_paths[0].stem}_cleaned.parquet"
     df.to_parquet(processed_path)
+    logger.info(f'Saved processed data to {processed_path}')
 
 
 def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.DataFrame:
