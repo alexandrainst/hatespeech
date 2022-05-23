@@ -87,7 +87,7 @@ def contains_offensive_word(record) -> int:
 
     # Mark document as offensive if it contains an offensive word, and abstain
     # otherwise
-    if not is_dr_answer(record) and any(
+    if is_dr_answer(record) == ABSTAIN and any(
         re.search(regex, doc.lower()) for regex in offensive_words
     ):
         return OFFENSIVE
