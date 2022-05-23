@@ -14,7 +14,7 @@ fastparquet~=0.8.1
 matplotlib~=3.5.2
 
 # Machine learning
-scikit-learn~=1.0.2
+scikit-learn~=0.25.0
 
 # Deep learning
 torch~=1.10.0
