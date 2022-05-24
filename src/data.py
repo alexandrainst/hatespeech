@@ -85,20 +85,24 @@ def clean_text(text: str) -> Union[str, None]:
     # Replace hyperlinks with " [LINK] "
     text = re.sub(r"http[.\/?&a-zA-Z0-9\-\:\=\%\_\;]+", " [LINK] ", text)
 
-    # Replace 8 digits with " [CPR] " if they follow date format, else replace with " [PHONE] "
+    # Replace 8 digits with " [CVR] " if "cvr" is in the text, else replace with " [PHONE] "
     # Check if an 8 digit number is present in text
     if re.search(r"(?<!\d)\d{8}(?!\d)", text):
 
-        # Check if 'cpr' in text
-        if "cpr" in text.lower():
-            text = re.sub(
-                r"(?<![\w.+-])(0[1-9]|[1-2]\d|30|31)(0\d|1[0-2])\d{2}-?\d{4}\b",
-                " [CPR] ",
-                text,
-            )
-        # Assume 8 digits is a phone number if 'cpr' not in text.
+        # Check if 'cvr' in text
+        if "cvr" in text.lower():
+            text = re.sub(r"(?<!\d)\d{8}(?!\d)", " [CVR] ", text)
+            
+        # Assume 8 digits is a phone number if 'cvr' not in text.
         else:
-            text = re.sub(r"(?<!\\d)\\d{8}(?!\\d)", " [PHONE] ", text)
+            text = re.sub(r"(?<!\d)\d{8}(?!\d)", " [PHONE] ", text)
+
+    # Replace CPR with " [CPR] "
+    text = re.sub(
+        r"(?<![\w.+-])(0[1-9]|[1-2]\d|30|31)(0\d|1[0-2])\d{2}-?\d{4}\b",
+        " [CPR] ",
+        text,
+    )
 
     # Replace telephone number with international prefix, limited to Europe with " [PHONE] "
     text = re.sub(
