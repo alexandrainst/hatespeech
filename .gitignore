@@ -150,3 +150,6 @@ dmypy.json
 # Models
 models/*
 !models/tfidf_model.bin
+
+# EDA notebooks
+notebooks/*_eda.ipynb
