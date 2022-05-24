@@ -62,7 +62,7 @@ def clean_text(text: str) -> Union[str, None]:
     This will NFKC normalize the text, remove unwanted symbols, replace
     hyperlinks with '[LINK]', replace phone numbers with '[PHONE]',
     replace CPR-numbers with '[CPR]', replace mail adresses with '[EMAIL]',
-    and remove superfluous whitespace.
+   replace CVR-numbers with '[CVR]' and remove superfluous whitespace.
 
     Args:
         text (str):
