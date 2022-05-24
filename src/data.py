@@ -104,9 +104,9 @@ def clean_text(text: str) -> Union[str, None]:
         text,
     )
 
-    # Replace telephone number with international prefix, limited to Europe with " [PHONE] "
+    # Replace telephone number with international prefix with " [PHONE] "
     text = re.sub(
-        r"[\w.+-]\+[34]\d{1,2}[ .-]?([(]\d{1,3}[)][ .-]?)?(\d[ .-]?){8,13}\b",
+        r"[\w.+-]\+[2-4]\d{1,2}[ .-]?([(]\d{1,3}[)][ .-]?)?(\d[ .-]?){8,13}\b",
         " [PHONE] ",
         text,
     )
