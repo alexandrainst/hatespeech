@@ -301,8 +301,15 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     df.drop_duplicates(subset="text", inplace=True)
     logger.info(f"Removed {num_rows - len(df):,} duplicates")
 
-    # Cast `account` and `action` columns as categories
-    df = df.astype(dict(account="category", action="category"))
+    # Cast `account` and `action` columns as categories, and the ID columns as
+    # nullable integers
+    df = df.astype(dict(
+        account="category",
+        action="category",
+        post_id="Int64",
+        comment_id="Int64",
+        reply_comment_id="Int64"
+    ))
 
     # Save the dataframe as a parquet file
     processed_path = processed_dir / f"{raw_paths[0].stem}_cleaned.parquet"
