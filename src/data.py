@@ -115,7 +115,7 @@ def clean_text(text: str) -> Union[str, None]:
     )
 
     # Replace hyperlinks with " [LINK] "
-    text = re.sub(r"(http|www\.)[.\/?&a-zA-Z0-9\-\:\=\%\_]+", " [LINK] ", text)
+    text = re.sub(r"(http|www\.)[.\/?&a-zA-Z0-9\-\:\=\%\_\;\$]+", " [LINK] ", text)
 
     # E-mail
     text = re.sub(r"\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b", " [EMAIL] ", text)
