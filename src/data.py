@@ -115,7 +115,11 @@ def clean_text(text: str) -> Union[str, None]:
     )
 
     # Replace hyperlinks with " [LINK] "
-    text = re.sub(r"(http|www\.)[.\/?&a-zæøåA-ZÆØÅ0-9\-\:\=\%\_\;\$\~\#\[\]\(\)\{\}]+", " [LINK] ", text)
+    text = re.sub(
+        r"(http|www\.)[.\/?&a-zæøåA-ZÆØÅ0-9\-\:\=\%\_\;\$\~\#\[\]\(\)\{\}]+",
+        " [LINK] ",
+        text,
+    )
 
     # E-mail
     text = re.sub(r"\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b", " [EMAIL] ", text)
@@ -303,13 +307,15 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
 
     # Cast `account` and `action` columns as categories, and the ID columns as
     # nullable integers
-    df = df.astype(dict(
-        account="category",
-        action="category",
-        post_id="Int64",
-        comment_id="Int64",
-        reply_comment_id="Int64"
-    ))
+    df = df.astype(
+        dict(
+            account="category",
+            action="category",
+            post_id="Int64",
+            comment_id="Int64",
+            reply_comment_id="Int64",
+        )
+    )
 
     # Save the dataframe as a parquet file
     processed_path = processed_dir / f"{raw_paths[0].stem}_cleaned.parquet"
