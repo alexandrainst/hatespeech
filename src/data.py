@@ -92,7 +92,7 @@ def clean_text(text: str) -> Union[str, None]:
         # Check if 'cvr' in text
         if "cvr" in text.lower():
             text = re.sub(r"(?<!\d)\d{8}(?!\d)", " [CVR] ", text)
-            
+
         # Assume 8 digits is a phone number if 'cvr' not in text.
         else:
             text = re.sub(r"(?<!\d)\d{8}(?!\d)", " [PHONE] ", text)
