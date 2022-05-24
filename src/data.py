@@ -63,7 +63,9 @@ def clean_text(text: str) -> Union[str, None]:
     """Clean a Facebook post.
 
     This will NFKC normalize the text, remove unwanted symbols, replace
-    hyperlinks with '[LINK]' and remove superfluous whitespace.
+    hyperlinks with '[LINK]', replace phone numbers with '[PHONE]',
+    replace CPR-numbers with '[CPR]', replace mail adresses with '[EMAIL]',
+    replace CVR-numbers with '[CVR]' and remove superfluous whitespace.
 
     Args:
         text (str):
@@ -84,6 +86,35 @@ def clean_text(text: str) -> Union[str, None]:
     text = re.sub("\n", " ", text)
 
     # Replace hyperlinks with " [LINK] "
+    text = re.sub(r"http[.\/?&a-zA-Z0-9\-\:\=\%\_\;]+", " [LINK] ", text)
+
+    # Replace 8 digits with " [CVR] " if "cvr" is in the text, else replace with " [PHONE] "
+    # Check if an 8 digit number is present in text
+    if re.search(r"(?<!\d)(\d\d ?){4}(?!\d)", text):
+
+        # Check if 'cvr' in text
+        if "cvr" in text.lower():
+            text = re.sub(r"(?<!\d)(\d\d ?){4}(?!\d)", " [CVR] ", text)
+
+        # Assume 8 digits is a phone number if 'cvr' not in text.
+        else:
+            text = re.sub(r"(?<!\d)(\d\d ?){4}(?!\d)", " [PHONE] ", text)
+
+    # Replace CPR with " [CPR] "
+    text = re.sub(
+        r"(?<![\w.+-])(0[1-9]|[1-2]\d|30|31)(0\d|1[0-2])\d{2}-?\d{4}\b",
+        " [CPR] ",
+        text,
+    )
+
+    # Replace telephone number with international prefix, limited to Europe with " [PHONE] "
+    text = re.sub(
+        r"(?<![\w.+-])(?:[+][34]\d{1,2}[ .-]?)(?:[(]\d{1,3}[)][ .-]?)?(?:\d[ .-]?){8,13}\b",
+        " [PHONE] ",
+        text,
+    )
+
+    # Replace hyperlinks with " [LINK] "
     text = re.sub(r"(http|www\.)[.\/?&a-zA-Z0-9\-\:\=\%\_]+", " [LINK] ", text)
 
     # Remove duplicate whitespace
@@ -92,8 +123,13 @@ def clean_text(text: str) -> Union[str, None]:
     # Strip trailing whitespace
     text = text.strip()
 
-    # Return None if the text is empty or if only contains a link
-    if len(text) == 0 or text == "[LINK]":
+    # Define replacement strings
+    replacement_string = ["[LINK]", "[PHONE]", "[CVR]", "[CPR]", "[EMAIL]"]
+
+    # Return None if the text is empty or if only contains a replacement string
+    if len(text) == 0 or any(
+        [text == replacement for replacement in replacement_string]
+    ):
         return None
 
     return text
