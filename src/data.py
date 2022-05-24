@@ -113,7 +113,7 @@ def clean_text(text: str) -> Union[str, None]:
 
     # Replace hyperlinks with " [LINK] "
     text = re.sub(
-        r"(http|www\.)[.\/?&a-zæøåA-ZÆØÅ0-9\-\:\=\%\_\;\$\~\#\[\]\(\)\{\}]+",
+        r"(http|www\.)[.\/?&a-zæøåA-ZÆØÅ0-9\-\:\=\%\_\;\$\~\#\[\]\(\)\{\}\,\+]+",
         " [LINK] ",
         text,
     )
