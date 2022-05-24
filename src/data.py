@@ -119,7 +119,7 @@ def clean_text(text: str) -> Union[str, None]:
     )
 
     # E-mail
-    text = re.sub(r"\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b", " [EMAIL] ", text)
+    text = re.sub(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", " [EMAIL] ", text)
 
     # Remove duplicate whitespace
     text = re.sub(" +", " ", text)
