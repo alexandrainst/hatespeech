@@ -4,12 +4,15 @@ import pandas as pd
 from pathlib import Path
 import re
 from unicodedata import normalize
-from typing import Union
+from typing import Union, Optional
 from tqdm.auto import tqdm
+import logging
 
 
-# Enable `progress_apply` method for DataFrame objects
-tqdm.pandas()
+# Set up logging
+fmt = "%(asctime)s [%(levelname)s] <%(name)s> %(message)s"
+logging.basicConfig(level=logging.INFO, format=fmt)
+logger = logging.getLogger(__name__)
 
 
 def clean_account(account: str) -> str:
@@ -81,7 +84,7 @@ def clean_text(text: str) -> Union[str, None]:
     text = re.sub("\n", " ", text)
 
     # Replace hyperlinks with " [LINK] "
-    text = re.sub(r"http[.\/?&a-zA-Z0-9\-\:\=\%\_]+", " [LINK] ", text)
+    text = re.sub(r"(http|www\.)[.\/?&a-zA-Z0-9\-\:\=\%\_]+", " [LINK] ", text)
 
     # Remove duplicate whitespace
     text = re.sub(" +", " ", text)
@@ -96,6 +99,86 @@ def clean_text(text: str) -> Union[str, None]:
     return text
 
 
+def get_post_id(url: Optional[str]) -> Union[int, None]:
+    """Extracts the post ID from the URL.
+
+    Args:
+        url (str or None):
+            The URL of the post.
+
+    Returns:
+        int:
+            The post ID if the URL is not None, otherwise None.
+    """
+    if url is None or not isinstance(url, str):
+        return None
+
+    # Extract the URL parts
+    parts = url.split("/")
+
+    # Case 1: We extract the post ID through the "fbid" GET parameter. If the
+    # URL has no GET parameters then return None.
+    if len(parts) == 4:
+        get_args_list = [
+            get_arg.split("=") for get_arg in url.split("?")[-1].split("&")
+        ]
+        if all(len(lst) == 2 for lst in get_args_list):
+            get_args = {key: val for key, val in get_args_list}
+            return int(get_args["fbid"])
+        else:
+            return None
+
+    # Case 2: The post ID is the last number before the GET parameters
+    else:
+        core_url = re.split(r"/?\?", url)[0]
+        post_id = [part for part in core_url.split("/") if part != ""][-1]
+        return int(post_id)
+
+
+def get_comment_id(url: Optional[str]) -> Union[int, None]:
+    """Extracts the comment ID from the URL.
+
+    Args:
+        url (str or None):
+            The URL of the comment.
+
+    Returns:
+        int:
+            The comment ID if the post is a comment and the URL is not None,
+            otherwise None.
+    """
+    if url is None or not isinstance(url, str) or "comment_id" not in url:
+        return None
+    else:
+        matches = re.search(r"(?<=comment_id=)\d+", url)
+        if matches is None:
+            return None
+        else:
+            return int(matches[0])
+
+
+def get_reply_comment_id(url: Optional[str]) -> Union[int, None]:
+    """Extracts the reply comment ID from the URL.
+
+    Args:
+        url (str or None):
+            The URL of the comment.
+
+    Returns:
+        int:
+            The comment ID if the post is a reply and the URL is not None,
+            otherwise None.
+    """
+    if url is None or not isinstance(url, str) or "reply_comment_id" not in url:
+        return None
+    else:
+        matches = re.search(r"(?<=reply_comment_id=)\d+", url)
+        if matches is None:
+            return None
+        else:
+            return int(matches[0])
+
+
 def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     """Process the raw data and store the processed data.
 
@@ -107,9 +190,6 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     """
     # Ensure that `data_dir` is a Path object
     data_dir = Path(data_dir)
-
-    # Ensure that `data_dir` exists
-    data_dir.mkdir(parents=True, exist_ok=True)
 
     # Create the path to the raw data directory
     raw_dir = data_dir / "raw"
@@ -134,10 +214,12 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
         ]
 
     # Read the CSV file
-    cols = ["account", "text", "date", "action"]
+    logger.info(f"Loading data from {raw_paths[0]}")
+    cols = ["account", "url", "text", "date", "action"]
     df = pd.read_csv(
         raw_paths[0], encoding="windows-1252", usecols=cols, low_memory=False
     )
+    logger.info(f"Loaded {len(df):,} rows")
 
     # Replace the NaN values in `action` by 'none'
     df.action.fillna(value="none", inplace=True)
@@ -145,24 +227,48 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     # Cast `date` column as datetime
     df.date = pd.to_datetime(df.date)
 
-    # Remove NaN values
-    df.dropna(inplace=True)
+    # Remove NaN values from the `text` and `account` columns
+    num_rows = len(df)
+    df.dropna(subset=["text", "account"], inplace=True)
+    logger.info(f"Removed {num_rows - len(df):,} rows with NaN values")
 
     # Clean the `text` column
+    tqdm.pandas(desc="Cleaning text")
     df.text = df.text.progress_apply(clean_text)
 
     # Clean the `account` column
+    tqdm.pandas(desc="Cleaning account")
     df.account = df.account.progress_apply(clean_account)
 
-    # Remove NaN values again
-    df.dropna(inplace=True)
+    # Remove NaN values again from the `text` and `account` columns
+    num_rows = len(df)
+    df.dropna(subset=["text", "account"], inplace=True)
+    logger.info(f"Removed {num_rows - len(df):,} rows with NaN values")
+
+    # Extract post_id from the url
+    tqdm.pandas(desc="Extracting post_id")
+    df["post_id"] = df.url.progress_apply(get_post_id)
+
+    # Extract comment_id from the url
+    tqdm.pandas(desc="Extracting comment_id")
+    df["comment_id"] = df.url.progress_apply(get_comment_id)
+
+    # Extract reply_comment_id from the url
+    tqdm.pandas(desc="Extracting reply_comment_id")
+    df["reply_comment_id"] = df.url.progress_apply(get_reply_comment_id)
+
+    # Remove duplicates
+    num_rows = len(df)
+    df.drop_duplicates(subset="text", inplace=True)
+    logger.info(f"Removed {num_rows - len(df):,} duplicates")
 
     # Cast `account` and `action` columns as categories
     df = df.astype(dict(account="category", action="category"))
 
     # Save the dataframe as a parquet file
-    processed_path = processed_dir / f"{raw_paths[0].stem}_processed.parquet"
+    processed_path = processed_dir / f"{raw_paths[0].stem}_cleaned.parquet"
     df.to_parquet(processed_path)
+    logger.info(f"Saved processed data with {len(df):,} rows to {processed_path}")
 
 
 def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.DataFrame:
@@ -183,9 +289,6 @@ def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.Dat
     # Ensure that `data_dir` is a Path object
     data_dir = Path(data_dir)
 
-    # Ensure that `data_dir` exists
-    data_dir.mkdir(parents=True, exist_ok=True)
-
     # Create the path to the processed data directory
     processed_dir = data_dir / "processed"
 
@@ -196,13 +299,13 @@ def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.Dat
     if test:
         parquet_paths = [
             path
-            for path in processed_dir.glob("*.parquet")
+            for path in processed_dir.glob("*_cleaned.parquet")
             if path.name.startswith("test_")
         ]
     else:
         parquet_paths = [
             path
-            for path in processed_dir.glob("*.parquet")
+            for path in processed_dir.glob("*_cleaned.parquet")
             if not path.name.startswith("test_")
         ]
 
@@ -212,13 +315,13 @@ def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.Dat
         if test:
             parquet_paths = [
                 path
-                for path in processed_dir.glob("*.parquet")
+                for path in processed_dir.glob("*_cleaned.parquet")
                 if path.name.startswith("test_")
             ]
         else:
             parquet_paths = [
                 path
-                for path in processed_dir.glob("*.parquet")
+                for path in processed_dir.glob("*_cleaned.parquet")
                 if not path.name.startswith("test_")
             ]
 
@@ -226,3 +329,7 @@ def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.Dat
     df = pd.read_parquet(parquet_paths[0])
 
     return df
+
+
+if __name__ == "__main__":
+    load_data()
