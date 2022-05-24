@@ -121,7 +121,7 @@ def clean_text(text: str) -> Union[str, None]:
     text = text.strip()
 
     # Define replacement strings
-    replacement_string = ["[LINK]", "[PHONE]", "[CPR]", "[EMAIL]"]
+    replacement_string = ["[LINK]", "[PHONE]", "[CVR]", "[CPR]", "[EMAIL]"]
 
     # Return None if the text is empty or if only contains a replacement string
     if len(text) == 0 or any(
