@@ -85,9 +85,6 @@ def clean_text(text: str) -> Union[str, None]:
     # Replace newlines with spaces
     text = re.sub("\n", " ", text)
 
-    # Replace hyperlinks with " [LINK] "
-    text = re.sub(r"http[.\/?&a-zA-Z0-9\-\:\=\%\_\;]+", " [LINK] ", text)
-
     # Replace 8 digits with " [CVR] " if "cvr" is in the text, else replace with " [PHONE] "
     # Check if an 8 digit number is present in text
     if re.search(r"(?<!\d)(\d\d ?){4}(?!\d)", text):
@@ -107,15 +104,26 @@ def clean_text(text: str) -> Union[str, None]:
         text,
     )
 
-    # Replace telephone number with international prefix, limited to Europe with " [PHONE] "
+    # Replace telephone number with international prefix with " [PHONE] "
     text = re.sub(
-        r"(?<![\w.+-])(?:[+][34]\d{1,2}[ .-]?)(?:[(]\d{1,3}[)][ .-]?)?(?:\d[ .-]?){8,13}\b",
+        r"(\+|00)[1-6]{1,2} ?([(]?\d[ \-)]{0,2}){7,10}\d\b",
         " [PHONE] ",
         text,
     )
 
     # Replace hyperlinks with " [LINK] "
-    text = re.sub(r"(http|www\.)[.\/?&a-zA-Z0-9\-\:\=\%\_]+", " [LINK] ", text)
+    text = re.sub(
+        r"(http|www\.)[.\/?&a-zæøåA-ZÆØÅ0-9\-\:\=\%\_\;\$\~\#\[\]\(\)\{\}\,\+\@]+",
+        " [LINK] ",
+        text,
+    )
+
+    # E-mail
+    text = re.sub(
+        r"\b[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]+@[A-Za-z0-9.-]+(\.[A-Za-z]{2,3}){1,2}(?=[A-ZÆØÅ]|\b)",
+        " [EMAIL] ",
+        text,
+    )
 
     # Remove duplicate whitespace
     text = re.sub(" +", " ", text)
@@ -298,8 +306,17 @@ def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
     df.drop_duplicates(subset="text", inplace=True)
     logger.info(f"Removed {num_rows - len(df):,} duplicates")
 
-    # Cast `account` and `action` columns as categories
-    df = df.astype(dict(account="category", action="category"))
+    # Cast `account` and `action` columns as categories, and the ID columns as
+    # nullable integers
+    df = df.astype(
+        dict(
+            account="category",
+            action="category",
+            post_id="Int64",
+            comment_id="Int64",
+            reply_comment_id="Int64",
+        )
+    )
 
     # Save the dataframe as a parquet file
     processed_path = processed_dir / f"{raw_paths[0].stem}_cleaned.parquet"
