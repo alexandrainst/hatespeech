@@ -74,7 +74,7 @@ def contains_offensive_word(record) -> int:
         r"k[æ?]lling",
         r"fatsvag",
         r"gimpe",
-        r"luder",
+        r"\Wluder",
         r"dumb +fuck",
         r"afskum",
         r"psykopat",
