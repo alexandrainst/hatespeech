@@ -79,7 +79,7 @@ def contains_offensive_word(record) -> int:
         r"mongol",
         r"(m[ø?][gj]|klamme|usselt?) ?(svin|so|kost)",
         r"klaphat",
-        r"kneppe",
+        r"(?<!flue)kneppe",
         r"liderlig",
         r"vatpik",
         r"k[æ?]lling",
