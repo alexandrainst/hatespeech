@@ -53,9 +53,9 @@ def train_tfidf_model(output_path: Union[str, Path] = "models/tfidf_model.bin"):
     test_mcc = matthews_corrcoef(test_df.label, test_preds)
     test_f1 = f1_score(test_df.label, test_preds)
     print(f"Train MCC: {100 * train_mcc:.2f}%")
-    print(f'Train F1: {100 * train_f1:.2f}%')
+    print(f"Train F1: {100 * train_f1:.2f}%")
     print(f"Test MCC: {100* test_mcc:.2f}%")
-    print(f'Test F1: {100 * test_f1:.2f}%')
+    print(f"Test F1: {100 * test_f1:.2f}%")
 
     # Save the pipeline
     output_path = Path(output_path)
