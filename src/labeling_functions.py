@@ -1,7 +1,11 @@
 """Labeling functions used for weak supervision."""
 
 from snorkel.labeling import labeling_function
-from transformers.pipelines import pipeline
+from transformers.pipelines import (
+    pipeline,
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+)
 import re
 import joblib
 import torch
@@ -24,13 +28,20 @@ device = 0 if torch.cuda.is_available() else -1
 
 # Load models
 ner = pipeline(model="saattrupdan/nbailab-base-ner-scandi", device=device)
-sent = pipeline(model="DaNLP/da-bert-tone-sentiment-polarity", device=device)
 guscode_model = pipeline(model="Guscode/DKbert-hatespeech-detection", device=device)
 danlp_electra_model = pipeline(
     model="DaNLP/da-electra-hatespeech-detection", device=device
 )
 danlp_dabert_model = pipeline(model="DaNLP/da-bert-hatespeech-detection", device=device)
 tfidf = joblib.load("models/tfidf_model.bin")
+sent_tok = AutoTokenizer.from_pretrained("DaNLP/da-bert-tone-sentiment-polarity")
+sent_model = (
+    AutoModelForSequenceClassification.from_pretrained(
+        "DaNLP/da-bert-tone-sentiment-polarity"
+    )
+    .eval()
+    .to("cuda" if device == 0 else "cpu")
+)
 
 
 @labeling_function()
@@ -68,13 +79,13 @@ def contains_offensive_word(record) -> int:
         r"mongol",
         r"(m[ø?][gj]|klamme|usselt?) ?(svin|so|kost)",
         r"klaphat",
-        r"kneppe",
+        r"(?<!flue)kneppe",
         r"liderlig",
         r"vatpik",
         r"k[æ?]lling",
         r"fatsvag",
         r"gimpe",
-        r"luder",
+        r"\Wluder",
         r"dumb +fuck",
         r"afskum",
         r"psykopat",
@@ -237,9 +248,7 @@ def use_tfidf_model(record) -> int:
     """Apply the TF-IDF offensive speech detection model.
 
     This will mark the document as offensive if the model classifies it as
-    offensive with a decision score of at least 2, it will mark it as not
-    offensive if the model classifies it as not offensive with a decision score
-    below -2, and abstains otherwise.
+    offensive with a decision score of at least 2, and abstains otherwise.
 
     Args:
         record:
@@ -257,12 +266,10 @@ def use_tfidf_model(record) -> int:
     # Get the prediction score
     predicted_score = tfidf.decision_function([doc])[0]
 
-    # If the predictive score is above 2 then mark as offensive, if it is below
-    # 2 then mark as not offensive, and otherwise abstain
+    # If the predictive score is above 2 then mark as offensive, and otherwise
+    # abstain
     if predicted_score > 2:
         return OFFENSIVE
-    elif predicted_score < 2:
-        return NOT_OFFENSIVE
     else:
         return ABSTAIN
 
@@ -298,10 +305,8 @@ def has_been_moderated(record) -> int:
 def sentiment(record) -> int:
     """Apply a sentiment analysis model.
 
-    This will mark the document as offensive if the predicted sentiment is
-    negative with a confidence of at least 0.99, and will mark it as not
-    offensive if the predicted sentiment is positive or neutral, and otherwise
-    abstain.
+    This will mark the document as not offensive if the probability of the
+    document being negative is less than 50%, and abstain otherwise.
 
     Args:
         record:
@@ -309,24 +314,23 @@ def sentiment(record) -> int:
 
     Returns:
         int:
-            This value is 1 (offensive) if the document has a positive
-            predicted sentiment, and 0 (not offensive) if the document has a
-            negative predicted sentiment, and -1 (abstain) otherwise.
+            This value is 0 (not offensive) if the document is classified as
+            not offensive by the model, and -1 (abstain) otherwise.
     """
     # Extract the document
     doc = record.text
 
     # Get the prediction
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=UserWarning)
-        prediction = sent(doc, **pipe_params)[0]
+        with torch.no_grad():
+            warnings.simplefilter("ignore", category=UserWarning)
+            inputs = sent_tok(doc, **pipe_params, return_tensors="pt")
+            prediction = sent_model(**inputs).logits[0]
+            negative_prob = torch.softmax(prediction, dim=-1)[-1].item()
 
-    # If the predicted label is positive or neutral then mark the document as
-    # not offensive. If the predicted label is negative and the confidence is
-    # at least 0.99, then mark the document as offensive. Otherwise abstain.
-    if prediction["label"] in ["positive", "neutral"]:
+    # If the probability of the document being negative is below 50% then mark
+    # it as not offensive, otherwise abstain
+    if negative_prob < 0.5:
         return NOT_OFFENSIVE
-    elif prediction["label"] == "negative" and prediction["score"] >= 0.99:
-        return OFFENSIVE
     else:
         return ABSTAIN
