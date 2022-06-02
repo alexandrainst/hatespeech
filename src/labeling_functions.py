@@ -34,11 +34,10 @@ danlp_electra_model = pipeline(
 )
 danlp_dabert_model = pipeline(model="DaNLP/da-bert-hatespeech-detection", device=device)
 tfidf = joblib.load("models/tfidf_model.bin")
-sent_tok = AutoTokenizer.from_pretrained("DaNLP/da-bert-tone-sentiment-polarity")
+sent_model_id = 'pin/senda'  # "DaNLP/da-bert-tone-sentiment-polarity"
+sent_tok = AutoTokenizer.from_pretrained(sent_model_id)
 sent_model = (
-    AutoModelForSequenceClassification.from_pretrained(
-        "DaNLP/da-bert-tone-sentiment-polarity"
-    )
+    AutoModelForSequenceClassification.from_pretrained(sent_model_id)
     .eval()
     .to("cuda" if device == 0 else "cpu")
 )
