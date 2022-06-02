@@ -29,15 +29,14 @@ device = 0 if torch.cuda.is_available() else -1
 # Load NER model
 ner = pipeline(model="saattrupdan/nbailab-base-ner-scandi", device=device)
 
-# Load transformer hatespeech models
+# Load transformer hatespeech models
 hatespeech_model_ids = [
     "DaNLP/da-electra-hatespeech-detection",
     "DaNLP/da-bert-hatespeech-detection",
     "DaNLP/da-electra-hatespeech-detection",
 ]
 hatespeech_toks = [
-    AutoTokenizer.from_pretrained(model_id)
-    for model_id in hatespeech_model_ids
+    AutoTokenizer.from_pretrained(model_id) for model_id in hatespeech_model_ids
 ]
 hatespeech_models = [
     AutoModelForSequenceClassification.from_pretrained(model_id)
@@ -46,7 +45,7 @@ hatespeech_models = [
     for model_id in hatespeech_model_ids
 ]
 
-# Load TF-IDF hatespeech model
+# Load TF-IDF hatespeech model
 tfidf = joblib.load("models/tfidf_model.bin")
 
 # Load sentiment model
@@ -243,17 +242,13 @@ def use_transformer_ensemble(record) -> int:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
         tokenised = [
-            tok(doc, **pipe_params, return_tensors="pt")
-            for tok in hatespeech_toks
+            tok(doc, **pipe_params, return_tensors="pt") for tok in hatespeech_toks
         ]
         preds = [
             model(**tokens).logits[0]
             for tokens, model in zip(tokenised, hatespeech_models)
         ]
-        offensive_probs = [
-            torch.softmax(pred, dim=-1)[-1].item() for pred in preds
-        ]
-
+        offensive_probs = [torch.softmax(pred, dim=-1)[-1].item() for pred in preds]
 
     # If all the models predict that the document is offensive with confidence
     # above 60% then mark it as offensive, if they all predict it is not
