@@ -221,9 +221,10 @@ def use_transformer_ensemble(record) -> int:
         - Guscode/DKbert-hatespeech-detection
         - DaNLP/da-bert-hatespeech-detection
 
-    This will mark the document as offensive if all models predict the
-    document as offensive, as not offensive if all models predict the
-    document as not offensive, and abstain otherwise.
+    This will mark the document as offensive if all models predict the document
+    as offensive with confidence above 60%, as not offensive if all models
+    predict the document as not offensive with confidence above 90%, and
+    abstain otherwise.
 
     Args:
         record:
@@ -238,30 +239,29 @@ def use_transformer_ensemble(record) -> int:
     # Extract the document
     doc = record.text
 
-    # Get the prediction
+    # Get the predictions
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
-        predicted_label_electra = danlp_electra_model(doc, **pipe_params)[0]["label"]
-        predicted_label_guscode = guscode_model(doc, **pipe_params)[0]["label"]
-        predicted_label_bert = danlp_dabert_model(doc, **pipe_params)[0]["label"]
+        tokenised = [
+            tok(doc, **pipe_params, return_tensors="pt")
+            for tok in hatespeech_toks
+        ]
+        preds = [
+            model(**tokens).logits[0]
+            for tokens, model in zip(tokenised, hatespeech_models)
+        ]
+        offensive_probs = [
+            torch.softmax(pred, dim=-1)[-1].item() for pred in preds
+        ]
 
-    # If the predicted label is 'not offensive' then it is not offensive,
-    # otherwise it is offensive
-    if all(
-        [
-            predicted_label_electra == "offensive",
-            predicted_label_bert == "offensive",
-            predicted_label_guscode == "LABEL_1",
-        ]
-    ):
+
+    # If all the models predict that the document is offensive with confidence
+    # above 60% then mark it as offensive, if they all predict it is not
+    # offensive with confidence above 90% then mark it as not offensive,
+    # otherwise abstain
+    if all(prob > 0.6 for prob in offensive_probs):
         return OFFENSIVE
-    elif all(
-        [
-            predicted_label_electra == "not offensive",
-            predicted_label_bert == "not offensive",
-            predicted_label_guscode == "LABEL_0",
-        ]
-    ):
+    elif all(prob < 0.1 for prob in offensive_probs):
         return NOT_OFFENSIVE
     else:
         return ABSTAIN
