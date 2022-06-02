@@ -305,7 +305,9 @@ def sentiment(record) -> int:
     """Apply a sentiment analysis model.
 
     This will mark the document as not offensive if the probability of the
-    document being negative is less than 50%, and abstain otherwise.
+    document being negative is less than 30%, mark it as offensive if the
+    probability of the document being negative is greater than 60%, and
+    abstain otherwise.
 
     Args:
         record:
@@ -325,11 +327,14 @@ def sentiment(record) -> int:
             warnings.simplefilter("ignore", category=UserWarning)
             inputs = sent_tok(doc, **pipe_params, return_tensors="pt")
             prediction = sent_model(**inputs).logits[0]
-            negative_prob = torch.softmax(prediction, dim=-1)[-1].item()
+            negative_prob = torch.softmax(prediction, dim=-1)[0].item()
 
-    # If the probability of the document being negative is below 50% then mark
-    # it as not offensive, otherwise abstain
-    if negative_prob < 0.5:
+    # If the probability of the document being negative is below 30% then mark
+    # it as not offensive, if it is above 60% then mark it as offensive, and
+    # otherwise abstain
+    if negative_prob < 0.3:
         return NOT_OFFENSIVE
+    elif negative_prob > 0.6:
+        return OFFENSIVE
     else:
         return ABSTAIN
