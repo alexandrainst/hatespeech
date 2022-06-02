@@ -26,14 +26,39 @@ pipe_params = dict(truncation=True, max_length=512)
 device = 0 if torch.cuda.is_available() else -1
 
 
-# Load models
+# Load NER model
 ner = pipeline(model="saattrupdan/nbailab-base-ner-scandi", device=device)
-guscode_model = pipeline(model="Guscode/DKbert-hatespeech-detection", device=device)
-danlp_electra_model = pipeline(
-    model="DaNLP/da-electra-hatespeech-detection", device=device
-)
-danlp_dabert_model = pipeline(model="DaNLP/da-bert-hatespeech-detection", device=device)
+
+# Load transformer hatespeech models
+hatespeech_model_ids = [
+    "DaNLP/da-electra-hatespeech-detection",
+    "DaNLP/da-bert-hatespeech-detection",
+    "DaNLP/da-electra-hatespeech-detection",
+]
+hatespeech_toks = [
+    AutoTokenizer.from_pretrained(model_id)
+    for model_id in hatespeech_model_ids
+]
+hatespeech_models = [
+    AutoModelForSequenceClassification.from_pretrained(model_id)
+    .eval()
+    .to("cuda" if device == 0 else "cpu")
+    for model_id in hatespeech_model_ids
+]
+
+# Load TF-IDF hatespeech model
 tfidf = joblib.load("models/tfidf_model.bin")
+
+# Load sentiment model
+sent_model_id = "pin/senda"
+sent_tok = AutoTokenizer.from_pretrained(sent_model_id)
+sent_model = (
+    AutoModelForSequenceClassification.from_pretrained(sent_model_id)
+    .eval()
+    .to("cuda" if device == 0 else "cpu")
+)
+
+# Load sentiment model
 sent_model_id = "pin/senda"  # "DaNLP/da-bert-tone-sentiment-polarity"
 sent_tok = AutoTokenizer.from_pretrained(sent_model_id)
 sent_model = (
