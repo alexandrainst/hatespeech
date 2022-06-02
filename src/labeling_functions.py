@@ -247,7 +247,7 @@ def use_tfidf_model(record) -> int:
     """Apply the TF-IDF offensive speech detection model.
 
     This will mark the document as offensive if the model classifies it as
-    offensive with a decision score of at least 2, and abstains otherwise.
+    offensive with a positive decision score, and abstains otherwise.
 
     Args:
         record:
@@ -265,9 +265,9 @@ def use_tfidf_model(record) -> int:
     # Get the prediction score
     predicted_score = tfidf.decision_function([doc])[0]
 
-    # If the predictive score is above 2 then mark as offensive, and otherwise
+    # If the predictive score is positive then mark as offensive, and otherwise
     # abstain
-    if predicted_score > 2:
+    if predicted_score > 0:
         return OFFENSIVE
     else:
         return ABSTAIN
