@@ -26,19 +26,42 @@ pipe_params = dict(truncation=True, max_length=512)
 device = 0 if torch.cuda.is_available() else -1
 
 
-# Load models
+# Load NER model
 ner = pipeline(model="saattrupdan/nbailab-base-ner-scandi", device=device)
-guscode_model = pipeline(model="Guscode/DKbert-hatespeech-detection", device=device)
-danlp_electra_model = pipeline(
-    model="DaNLP/da-electra-hatespeech-detection", device=device
-)
-danlp_dabert_model = pipeline(model="DaNLP/da-bert-hatespeech-detection", device=device)
+
+# Load transformer hatespeech models
+hatespeech_model_ids = [
+    "DaNLP/da-electra-hatespeech-detection",
+    "DaNLP/da-bert-hatespeech-detection",
+    "DaNLP/da-electra-hatespeech-detection",
+]
+hatespeech_toks = [
+    AutoTokenizer.from_pretrained(model_id) for model_id in hatespeech_model_ids
+]
+hatespeech_models = [
+    AutoModelForSequenceClassification.from_pretrained(model_id)
+    .eval()
+    .to("cuda" if device == 0 else "cpu")
+    for model_id in hatespeech_model_ids
+]
+
+# Load TF-IDF hatespeech model
 tfidf = joblib.load("models/tfidf_model.bin")
-sent_tok = AutoTokenizer.from_pretrained("DaNLP/da-bert-tone-sentiment-polarity")
+
+# Load sentiment model
+sent_model_id = "pin/senda"
+sent_tok = AutoTokenizer.from_pretrained(sent_model_id)
 sent_model = (
-    AutoModelForSequenceClassification.from_pretrained(
-        "DaNLP/da-bert-tone-sentiment-polarity"
-    )
+    AutoModelForSequenceClassification.from_pretrained(sent_model_id)
+    .eval()
+    .to("cuda" if device == 0 else "cpu")
+)
+
+# Load sentiment model
+sent_model_id = "pin/senda"  # "DaNLP/da-bert-tone-sentiment-polarity"
+sent_tok = AutoTokenizer.from_pretrained(sent_model_id)
+sent_model = (
+    AutoModelForSequenceClassification.from_pretrained(sent_model_id)
     .eval()
     .to("cuda" if device == 0 else "cpu")
 )
@@ -108,9 +131,9 @@ def contains_offensive_word(record) -> int:
 
 @labeling_function()
 def is_mention(record) -> int:
-    """Check if the document is only a mention.
+    """Check if the document consists of only mentions.
 
-    This will mark the document as not offensive if it contains a mention, and
+    This will mark the document as not offensive if it consists of only mentions, and
     abstain otherwise.
 
     Args:
@@ -119,7 +142,7 @@ def is_mention(record) -> int:
 
     Returns:
         int:
-            This value is 0 (not offensive) if the document contains a mention,
+            This value is 0 (not offensive) if the document consists of only mentions,
             and -1 (abstain) otherwise.
     """
     # Extract the document
@@ -197,9 +220,10 @@ def use_transformer_ensemble(record) -> int:
         - Guscode/DKbert-hatespeech-detection
         - DaNLP/da-bert-hatespeech-detection
 
-    This will mark the document as offensive if all models predict the
-    document as offensive, as not offensive if all models predict the
-    document as not offensive, and abstain otherwise.
+    This will mark the document as offensive if all models predict the document
+    as offensive with confidence above 60%, as not offensive if all models
+    predict the document as not offensive with confidence above 90%, and
+    abstain otherwise.
 
     Args:
         record:
@@ -214,30 +238,25 @@ def use_transformer_ensemble(record) -> int:
     # Extract the document
     doc = record.text
 
-    # Get the prediction
+    # Get the predictions
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
-        predicted_label_electra = danlp_electra_model(doc, **pipe_params)[0]["label"]
-        predicted_label_guscode = guscode_model(doc, **pipe_params)[0]["label"]
-        predicted_label_bert = danlp_dabert_model(doc, **pipe_params)[0]["label"]
+        tokenised = [
+            tok(doc, **pipe_params, return_tensors="pt") for tok in hatespeech_toks
+        ]
+        preds = [
+            model(**tokens).logits[0]
+            for tokens, model in zip(tokenised, hatespeech_models)
+        ]
+        offensive_probs = [torch.softmax(pred, dim=-1)[-1].item() for pred in preds]
 
-    # If the predicted label is 'not offensive' then it is not offensive,
-    # otherwise it is offensive
-    if all(
-        [
-            predicted_label_electra == "offensive",
-            predicted_label_bert == "offensive",
-            predicted_label_guscode == "LABEL_1",
-        ]
-    ):
+    # If all the models predict that the document is offensive with confidence
+    # above 60% then mark it as offensive, if they all predict it is not
+    # offensive with confidence above 90% then mark it as not offensive,
+    # otherwise abstain
+    if all(prob > 0.6 for prob in offensive_probs):
         return OFFENSIVE
-    elif all(
-        [
-            predicted_label_electra == "not offensive",
-            predicted_label_bert == "not offensive",
-            predicted_label_guscode == "LABEL_0",
-        ]
-    ):
+    elif all(prob < 0.1 for prob in offensive_probs):
         return NOT_OFFENSIVE
     else:
         return ABSTAIN
@@ -248,7 +267,7 @@ def use_tfidf_model(record) -> int:
     """Apply the TF-IDF offensive speech detection model.
 
     This will mark the document as offensive if the model classifies it as
-    offensive with a decision score of at least 2, and abstains otherwise.
+    offensive with a positive decision score, and abstains otherwise.
 
     Args:
         record:
@@ -266,9 +285,9 @@ def use_tfidf_model(record) -> int:
     # Get the prediction score
     predicted_score = tfidf.decision_function([doc])[0]
 
-    # If the predictive score is above 2 then mark as offensive, and otherwise
+    # If the predictive score is positive then mark as offensive, and otherwise
     # abstain
-    if predicted_score > 2:
+    if predicted_score > 0:
         return OFFENSIVE
     else:
         return ABSTAIN
@@ -306,7 +325,9 @@ def sentiment(record) -> int:
     """Apply a sentiment analysis model.
 
     This will mark the document as not offensive if the probability of the
-    document being negative is less than 50%, and abstain otherwise.
+    document being negative is less than 30%, mark it as offensive if the
+    probability of the document being negative is greater than 60%, and
+    abstain otherwise.
 
     Args:
         record:
@@ -326,11 +347,14 @@ def sentiment(record) -> int:
             warnings.simplefilter("ignore", category=UserWarning)
             inputs = sent_tok(doc, **pipe_params, return_tensors="pt")
             prediction = sent_model(**inputs).logits[0]
-            negative_prob = torch.softmax(prediction, dim=-1)[-1].item()
+            negative_prob = torch.softmax(prediction, dim=-1)[0].item()
 
-    # If the probability of the document being negative is below 50% then mark
-    # it as not offensive, otherwise abstain
-    if negative_prob < 0.5:
+    # If the probability of the document being negative is below 30% then mark
+    # it as not offensive, if it is above 60% then mark it as offensive, and
+    # otherwise abstain
+    if negative_prob < 0.3:
         return NOT_OFFENSIVE
+    elif negative_prob > 0.6:
+        return OFFENSIVE
     else:
         return ABSTAIN

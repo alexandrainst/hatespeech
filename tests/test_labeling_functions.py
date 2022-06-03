@@ -79,7 +79,7 @@ class TestLabelingFunctions:
 
     def test_use_tfidf_model(self, fatsvag_record, mention_record):
         assert use_tfidf_model(fatsvag_record) == OFFENSIVE
-        assert use_tfidf_model(mention_record) == NOT_OFFENSIVE
+        assert use_tfidf_model(mention_record) == ABSTAIN
 
     def test_has_been_moderated(self, fatsvag_record, mention_record):
         assert has_been_moderated(fatsvag_record) == OFFENSIVE
