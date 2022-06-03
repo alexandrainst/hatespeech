@@ -131,9 +131,9 @@ def contains_offensive_word(record) -> int:
 
 @labeling_function()
 def is_mention(record) -> int:
-    """Check if the document is only a mention.
+    """Check if the document consists of only mentions.
 
-    This will mark the document as not offensive if it contains a mention, and
+    This will mark the document as not offensive if it consists of only mentions, and
     abstain otherwise.
 
     Args:
@@ -142,7 +142,7 @@ def is_mention(record) -> int:
 
     Returns:
         int:
-            This value is 0 (not offensive) if the document contains a mention,
+            This value is 0 (not offensive) if the document consists of only mentions,
             and -1 (abstain) otherwise.
     """
     # Extract the document
