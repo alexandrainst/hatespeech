@@ -229,16 +229,26 @@ def use_transformer_ensemble(record) -> int:
     # Extract the document
     doc = record.text
 
-    # Get the predictions
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
+
+        # Tokenise the document
         tokenised = [
             tok(doc, **pipe_params, return_tensors="pt") for tok in hatespeech_toks
         ]
+
+        # Move the tokens to the desired device
+        tokenised = [
+            {k: v.to(device) for k, v in dct.items()} for dct in tokenised
+        ]
+
+        # Get the predictions
         preds = [
             model(**tokens).logits[0]
             for tokens, model in zip(tokenised, hatespeech_models)
         ]
+
+        # Extract the offensive probability
         offensive_probs = [torch.softmax(pred, dim=-1)[-1].item() for pred in preds]
 
     # If all the models predict that the document is offensive with confidence
@@ -336,8 +346,17 @@ def sentiment(record) -> int:
     with warnings.catch_warnings():
         with torch.no_grad():
             warnings.simplefilter("ignore", category=UserWarning)
+
+            # Tokenise the document
             inputs = sent_tok(doc, **pipe_params, return_tensors="pt")
+
+            # Move the tokens to the desired device
+            inputs = {k: v.to(device) for k, v in inputs.items()}
+
+            # Get the prediction
             prediction = sent_model(**inputs).logits[0]
+
+            # Extract the probability of the document being negative
             negative_prob = torch.softmax(prediction, dim=-1)[0].item()
 
     # If the probability of the document being negative is below 30% then mark
