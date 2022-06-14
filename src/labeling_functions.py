@@ -212,8 +212,8 @@ def use_transformer_ensemble(record) -> int:
         - DaNLP/da-bert-hatespeech-detection
 
     This will mark the document as offensive if all models predict the document
-    as offensive with confidence above 60%, as not offensive if all models
-    predict the document as not offensive with confidence above 90%, and
+    as offensive with confidence above 70%, as not offensive if all models
+    predict the document as not offensive with confidence above 99.9%, and
     abstain otherwise.
 
     Args:
@@ -253,12 +253,12 @@ def use_transformer_ensemble(record) -> int:
         offensive_probs = [torch.softmax(pred, dim=-1)[-1].item() for pred in preds]
 
     # If all the models predict that the document is offensive with confidence
-    # above 60% then mark it as offensive, if they all predict it is not
-    # offensive with confidence above 90% then mark it as not offensive,
+    # above 70% then mark it as offensive, if they all predict it is not
+    # offensive with confidence above 99.9% then mark it as not offensive,
     # otherwise abstain
-    if all(prob > 0.6 for prob in offensive_probs):
+    if all(prob > 0.7 for prob in offensive_probs):
         return OFFENSIVE
-    elif all(prob < 0.1 for prob in offensive_probs):
+    elif all(prob < 0.001 for prob in offensive_probs):
         return NOT_OFFENSIVE
     else:
         return ABSTAIN
