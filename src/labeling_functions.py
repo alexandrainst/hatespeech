@@ -57,15 +57,6 @@ sent_model = (
     .to("cuda" if device == 0 else "cpu")
 )
 
-# Load sentiment model
-sent_model_id = "pin/senda"  # "DaNLP/da-bert-tone-sentiment-polarity"
-sent_tok = AutoTokenizer.from_pretrained(sent_model_id)
-sent_model = (
-    AutoModelForSequenceClassification.from_pretrained(sent_model_id)
-    .eval()
-    .to("cuda" if device == 0 else "cpu")
-)
-
 
 @labeling_function()
 def contains_offensive_word(record) -> int:
