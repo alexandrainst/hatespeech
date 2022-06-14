@@ -239,7 +239,8 @@ def use_transformer_ensemble(record) -> int:
 
         # Move the tokens to the desired device
         tokenised = [
-            {k: v.to(device) for k, v in dct.items()} for dct in tokenised
+            {k: v.to("cuda" if device == 0 else "cpu") for k, v in dct.items()}
+            for dct in tokenised
         ]
 
         # Get the predictions
@@ -351,7 +352,10 @@ def sentiment(record) -> int:
             inputs = sent_tok(doc, **pipe_params, return_tensors="pt")
 
             # Move the tokens to the desired device
-            inputs = {k: v.to(device) for k, v in inputs.items()}
+            inputs = {
+                k: v.to("cuda" if device == 0 else "cpu")
+                for k, v in inputs.items()
+            }
 
             # Get the prediction
             prediction = sent_model(**inputs).logits[0]
