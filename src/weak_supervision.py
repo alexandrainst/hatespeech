@@ -37,6 +37,9 @@ def main(data_dir: Union[str, Path] = "data", test: bool = False):
     # Load the data
     df_train = load_data(data_dir=data_dir, test=test)
 
+    # TEMP: Reduce the data size, for testing purposes
+    df_train = df_train.sample(n=1000)
+
     # Define the list of labeling functions
     lfs = [
         contains_offensive_word,
