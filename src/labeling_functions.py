@@ -232,7 +232,7 @@ def use_transformer_ensemble(record) -> int:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
 
-        # Tokenise the document
+        # Tokenise the document
         tokenised = [
             tok(doc, **pipe_params, return_tensors="pt") for tok in hatespeech_toks
         ]
@@ -243,13 +243,13 @@ def use_transformer_ensemble(record) -> int:
             for dct in tokenised
         ]
 
-        # Get the predictions
+        # Get the predictions
         preds = [
             model(**tokens).logits[0]
             for tokens, model in zip(tokenised, hatespeech_models)
         ]
 
-        # Extract the offensive probability
+        # Extract the offensive probability
         offensive_probs = [torch.softmax(pred, dim=-1)[-1].item() for pred in preds]
 
     # If all the models predict that the document is offensive with confidence
@@ -351,8 +351,7 @@ def sentiment(record) -> int:
 
             # Move the tokens to the desired device
             inputs = {
-                k: v.to("cuda" if device == 0 else "cpu")
-                for k, v in inputs.items()
+                k: v.to("cuda" if device == 0 else "cpu") for k, v in inputs.items()
             }
 
             # Get the prediction
