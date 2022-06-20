@@ -1,8 +1,10 @@
 """Unit tests related to the weak_supervision module."""
 
-import pandas as pd
 from pathlib import Path
-from src.weak_supervision import main as apply_weak_supervision
+
+import pandas as pd
+
+from src.dr_hatespeech.weak_supervision import main as apply_weak_supervision
 
 
 def test_weak_supervision():
