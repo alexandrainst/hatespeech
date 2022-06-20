@@ -6,8 +6,7 @@ from typing import Union
 from snorkel.labeling import PandasLFApplier
 from snorkel.labeling.model import LabelModel
 
-from data import load_data
-
+from .data import load_data
 from .labeling_functions import (
     contains_offensive_word,
     has_been_moderated,
