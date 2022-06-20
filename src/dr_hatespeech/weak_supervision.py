@@ -3,7 +3,12 @@
 from pathlib import Path
 from typing import Union
 
-from labeling_functions import (
+from snorkel.labeling import PandasLFApplier
+from snorkel.labeling.model import LabelModel
+
+from data import load_data
+
+from .labeling_functions import (
     contains_offensive_word,
     has_been_moderated,
     is_dr_answer,
@@ -12,10 +17,6 @@ from labeling_functions import (
     use_tfidf_model,
     use_transformer_ensemble,
 )
-from snorkel.labeling import PandasLFApplier
-from snorkel.labeling.model import LabelModel
-
-from data import load_data
 
 
 def main(data_dir: Union[str, Path] = "data", test: bool = False):
