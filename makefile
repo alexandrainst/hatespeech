@@ -46,4 +46,3 @@ clean:
 	@find . -type d -name "__pycache__" -delete
 	@rm -rf .pytest_cache
 	@echo "Cleaned repository."
-
