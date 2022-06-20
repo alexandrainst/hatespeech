@@ -35,10 +35,10 @@ remove-env:
 
 view-docs:
 	@echo "Viewing API documentation..."
-	@poetry run pdoc src/{{cookiecutter.project_name}}
+	@poetry run pdoc src/dr_hatespeech
 
 docs:
-	@poetry run pdoc src/{{cookiecutter.project_name}} -o docs
+	@poetry run pdoc src/dr_hatespeech -o docs
 	@echo "Saved documentation."
 
 clean:
