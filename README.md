@@ -1,4 +1,4 @@
-# dr-hatespeech
+# DR Hatespeech
 
 Hatespeech detection for DR Facebook data.
 
