@@ -54,10 +54,8 @@ make view-docs
 ├── README.md
 ├── config
 │   ├── main.yaml
-│   ├── model
-│   │   └── model1.yaml
-│   └── process
-│       └── process1.yaml
+│   └── model
+│       └── model1.yaml
 ├── data
 │   ├── final
 │   ├── processed
