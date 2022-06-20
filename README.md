@@ -51,29 +51,43 @@ make view-docs
 ## Project structure
 ```bash
 .
+├── README.md
 ├── config
-│   ├── main.yaml                   # Main configuration file
-│   ├── model                       # Configurations for training model
-│   │   └── model1.yaml             # First variation of parameters to train model
-│   └── process                     # Configurations for processing data
-│       └── process1.yaml           # First variation of parameters to process data
+│   ├── main.yaml
+│   ├── model
+│   │   └── model1.yaml
+│   └── process
+│       └── process1.yaml
 ├── data
-│   ├── final                       # Data after training the model
-│   ├── processed                   # Data after processing
-│   └── raw                         # Raw data
-├── docs                            # Documentation for the project
-├── .flake8                         # Configuration for the linting tool flake8
-├── .gitignore
+│   ├── final
+│   ├── processed
+│   │   ├── test_data_cleaned.parquet
+│   │   └── test_data_weakly_supervised.parquet
+│   └── raw
+│       └── test_data.csv
+├── docs
+│   └── dr_hatespeech
+│       ├── data.html
+│       ├── index.html
+│       ├── labeling_functions.html
+│       ├── tfidf.html
+│       └── weak_supervision.html
 ├── makefile
-├── models                          # Trained machine learning models
-├── notebooks                       # Jupyter notebooks
-├── .pre-commit-config.yaml         # Configurations for pre-commit hook
-├── pyproject.toml                  # Project setup
-├── README.md                       # Description of the project
-├── src                             # All source code
-│   └── dr-hatespeech
-│      ├── __init__.py
-│      └── demo.py                  # Demo module
-└── tests                           # Unit tests
-    └── __init__.py
+├── models
+│   └── tfidf_model.bin
+├── notebooks
+├── poetry.lock
+├── pyproject.toml
+├── src
+│   └── dr_hatespeech
+│       ├── __init__.py
+│       ├── data.py
+│       ├── labeling_functions.py
+│       ├── tfidf.py
+│       └── weak_supervision.py
+└── tests
+    ├── __init__.py
+    ├── test_data.py
+    ├── test_labeling_functions.py
+    └── test_weak_supervision.py
 ```
