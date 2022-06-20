@@ -94,3 +94,6 @@ outputs
 
 # Data
 data/
+
+# EDA notebooks
+notebooks/*_eda.ipynb
