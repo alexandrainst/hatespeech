@@ -1,13 +1,14 @@
 """Train a simple TF-IDF + logistic regression model on the DKHate dataset."""
 
-from datasets import load_dataset
 from pathlib import Path
 from typing import Union
+
 import joblib
+from datasets import load_dataset
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import f1_score, matthews_corrcoef
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import matthews_corrcoef, f1_score
 
 
 def train_tfidf_model(output_path: Union[str, Path] = "models/tfidf_model.bin"):

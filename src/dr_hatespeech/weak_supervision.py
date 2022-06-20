@@ -1,19 +1,21 @@
 """Weak supervision module to create labels in an unsupervised setting."""
 
-from snorkel.labeling.model import LabelModel
-from snorkel.labeling import PandasLFApplier
-from typing import Union
 from pathlib import Path
-from data import load_data
+from typing import Union
+
 from labeling_functions import (
     contains_offensive_word,
-    is_mention,
-    is_dr_answer,
-    use_transformer_ensemble,
-    use_tfidf_model,
     has_been_moderated,
+    is_dr_answer,
+    is_mention,
     sentiment,
+    use_tfidf_model,
+    use_transformer_ensemble,
 )
+from snorkel.labeling import PandasLFApplier
+from snorkel.labeling.model import LabelModel
+
+from data import load_data
 
 
 def main(data_dir: Union[str, Path] = "data", test: bool = False):

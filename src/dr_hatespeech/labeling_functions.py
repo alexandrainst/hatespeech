@@ -1,16 +1,16 @@
 """Labeling functions used for weak supervision."""
 
-from snorkel.labeling import labeling_function
-from transformers.pipelines import (
-    pipeline,
-    AutoModelForSequenceClassification,
-    AutoTokenizer,
-)
 import re
-import joblib
-import torch
 import warnings
 
+import joblib
+import torch
+from snorkel.labeling import labeling_function
+from transformers.pipelines import (
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+    pipeline,
+)
 
 # Create label names
 ABSTAIN = -1
