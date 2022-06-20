@@ -46,3 +46,11 @@ clean:
 	@find . -type d -name "__pycache__" -delete
 	@rm -rf .pytest_cache
 	@echo "Cleaned repository."
+
+clean-data:
+	@poetry run python -m src.dr_hatespeech.data
+	@echo "Cleaned data."
+
+weak-supervision:
+	@poetry run python -m src.dr_hatespeech.weak_supervision
+	@echo "Finished applying weak supervision."
