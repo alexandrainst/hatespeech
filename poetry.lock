@@ -7,6 +7,28 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "accelerate"
+version = "0.10.0"
+description = "Accelerate"
+category = "main"
+optional = false
+python-versions = ">=3.7.0"
+
+[package.dependencies]
+numpy = ">=1.17"
+packaging = ">=20.0"
+psutil = "*"
+pyyaml = "*"
+torch = ">=1.4.0"
+
+[package.extras]
+dev = ["black (>=22.0,<23.0)", "isort (>=5.5.4)", "flake8 (>=3.8.3)", "pytest", "pytest-xdist", "pytest-subtests", "datasets", "evaluate", "transformers", "scipy", "sklearn", "parameterized", "deepspeed"]
+quality = ["black (>=22.0,<23.0)", "isort (>=5.5.4)", "flake8 (>=3.8.3)"]
+sagemaker = ["sagemaker"]
+test = ["pytest", "pytest-xdist", "pytest-subtests", "datasets", "evaluate", "transformers", "scipy", "sklearn", "parameterized", "deepspeed"]
+test_trackers = ["wandb", "comet-ml", "tensorboard"]
+
+[[package]]
 name = "aiohttp"
 version = "3.8.1"
 description = "Async http client/server framework (asyncio)"
@@ -2157,12 +2179,16 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.10"
-content-hash = "2380e2a526c5d5d67c5fa78764e769fca1117877bdecc5addddcf7e7c64ee9ab"
+content-hash = "9bcf6af5764247e3ca9114fec2085e7032eac26f4a93ba42ba85517e84945cc7"
 
 [metadata.files]
 absl-py = [
     {file = "absl-py-1.1.0.tar.gz", hash = "sha256:3aa39f898329c2156ff525dfa69ce709e42d77aab18bf4917719d6f260aa6a08"},
     {file = "absl_py-1.1.0-py3-none-any.whl", hash = "sha256:db97287655e30336938f8058d2c81ed2be6af1d9b6ebbcd8df1080a6c7fcd24e"},
+]
+accelerate = [
+    {file = "accelerate-0.10.0-py3-none-any.whl", hash = "sha256:8f38773d5234e342b7b72333861fdb67549abda90c07a5408d24028fb21db84c"},
+    {file = "accelerate-0.10.0.tar.gz", hash = "sha256:e9eb1e2b8bccf03a821db49a8720f518289980dc2a1da9e5a8e633a8d9023a58"},
 ]
 aiohttp = [
     {file = "aiohttp-3.8.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:1ed0b6477896559f17b9eaeb6d38e07f7f9ffe40b9f0f9627ae8b9926ae260a8"},
