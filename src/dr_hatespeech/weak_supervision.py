@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-import hydra
 from omegaconf import DictConfig
 from snorkel.labeling import PandasLFApplier
 from snorkel.labeling.model import LabelModel
@@ -19,13 +18,17 @@ from .labeling_functions import (
 from .load_data import load_cleaned_data
 
 
-@hydra.main(config_path="../../config", config_name="config", version_base=None)
-def apply_weak_supervision(config: DictConfig):
+def apply_weak_supervision(config: DictConfig) -> dict:
     """Generate weakly supervised labels for the data.
 
     Args:
         config (DictConfig):
             The configuration.
+
+    Returns:
+        dict:
+            A dictionary containing the weakly supervised data and the path where it
+            was saved.
     """
     # Load the cleaned data
     data_dict = load_cleaned_data(config=config)
@@ -59,5 +62,8 @@ def apply_weak_supervision(config: DictConfig):
 
     # Save the dataframe
     fname = str(data_path.name).replace("_cleaned", "_weakly_supervised")
-    path = Path(config.final.dir) / fname
+    path = Path(config.data.processed_dir) / fname
     df_train.to_parquet(path)
+
+    # Return the data dict
+    return dict(df=df_train, path=path)

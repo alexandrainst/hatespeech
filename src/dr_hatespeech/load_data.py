@@ -3,14 +3,12 @@
 import logging
 from pathlib import Path
 
-import hydra
 import pandas as pd
 from omegaconf import DictConfig
 
 logger = logging.getLogger(__name__)
 
 
-@hydra.main(config_path="../../config", config_name="config", version_base=None)
 def load_raw_data(config: DictConfig) -> dict:
     """Loading of raw data.
 
@@ -65,7 +63,6 @@ def load_raw_data(config: DictConfig) -> dict:
     return dict(df=df, path=csv_paths[0])
 
 
-@hydra.main(config_path="../../config", config_name="config", version_base=None)
 def load_cleaned_data(config: DictConfig) -> dict:
     """Loading of cleaned data.
 
@@ -117,7 +114,6 @@ def load_cleaned_data(config: DictConfig) -> dict:
     return dict(df=df, path=parquet_paths[0])
 
 
-@hydra.main(config_path="../../config", config_name="config", version_base=None)
 def load_weakly_supervised_data(config: DictConfig) -> dict:
     """Loading of weakly supervised data.
 
@@ -169,7 +165,6 @@ def load_weakly_supervised_data(config: DictConfig) -> dict:
     return dict(df=df, path=parquet_paths[0])
 
 
-@hydra.main(config_path="../../config", config_name="config", version_base=None)
 def load_final_data(config: DictConfig) -> dict:
     """Loading of final data, split into a training, validation and test set.
 
@@ -197,33 +192,21 @@ def load_final_data(config: DictConfig) -> dict:
     # directory
     train_paths = [
         path
-        for path in data_dir.glob("train.parquet")
-        if (
-            config.test
-            and path.name.startswith("test_")
-            or not config.test
-            and not path.name.startswith("test_")
-        )
+        for path in data_dir.glob("*train.parquet")
+        if (config.test and path.name.startswith("test_"))
+        or (not config.test and not path.name.startswith("test_"))
     ]
     val_paths = [
         path
-        for path in data_dir.glob("val.parquet")
-        if (
-            config.test
-            and path.name.startswith("test_")
-            or not config.test
-            and not path.name.startswith("test_")
-        )
+        for path in data_dir.glob("*val.parquet")
+        if (config.test and path.name.startswith("test_"))
+        or (not config.test and not path.name.startswith("test_"))
     ]
     test_paths = [
         path
-        for path in data_dir.glob("test.parquet")
-        if (
-            config.test
-            and path.name.startswith("test_")
-            or not config.test
-            and not path.name.startswith("test_")
-        )
+        for path in data_dir.glob("*test.parquet")
+        if (config.test and path.name.startswith("test_"))
+        or (not config.test and not path.name.startswith("test_"))
     ]
 
     # If any of the paths are missing then split the data

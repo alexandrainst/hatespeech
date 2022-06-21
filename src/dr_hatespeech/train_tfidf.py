@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-import hydra
 import joblib
 from datasets import load_dataset
 from omegaconf import DictConfig
@@ -12,7 +11,6 @@ from sklearn.metrics import f1_score, matthews_corrcoef
 from sklearn.pipeline import Pipeline
 
 
-@hydra.main(config_path="../../config", config_name="config", version_base=None)
 def train_tfidf_model(config: DictConfig) -> Pipeline:
     """Train a logitstic regression model with TF-IDF features on DKHate.
 

@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Optional, Union
 from unicodedata import normalize
 
-import hydra
 import pandas as pd
 from omegaconf import DictConfig
 from tqdm.auto import tqdm
@@ -16,13 +15,16 @@ from .load_data import load_raw_data
 logger = logging.getLogger(__name__)
 
 
-@hydra.main(config_path="../../config", config_name="config", version_base=None)
-def clean_data(config: DictConfig):
+def clean_data(config: DictConfig) -> dict:
     """Process the raw data and store the processed data.
 
     Args:
         config (DictConfig):
             The configuration.
+
+    Returns:
+        dict:
+            A dictionary containing the cleaned data and the path where it was saved.
     """
     # Load the raw data
     data_dict = load_raw_data(config=config)
@@ -83,9 +85,14 @@ def clean_data(config: DictConfig):
     )
 
     # Save the dataframe as a parquet file
-    processed_path = Path(config.processed.dir) / f"{data_path.stem}_cleaned.parquet"
+    processed_path = (
+        Path(config.data.processed_dir) / f"{data_path.stem}_cleaned.parquet"
+    )
     df.to_parquet(processed_path)
     logger.info(f"Saved processed data with {len(df):,} rows to {processed_path}")
+
+    # Return the data dictionary
+    return dict(df=df, path=processed_path)
 
 
 def clean_account(account: str) -> str:
