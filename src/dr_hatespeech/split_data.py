@@ -27,8 +27,8 @@ def split_data(config: DictConfig) -> Dict[str, pd.DataFrame]:
 
     # Get validation and test sizes from the config
     if config.test:
-        val_size = 1
-        test_size = 1
+        val_size = 2
+        test_size = 2
     else:
         val_size = config.data.val_size
         test_size = config.data.test_size
