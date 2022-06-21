@@ -29,6 +29,7 @@ device = 0 if torch.cuda.is_available() else -1
 # Load NER model
 ner = pipeline(model="saattrupdan/nbailab-base-ner-scandi", device=device)
 
+
 # Load transformer hatespeech models
 hatespeech_model_ids = [
     "DaNLP/da-electra-hatespeech-detection",
@@ -45,8 +46,10 @@ hatespeech_models = [
     for model_id in hatespeech_model_ids
 ]
 
+
 # Load TF-IDF hatespeech model
 tfidf = joblib.load("models/tfidf_model.bin")
+
 
 # Load sentiment model
 sent_model_id = "pin/senda"
