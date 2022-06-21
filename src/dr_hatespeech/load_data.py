@@ -7,10 +7,6 @@ import hydra
 import pandas as pd
 from omegaconf import DictConfig
 
-from .clean_data import clean_data
-from .split_data import split_data
-from .weak_supervision import apply_weak_supervision
-
 logger = logging.getLogger(__name__)
 
 
@@ -81,6 +77,10 @@ def load_cleaned_data(config: DictConfig) -> dict:
         dict:
             A dictionary with a key `df`, containing the weakly supervised data, and
             `path`, being a Path object pointing to the location of the data.
+
+    Raises:
+        FileNotFoundError:
+            If the cleaned data file does not exist.
     """
     # Set up the path to the data directory
     data_dir = Path(config.data.processed_dir)
@@ -100,19 +100,9 @@ def load_cleaned_data(config: DictConfig) -> dict:
         )
     ]
 
-    # If no cleaned data file exists then clean the raw data
+    # If there are no parquet files in the data directory then raise an error
     if len(parquet_paths) == 0:
-        clean_data(config=config)
-        parquet_paths = [
-            path
-            for path in data_dir.glob("*_cleaned.parquet")
-            if (
-                config.test
-                and path.name.startswith("test_")
-                or not config.test
-                and not path.name.startswith("test_")
-            )
-        ]
+        raise FileNotFoundError(f"No cleaned data files found in {data_dir}.")
 
     # Log loading of dataset
     logger.info(f"Loading data from {parquet_paths[0]}")
@@ -139,6 +129,10 @@ def load_weakly_supervised_data(config: DictConfig) -> dict:
         dict:
             A dictionary with a key `df`, containing the weakly supervised data, and
             `path`, being a Path object pointing to the location of the data.
+
+    Raises:
+        FileNotFoundError:
+            If the weakly supervised data file does not exist.
     """
     # Set up the path to the data directory
     data_dir = Path(config.data.processed_dir)
@@ -158,19 +152,9 @@ def load_weakly_supervised_data(config: DictConfig) -> dict:
         )
     ]
 
-    # If no weakly supervised data file exists then apply the weak supervision
+    # If there are no parquet files in the data directory then raise an error
     if len(parquet_paths) == 0:
-        apply_weak_supervision(config=config)
-        parquet_paths = [
-            path
-            for path in data_dir.glob("*_weakly_supervised.parquet")
-            if (
-                config.test
-                and path.name.startswith("test_")
-                or not config.test
-                and not path.name.startswith("test_")
-            )
-        ]
+        raise FileNotFoundError(f"No weakly supervised data files found in {data_dir}.")
 
     # Log loading of dataset
     logger.info(f"Loading data from {parquet_paths[0]}")
@@ -197,6 +181,11 @@ def load_final_data(config: DictConfig) -> dict:
         dict:
             A dictionary with a keys `train`, `val` and `test`, containing the
             training, validation and test data, respectively.
+
+    Raises:
+        FileNotFoundError:
+            If one of "train.parquet", "val.parquet" or "test.parquet" do not exist in
+            the final data directory.
     """
     # Set up the path to the data directory
     data_dir = Path(config.data.final_dir)
@@ -238,38 +227,12 @@ def load_final_data(config: DictConfig) -> dict:
     ]
 
     # If any of the paths are missing then split the data
-    if any(len(splits) == 0 for splits in [train_paths, val_paths, test_paths]):
-        split_data(config=config)
-        train_paths = [
-            path
-            for path in data_dir.glob("train.parquet")
-            if (
-                config.test
-                and path.name.startswith("test_")
-                or not config.test
-                and not path.name.startswith("test_")
-            )
-        ]
-        val_paths = [
-            path
-            for path in data_dir.glob("val.parquet")
-            if (
-                config.test
-                and path.name.startswith("test_")
-                or not config.test
-                and not path.name.startswith("test_")
-            )
-        ]
-        test_paths = [
-            path
-            for path in data_dir.glob("test.parquet")
-            if (
-                config.test
-                and path.name.startswith("test_")
-                or not config.test
-                and not path.name.startswith("test_")
-            )
-        ]
+    if len(train_paths) == 0:
+        raise FileNotFoundError(f"No training data file found in {data_dir}.")
+    if len(val_paths) == 0:
+        raise FileNotFoundError(f"No validation data file found in {data_dir}.")
+    if len(test_paths) == 0:
+        raise FileNotFoundError(f"No test data file found in {data_dir}.")
 
     # Log loading of dataset
     logger.info(
