@@ -2,7 +2,6 @@
 
 from typing import Dict
 
-import hydra
 from datasets import Dataset, DatasetDict, load_metric
 from omegaconf import DictConfig
 from transformers import (
@@ -18,7 +17,6 @@ from transformers import (
 from .load_data import load_final_data
 
 
-@hydra.main(config_path="../../config", config_name="config", version_base=None)
 def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassification:
     """Training of a transformer-based offensive speech classifier.
 
@@ -30,6 +28,25 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
         AutoModelForSequenceClassification:
             The trained model.
     """
+    # Load the data
+    data_dict = load_final_data(config)
+    train_df = data_dict["train"]
+    val_df = data_dict["val"]
+    test_df = data_dict["test"]
+
+    # Only keep the `text` and `label` columns
+    train_df = train_df[["text", "label"]]
+    val_df = val_df[["text", "label"]]
+    test_df = test_df[["text", "label"]]
+
+    # Convert the data to Hugging Face Dataset objects
+    train = Dataset.from_pandas(train_df, split="train", preserve_index=False)
+    val = Dataset.from_pandas(val_df, split="val", preserve_index=False)
+    test = Dataset.from_pandas(test_df, split="test", preserve_index=False)
+
+    # Collect the data into a DatasetDict
+    dataset = DatasetDict(train=train, val=val, test=test)
+
     # Get model config
     model_config = config.transformer_model
 
@@ -50,23 +67,9 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
         num_labels=2,
     )
 
-    # Load the data
-    data_dict = load_final_data(config=config)
-    train_df = data_dict["train"]
-    val_df = data_dict["val"]
-    test_df = data_dict["test"]
-
-    # Convert the data to Hugging Face Dataset objects
-    train = Dataset.from_pandas(train_df, split="train", preserve_index=False)
-    val = Dataset.from_pandas(val_df, split="val", preserve_index=False)
-    test = Dataset.from_pandas(test_df, split="test", preserve_index=False)
-
-    # Collect the data into a DatasetDict
-    dataset = DatasetDict(train=train, val=val, test=test)
-
     # Tokenise the data
     def tokenise(examples: dict) -> dict:
-        doc = examples["doc"]
+        doc = examples["text"]
         return tokenizer(doc, truncation=True, padding=True)
 
     dataset = dataset.map(tokenise, batched=True)
