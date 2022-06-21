@@ -1,0 +1,16 @@
+defaults:
+  - tfidf_model: tfidf_model1
+  - transformer_model: transformer_model1
+
+data:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  final_dir: data/final
+  val_size: 1_000
+  test_size: 10_000
+
+models:
+  dir: models
+
+seed: 4242
+test: False
