@@ -1,6 +1,7 @@
 defaults:
   - tfidf_model: tfidf_model1
   - transformer_model: transformer_model1
+  - _self_
 
 data:
   raw_dir: data/raw
