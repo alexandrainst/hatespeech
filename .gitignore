@@ -99,5 +99,9 @@ data/
 !data/final/.gitkeep
 !data/raw/test_data.csv
 
+# Models
+models/
+!models/.gitkeep
+
 # EDA notebooks
 notebooks/*_eda.ipynb
