@@ -61,7 +61,3 @@ def apply_weak_supervision(config: DictConfig):
     fname = str(data_path.name).replace("_cleaned", "_weakly_supervised")
     path = Path(config.final.dir) / fname
     df_train.to_parquet(path)
-
-
-if __name__ == "__main__":
-    apply_weak_supervision()
