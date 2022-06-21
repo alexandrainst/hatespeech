@@ -99,9 +99,15 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
         early_stopping_patience=model_config.early_stopping_patience
     )
 
+    # Set up output directory
+    if config.test:
+        output_dir = f"{config.models.dir}/test_{model_config.name}"
+    else:
+        output_dir = f"{config.models.dir}/{model_config.name}"
+
     # Create the training arguments
     training_args = TrainingArguments(
-        output_dir=f"{config.models.dir}/{model_config.name}",
+        output_dir=output_dir,
         evaluation_strategy=model_config.evaluation_strategy,
         logging_strategy=model_config.logging_strategy,
         save_strategy=model_config.save_strategy,
@@ -120,10 +126,10 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
         optim=model_config.optim,
         seed=config.seed,
         metric_for_best_model=model_config.metric,
+        greater_is_better=model_config.greater_is_better,
         auto_find_batch_size=model_config.auto_find_batch_size,
         full_determinism=model_config.full_determinism,
         lr_scheduler_type=model_config.lr_scheduler_type,
-        label_names=model_config.label_names,
     )
 
     # Create the trainer
@@ -142,7 +148,10 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
     trainer.train()
 
     # Evaluate the model
-    trainer.evaluate(dataset["test"])
+    print(trainer.evaluate(dataset["test"]))
+
+    # Save the model
+    trainer.save_model()
 
     # Return the model
     return model
