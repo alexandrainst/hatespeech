@@ -86,5 +86,5 @@ class TestLabelingFunctions:
         assert has_been_moderated(mention_record) == ABSTAIN
 
     def test_sentiment(self, fatsvag_record, mention_record):
-        assert sentiment(fatsvag_record) == OFFENSIVE
+        assert sentiment(fatsvag_record) == ABSTAIN
         assert sentiment(mention_record) == NOT_OFFENSIVE

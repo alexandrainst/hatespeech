@@ -85,6 +85,20 @@ def clean_text(text: str) -> Union[str, None]:
     # Replace newlines with spaces
     text = re.sub("\n", " ", text)
 
+    # Replace hyperlinks with " [LINK] "
+    text = re.sub(
+        r"(http|www\.)[.\/?&a-zæøåA-ZÆØÅ0-9\-\:\=\%\_\;\$\~\#\[\]\(\)\{\}\,\+\@]+",
+        " [LINK] ",
+        text,
+    )
+
+    # E-mail
+    text = re.sub(
+        r"\b[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]+@[A-Za-z0-9.-]+(\.[A-Za-z]{2,3}){1,2}(?=[A-ZÆØÅ]|\b)",
+        " [EMAIL] ",
+        text,
+    )
+
     # Replace 8 digits with " [CVR] " if "cvr" is in the text, else replace with " [PHONE] "
     # Check if an 8 digit number is present in text
     if re.search(r"(?<!\d)(\d\d ?){4}(?!\d)", text):
@@ -108,20 +122,6 @@ def clean_text(text: str) -> Union[str, None]:
     text = re.sub(
         r"(\+|00)[1-6]{1,2} ?([(]?\d[ \-)]{0,2}){7,10}\d\b",
         " [PHONE] ",
-        text,
-    )
-
-    # Replace hyperlinks with " [LINK] "
-    text = re.sub(
-        r"(http|www\.)[.\/?&a-zæøåA-ZÆØÅ0-9\-\:\=\%\_\;\$\~\#\[\]\(\)\{\}\,\+\@]+",
-        " [LINK] ",
-        text,
-    )
-
-    # E-mail
-    text = re.sub(
-        r"\b[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]+@[A-Za-z0-9.-]+(\.[A-Za-z]{2,3}){1,2}(?=[A-ZÆØÅ]|\b)",
-        " [EMAIL] ",
         text,
     )
 

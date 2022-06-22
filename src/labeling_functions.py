@@ -57,15 +57,6 @@ sent_model = (
     .to("cuda" if device == 0 else "cpu")
 )
 
-# Load sentiment model
-sent_model_id = "pin/senda"  # "DaNLP/da-bert-tone-sentiment-polarity"
-sent_tok = AutoTokenizer.from_pretrained(sent_model_id)
-sent_model = (
-    AutoModelForSequenceClassification.from_pretrained(sent_model_id)
-    .eval()
-    .to("cuda" if device == 0 else "cpu")
-)
-
 
 @labeling_function()
 def contains_offensive_word(record) -> int:
@@ -221,8 +212,8 @@ def use_transformer_ensemble(record) -> int:
         - DaNLP/da-bert-hatespeech-detection
 
     This will mark the document as offensive if all models predict the document
-    as offensive with confidence above 60%, as not offensive if all models
-    predict the document as not offensive with confidence above 90%, and
+    as offensive with confidence above 70%, as not offensive if all models
+    predict the document as not offensive with confidence above 99.9%, and
     abstain otherwise.
 
     Args:
@@ -238,25 +229,36 @@ def use_transformer_ensemble(record) -> int:
     # Extract the document
     doc = record.text
 
-    # Get the predictions
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
+
+        # Tokenise the document
         tokenised = [
             tok(doc, **pipe_params, return_tensors="pt") for tok in hatespeech_toks
         ]
+
+        # Move the tokens to the desired device
+        tokenised = [
+            {k: v.to("cuda" if device == 0 else "cpu") for k, v in dct.items()}
+            for dct in tokenised
+        ]
+
+        # Get the predictions
         preds = [
             model(**tokens).logits[0]
             for tokens, model in zip(tokenised, hatespeech_models)
         ]
+
+        # Extract the offensive probability
         offensive_probs = [torch.softmax(pred, dim=-1)[-1].item() for pred in preds]
 
     # If all the models predict that the document is offensive with confidence
-    # above 60% then mark it as offensive, if they all predict it is not
-    # offensive with confidence above 90% then mark it as not offensive,
+    # above 70% then mark it as offensive, if they all predict it is not
+    # offensive with confidence above 99.9% then mark it as not offensive,
     # otherwise abstain
-    if all(prob > 0.6 for prob in offensive_probs):
+    if all(prob > 0.7 for prob in offensive_probs):
         return OFFENSIVE
-    elif all(prob < 0.1 for prob in offensive_probs):
+    elif all(prob < 0.001 for prob in offensive_probs):
         return NOT_OFFENSIVE
     else:
         return ABSTAIN
@@ -325,9 +327,7 @@ def sentiment(record) -> int:
     """Apply a sentiment analysis model.
 
     This will mark the document as not offensive if the probability of the
-    document being negative is less than 30%, mark it as offensive if the
-    probability of the document being negative is greater than 60%, and
-    abstain otherwise.
+    document being negative is less than 30%, and abstain otherwise.
 
     Args:
         record:
@@ -345,16 +345,24 @@ def sentiment(record) -> int:
     with warnings.catch_warnings():
         with torch.no_grad():
             warnings.simplefilter("ignore", category=UserWarning)
+
+            # Tokenise the document
             inputs = sent_tok(doc, **pipe_params, return_tensors="pt")
+
+            # Move the tokens to the desired device
+            inputs = {
+                k: v.to("cuda" if device == 0 else "cpu") for k, v in inputs.items()
+            }
+
+            # Get the prediction
             prediction = sent_model(**inputs).logits[0]
+
+            # Extract the probability of the document being negative
             negative_prob = torch.softmax(prediction, dim=-1)[0].item()
 
     # If the probability of the document being negative is below 30% then mark
-    # it as not offensive, if it is above 60% then mark it as offensive, and
-    # otherwise abstain
+    # it as not offensive, and otherwise abstain
     if negative_prob < 0.3:
         return NOT_OFFENSIVE
-    elif negative_prob > 0.6:
-        return OFFENSIVE
     else:
         return ABSTAIN
