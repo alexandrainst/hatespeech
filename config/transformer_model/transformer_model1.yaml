@@ -10,7 +10,7 @@ cache_dir: .cache
 padding: longest
 
 # Training hyperparameters
-max_steps: 10_000
+max_steps: 1_000_000
 batch_size: 32
 auto_find_batch_size: True
 gradient_accumulation_steps: 1
