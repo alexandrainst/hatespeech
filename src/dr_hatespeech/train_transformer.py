@@ -2,6 +2,7 @@
 
 from typing import Dict
 
+import hydra
 from datasets import Dataset, DatasetDict, load_metric
 from omegaconf import DictConfig
 from transformers import (
@@ -17,6 +18,7 @@ from transformers import (
 from .load_data import load_final_data
 
 
+@hydra.main(config_path="../../config", config_name="config", version_base=None)
 def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassification:
     """Training of a transformer-based offensive speech classifier.
 

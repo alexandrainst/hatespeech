@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+import hydra
 from omegaconf import DictConfig
 from snorkel.labeling import PandasLFApplier
 from snorkel.labeling.model import LabelModel
@@ -18,6 +19,7 @@ from .labeling_functions import (
 from .load_data import load_cleaned_data
 
 
+@hydra.main(config_path="../../config", config_name="config", version_base=None)
 def apply_weak_supervision(config: DictConfig) -> dict:
     """Generate weakly supervised labels for the data.
 

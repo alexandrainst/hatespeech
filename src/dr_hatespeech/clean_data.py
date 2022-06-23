@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional, Union
 from unicodedata import normalize
 
+import hydra
 import pandas as pd
 from omegaconf import DictConfig
 from tqdm.auto import tqdm
@@ -15,6 +16,7 @@ from .load_data import load_raw_data
 logger = logging.getLogger(__name__)
 
 
+@hydra.main(config_path="../../config", config_name="config", version_base=None)
 def clean_data(config: DictConfig) -> dict:
     """Process the raw data and store the processed data.
 

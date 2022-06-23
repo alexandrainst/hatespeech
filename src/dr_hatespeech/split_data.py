@@ -3,6 +3,7 @@
 from pathlib import Path
 from typing import Dict
 
+import hydra
 import pandas as pd
 from omegaconf import DictConfig
 from sklearn.model_selection import train_test_split
@@ -10,6 +11,7 @@ from sklearn.model_selection import train_test_split
 from .load_data import load_weakly_supervised_data
 
 
+@hydra.main(config_path="../../config", config_name="config", version_base=None)
 def split_data(config: DictConfig) -> Dict[str, pd.DataFrame]:
     """Splits the weakly supervised data into training, validation and test sets.
 
@@ -23,7 +25,7 @@ def split_data(config: DictConfig) -> Dict[str, pd.DataFrame]:
             "train", "val" and "test".
     """
     # Load the weakly supervised data
-    df = load_weakly_supervised_data(config=config)["df"]
+    df = load_weakly_supervised_data(config)["df"]
 
     # Get validation and test sizes from the config
     if config.test:

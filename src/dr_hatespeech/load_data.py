@@ -3,12 +3,14 @@
 import logging
 from pathlib import Path
 
+import hydra
 import pandas as pd
 from omegaconf import DictConfig
 
 logger = logging.getLogger(__name__)
 
 
+@hydra.main(config_path="../../config", config_name="config", version_base=None)
 def load_raw_data(config: DictConfig) -> dict:
     """Loading of raw data.
 
@@ -63,6 +65,7 @@ def load_raw_data(config: DictConfig) -> dict:
     return dict(df=df, path=csv_paths[0])
 
 
+@hydra.main(config_path="../../config", config_name="config", version_base=None)
 def load_cleaned_data(config: DictConfig) -> dict:
     """Loading of cleaned data.
 
@@ -114,6 +117,7 @@ def load_cleaned_data(config: DictConfig) -> dict:
     return dict(df=df, path=parquet_paths[0])
 
 
+@hydra.main(config_path="../../config", config_name="config", version_base=None)
 def load_weakly_supervised_data(config: DictConfig) -> dict:
     """Loading of weakly supervised data.
 
@@ -165,6 +169,7 @@ def load_weakly_supervised_data(config: DictConfig) -> dict:
     return dict(df=df, path=parquet_paths[0])
 
 
+@hydra.main(config_path="../../config", config_name="config", version_base=None)
 def load_final_data(config: DictConfig) -> dict:
     """Loading of final data, split into a training, validation and test set.
 
