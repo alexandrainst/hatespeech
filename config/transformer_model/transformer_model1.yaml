@@ -19,24 +19,24 @@ lr_scheduler_type: linear
 warmup_ratio: 0.01
 optim: adamw_torch
 full_determinism: True
-fp16: False
+fp16: True
 
 # Evaluation
 evaluation_strategy: steps
-eval_steps: 30
+eval_steps: 500
 
 # Logging
 logging_strategy: steps
-logging_steps: 30
+logging_steps: 100
 report_to: none
 
 # Model saving
 save_strategy: steps
-save_steps: 30
+save_steps: 500
 save_total_limit: 1
 
 # Early stopping
-early_stopping_patience: 3
+early_stopping_patience: 10
 load_best_model_at_end: True
 metric: matthews_correlation
 greater_is_better: True
