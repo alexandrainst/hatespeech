@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.dr_hatespeech.weak_supervision import main as apply_weak_supervision
+from src.dr_hatespeech.weak_supervision import apply_weak_supervision
 
 
 def test_weak_supervision():
