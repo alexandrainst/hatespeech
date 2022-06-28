@@ -1,20 +1,22 @@
 """Unit tests related to the labeling_functions module."""
 
-import pytest
-import pandas as pd
-import numpy as np
 import datetime as dt
-from labeling_functions import (
-    contains_offensive_word,
-    is_mention,
-    is_dr_answer,
-    use_transformer_ensemble,
-    use_tfidf_model,
-    has_been_moderated,
-    sentiment,
+
+import numpy as np
+import pandas as pd
+import pytest
+
+from src.dr_hatespeech.labeling_functions import (
     ABSTAIN,
     NOT_OFFENSIVE,
     OFFENSIVE,
+    contains_offensive_word,
+    has_been_moderated,
+    is_dr_answer,
+    is_mention,
+    sentiment,
+    use_tfidf_model,
+    use_transformer_ensemble,
 )
 
 

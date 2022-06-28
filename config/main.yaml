@@ -1,0 +1,22 @@
+defaults:
+  - model: model1
+
+raw:
+  dir: data/raw
+  name: dr_hatespeech.parquet
+  path: ${processed.dir}/${processed.name}
+
+cleaned:
+  dir: data/processed
+  name: dr_hatespeech_cleaned.parquet
+  path: ${cleaned.dir}/${cleaned.name}
+
+weakly_supervised:
+  dir: data/processed
+  name: dr_hatespeech_weakly_supervised.parquet
+  path: ${weakly_supervised.dir}/${weakly_supervised.name}
+
+final:
+  dir: data/final
+  name: dr_hatespeech_final.parquet
+  path: ${final.dir}/${final.name}

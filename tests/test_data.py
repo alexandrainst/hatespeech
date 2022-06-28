@@ -1,8 +1,9 @@
 """Unit tests related to the data module."""
 
-import pytest
 import pandas as pd
-from src.data import load_data
+import pytest
+
+from src.dr_hatespeech.data import load_data
 
 
 class TestData:

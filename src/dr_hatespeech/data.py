@@ -1,13 +1,13 @@
 """Functions related to the processing and loading of data."""
 
-import pandas as pd
-from pathlib import Path
-import re
-from unicodedata import normalize
-from typing import Union, Optional
-from tqdm.auto import tqdm
 import logging
+import re
+from pathlib import Path
+from typing import Optional, Union
+from unicodedata import normalize
 
+import pandas as pd
+from tqdm.auto import tqdm
 
 # Set up logging
 fmt = "%(asctime)s [%(levelname)s] <%(name)s> %(message)s"

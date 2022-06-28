@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>dr_hatespeech.labeling_functions API documentation</title>
+<meta name="description" content="Labeling functions used for weak supervision." />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>dr_hatespeech.labeling_functions</code></h1>
+</header>
+<section id="section-intro">
+<p>Labeling functions used for weak supervision.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Labeling functions used for weak supervision.&#34;&#34;&#34;
+
+import re
+import warnings
+
+import joblib
+import torch
+from snorkel.labeling import labeling_function
+from transformers.pipelines import (
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+    pipeline,
+)
+
+# Create label names
+ABSTAIN = -1
+NOT_OFFENSIVE = 0
+OFFENSIVE = 1
+
+
+# Set up parameters for `transformers` pipelines
+pipe_params = dict(truncation=True, max_length=512)
+
+
+# Get device
+device = 0 if torch.cuda.is_available() else -1
+
+
+# Load NER model
+ner = pipeline(model=&#34;saattrupdan/nbailab-base-ner-scandi&#34;, device=device)
+
+# Load transformer hatespeech models
+hatespeech_model_ids = [
+    &#34;DaNLP/da-electra-hatespeech-detection&#34;,
+    &#34;DaNLP/da-bert-hatespeech-detection&#34;,
+    &#34;DaNLP/da-electra-hatespeech-detection&#34;,
+]
+hatespeech_toks = [
+    AutoTokenizer.from_pretrained(model_id) for model_id in hatespeech_model_ids
+]
+hatespeech_models = [
+    AutoModelForSequenceClassification.from_pretrained(model_id)
+    .eval()
+    .to(&#34;cuda&#34; if device == 0 else &#34;cpu&#34;)
+    for model_id in hatespeech_model_ids
+]
+
+# Load TF-IDF hatespeech model
+tfidf = joblib.load(&#34;models/tfidf_model.bin&#34;)
+
+# Load sentiment model
+sent_model_id = &#34;pin/senda&#34;
+sent_tok = AutoTokenizer.from_pretrained(sent_model_id)
+sent_model = (
+    AutoModelForSequenceClassification.from_pretrained(sent_model_id)
+    .eval()
+    .to(&#34;cuda&#34; if device == 0 else &#34;cpu&#34;)
+)
+
+
+@labeling_function()
+def contains_offensive_word(record) -&gt; int:
+    &#34;&#34;&#34;Check if the document contains an offensive word.
+
+    This will mark the document as offensive if it contains an offensive word
+    and is not an official DR answer, and abstain otherwise.
+
+    Args:
+        record:
+            The record containing the document to be checked.
+
+    Returns:
+        int:
+            This value is 1 (offensive) if the document contains an offensive
+            word, and -1 (abstain) otherwise.
+    &#34;&#34;&#34;
+    # Extract the document
+    doc = record.text
+
+    # Define list of offensive words
+    offensive_words = [
+        r&#34;perker&#34;,
+        r&#34;snotunge&#34;,
+        r&#34;svagpisser&#34;,
+        r&#34;pik\W&#34;,
+        r&#34;fisse&#34;,
+        r&#34;retar?deret&#34;,
+        r&#34;asshole&#34;,
+        r&#34;retard&#34;,
+        r&#34;idiot&#34;,
+        r&#34;hold (dog |nu |bare )?k[æ?]ft&#34;,
+        r&#34;stodder&#34;,
+        r&#34;mongol&#34;,
+        r&#34;(m[ø?][gj]|klamme|usselt?) ?(svin|so|kost)&#34;,
+        r&#34;klaphat&#34;,
+        r&#34;(?&lt;!flue)kneppe&#34;,
+        r&#34;liderlig&#34;,
+        r&#34;vatpik&#34;,
+        r&#34;k[æ?]lling&#34;,
+        r&#34;fatsvag&#34;,
+        r&#34;gimpe&#34;,
+        r&#34;\Wluder&#34;,
+        r&#34;dumb +fuck&#34;,
+        r&#34;afskum&#34;,
+        r&#34;psykopat&#34;,
+        r&#34;b[ø?]sser[ø?]v&#34;,
+        r&#34;\Wtumpe&#34;,
+        r&#34;[åa?]ndss?vag&#34;,
+        r&#34;spasser&#34;,
+        r&#34;r[ø?]vhul&#34;,
+    ]
+
+    # Mark document as offensive if it contains an offensive word, and abstain
+    # otherwise
+    if is_dr_answer(record) == ABSTAIN and any(
+        re.search(regex, doc.lower()) for regex in offensive_words
+    ):
+        return OFFENSIVE
+    else:
+        return ABSTAIN
+
+
+@labeling_function()
+def is_mention(record) -&gt; int:
+    &#34;&#34;&#34;Check if the document consists of only mentions.
+
+    This will mark the document as not offensive if it consists of only mentions, and
+    abstain otherwise.
+
+    Args:
+        record:
+            The record containing the document to be checked.
+
+    Returns:
+        int:
+            This value is 0 (not offensive) if the document consists of only mentions,
+            and -1 (abstain) otherwise.
+    &#34;&#34;&#34;
+    # Extract the document
+    doc = record.text
+
+    # Get the PER label indices
+    with warnings.catch_warnings():
+        warnings.simplefilter(&#34;ignore&#34;, category=UserWarning)
+        per_indices = [
+            (dct[&#34;start&#34;], dct[&#34;end&#34;])
+            for dct in ner(doc, aggregation_strategy=&#34;first&#34;)
+            if &#34;entity_group&#34; in dct and dct[&#34;entity_group&#34;] == &#34;PER&#34;
+        ]
+
+    # Sort the indices, so that the latest mention is first
+    per_indices = sorted(per_indices, key=lambda x: x[0], reverse=True)
+
+    # Remove all PER labels, by removing them one at a time, starting from the
+    # end of the document
+    for start, end in per_indices:
+        doc = doc[:start] + doc[end:]
+
+    # Strip the document of whitespace
+    doc = doc.strip()
+
+    # If the remaining document is empty then mark it as not offensive,
+    # otherwise abstain
+    if doc == &#34;&#34;:
+        return NOT_OFFENSIVE
+    else:
+        return ABSTAIN
+
+
+@labeling_function()
+def is_dr_answer(record) -&gt; int:
+    &#34;&#34;&#34;Check if the document is an official reply from DR.
+
+    This will mark the document as not offensive if it contains an official
+    reply from DR, and abstain otherwise.
+
+    Args:
+        record:
+            The record containing the document to be checked.
+
+    Returns:
+        int:
+            This value is 0 (not offensive) if the document contains an
+            official reply from DR, and -1 (abstain) otherwise.
+    &#34;&#34;&#34;
+    # Extract the document
+    doc = record.text
+
+    # Define phrases the DR employees tend to use
+    dr_phrases = [
+        r&#34;vi har slettet din kommentar&#34;,
+        r&#34;overskrider vores retningslinjer&#34;,
+        r&#34;\W(m?vh\.?|/+) *[a-zæøå]+ *[/,]+ *dr&#34;,
+    ]
+
+    # If the document contains any of the phrases then mark it as not
+    # offensive, otherwise abstain
+    if any(re.search(regex, doc.lower()) for regex in dr_phrases):
+        return NOT_OFFENSIVE
+    else:
+        return ABSTAIN
+
+
+@labeling_function()
+def use_transformer_ensemble(record) -&gt; int:
+    &#34;&#34;&#34;Apply an ensemble of hatespeech detection transformer models.
+
+    The following models will be applied:
+
+        - DaNLP/Electra-hatespeech-detection
+        - Guscode/DKbert-hatespeech-detection
+        - DaNLP/da-bert-hatespeech-detection
+
+    This will mark the document as offensive if all models predict the document
+    as offensive with confidence above 70%, as not offensive if all models
+    predict the document as not offensive with confidence above 99.9%, and
+    abstain otherwise.
+
+    Args:
+        record:
+            The record containing the document to be checked.
+
+    Returns:
+        int:
+            This value is 1 (offensive) if the document is classified as
+            offensive by the ensemble, and 0 (not offensive) if the document is
+            classified as not offensive by the ensemble.
+    &#34;&#34;&#34;
+    # Extract the document
+    doc = record.text
+
+    with warnings.catch_warnings():
+        warnings.simplefilter(&#34;ignore&#34;, category=UserWarning)
+
+        # Tokenise the document
+        tokenised = [
+            tok(doc, **pipe_params, return_tensors=&#34;pt&#34;) for tok in hatespeech_toks
+        ]
+
+        # Move the tokens to the desired device
+        tokenised = [
+            {k: v.to(&#34;cuda&#34; if device == 0 else &#34;cpu&#34;) for k, v in dct.items()}
+            for dct in tokenised
+        ]
+
+        # Get the predictions
+        preds = [
+            model(**tokens).logits[0]
+            for tokens, model in zip(tokenised, hatespeech_models)
+        ]
+
+        # Extract the offensive probability
+        offensive_probs = [torch.softmax(pred, dim=-1)[-1].item() for pred in preds]
+
+    # If all the models predict that the document is offensive with confidence
+    # above 70% then mark it as offensive, if they all predict it is not
+    # offensive with confidence above 99.9% then mark it as not offensive,
+    # otherwise abstain
+    if all(prob &gt; 0.7 for prob in offensive_probs):
+        return OFFENSIVE
+    elif all(prob &lt; 0.001 for prob in offensive_probs):
+        return NOT_OFFENSIVE
+    else:
+        return ABSTAIN
+
+
+@labeling_function()
+def use_tfidf_model(record) -&gt; int:
+    &#34;&#34;&#34;Apply the TF-IDF offensive speech detection model.
+
+    This will mark the document as offensive if the model classifies it as
+    offensive with a positive decision score, and abstains otherwise.
+
+    Args:
+        record:
+            The record containing the document to be checked.
+
+    Returns:
+        int:
+            This value is 1 (offensive) if the document is classified as
+            offensive by the model, and 0 (not offensive) if the document is
+            classified as not offensive by the model.
+    &#34;&#34;&#34;
+    # Extract the document
+    doc = record.text
+
+    # Get the prediction score
+    predicted_score = tfidf.decision_function([doc])[0]
+
+    # If the predictive score is positive then mark as offensive, and otherwise
+    # abstain
+    if predicted_score &gt; 0:
+        return OFFENSIVE
+    else:
+        return ABSTAIN
+
+
+@labeling_function()
+def has_been_moderated(record) -&gt; int:
+    &#34;&#34;&#34;Check if a document has already been moderated.
+
+    This will mark the document as offensive if it has been moderated, and
+    abstain otherwise.
+
+    Args:
+        record:
+            The record containing the document to be checked.
+
+    Returns:
+        int:
+            This value is 1 (offensive) if the document has been moderated,
+            and -1 (abstain) otherwise.
+    &#34;&#34;&#34;
+    # Extract the moderation action
+    action = record.action
+
+    # If the action is not &#34;none&#34; then mark the document as offensive, and
+    # otherwise abstain
+    if action != &#34;none&#34;:
+        return OFFENSIVE
+    else:
+        return ABSTAIN
+
+
+@labeling_function()
+def sentiment(record) -&gt; int:
+    &#34;&#34;&#34;Apply a sentiment analysis model.
+
+    This will mark the document as not offensive if the probability of the
+    document being negative is less than 30%, and abstain otherwise.
+
+    Args:
+        record:
+            The record containing the document to be checked.
+
+    Returns:
+        int:
+            This value is 0 (not offensive) if the document is classified as
+            not offensive by the model, and -1 (abstain) otherwise.
+    &#34;&#34;&#34;
+    # Extract the document
+    doc = record.text
+
+    # Get the prediction
+    with warnings.catch_warnings():
+        with torch.no_grad():
+            warnings.simplefilter(&#34;ignore&#34;, category=UserWarning)
+
+            # Tokenise the document
+            inputs = sent_tok(doc, **pipe_params, return_tensors=&#34;pt&#34;)
+
+            # Move the tokens to the desired device
+            inputs = {
+                k: v.to(&#34;cuda&#34; if device == 0 else &#34;cpu&#34;) for k, v in inputs.items()
+            }
+
+            # Get the prediction
+            prediction = sent_model(**inputs).logits[0]
+
+            # Extract the probability of the document being negative
+            negative_prob = torch.softmax(prediction, dim=-1)[0].item()
+
+    # If the probability of the document being negative is below 30% then mark
+    # it as not offensive, and otherwise abstain
+    if negative_prob &lt; 0.3:
+        return NOT_OFFENSIVE
+    else:
+        return ABSTAIN</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="dr_hatespeech" href="index.html">dr_hatespeech</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
