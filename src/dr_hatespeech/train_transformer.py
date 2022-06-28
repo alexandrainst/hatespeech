@@ -76,8 +76,9 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
 
     dataset = dataset.map(tokenise, batched=True)
 
-    # Initialise the metric
-    metric = load_metric(model_config.metric)
+    # Initialise the metrics
+    mcc_metric = load_metric("matthews_correlation")
+    f1_metric = load_metric("f1")
 
     # Create the `compute_metrics` function
     def compute_metrics(predictions_and_labels: EvalPrediction) -> Dict[str, float]:
@@ -91,10 +92,17 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
             Dict[str, float]:
                 The metrics.
         """
+        # Extract the predictions
         predictions, labels = predictions_and_labels
         predictions = predictions.argmax(axis=-1)
-        results = metric.compute(predictions=predictions, references=labels)
-        return {model_config.metric: results[model_config.metric]}
+
+        # Compute the metrics
+        mcc = mcc_metric.compute(predictions=predictions, references=labels)[
+            "matthews_correlation"
+        ]
+        f1 = f1_metric.compute(predictions=predictions, references=labels)["f1"]
+
+        return dict(mcc=mcc, f1=f1)
 
     # Create early stopping callback
     early_stopping_callback = EarlyStoppingCallback(
@@ -124,14 +132,14 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
         learning_rate=model_config.learning_rate,
         warmup_ratio=model_config.warmup_ratio,
         gradient_accumulation_steps=model_config.gradient_accumulation_steps,
-        load_best_model_at_end=model_config.load_best_model_at_end,
         optim=model_config.optim,
         seed=config.seed,
-        metric_for_best_model=model_config.metric,
-        greater_is_better=model_config.greater_is_better,
-        auto_find_batch_size=model_config.auto_find_batch_size,
         full_determinism=model_config.full_determinism,
         lr_scheduler_type=model_config.lr_scheduler_type,
+        fp16=model_config.fp16,
+        metric_for_best_model="mcc",
+        greater_is_better=True,
+        load_best_model_at_end=True,
     )
 
     # Create the trainer
