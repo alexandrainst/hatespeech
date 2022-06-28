@@ -97,7 +97,6 @@ data/
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/final/.gitkeep
-!data/raw/test_data.csv
 
 # Models
 models/
