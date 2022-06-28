@@ -11,9 +11,8 @@ padding: longest
 
 # Training hyperparameters
 max_steps: 1_000_000
-batch_size: 32
-auto_find_batch_size: True
-gradient_accumulation_steps: 1
+batch_size: 8
+gradient_accumulation_steps: 4
 learning_rate: 2e-5
 lr_scheduler_type: linear
 warmup_ratio: 0.01
