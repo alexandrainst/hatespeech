@@ -29,7 +29,7 @@ def clean_data(config: DictConfig) -> dict:
             A dictionary containing the cleaned data and the path where it was saved.
     """
     # Load the raw data
-    data_dict = load_raw_data(config=config)
+    data_dict = load_raw_data(config)
     df = data_dict["df"]
     data_path = data_dict["path"]
 
@@ -303,3 +303,7 @@ def get_reply_comment_id(url: Optional[str]) -> Union[int, None]:
             return None
         else:
             return int(matches[0])
+
+
+if __name__ == "__main__":
+    clean_data()

@@ -68,3 +68,7 @@ def split_data(config: DictConfig) -> Dict[str, pd.DataFrame]:
 
     # Return the training, validation and test sets
     return dict(train=train, val=val, test=test)
+
+
+if __name__ == "__main__":
+    split_data()

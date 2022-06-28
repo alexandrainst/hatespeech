@@ -33,7 +33,7 @@ def apply_weak_supervision(config: DictConfig) -> dict:
             was saved.
     """
     # Load the cleaned data
-    data_dict = load_cleaned_data(config=config)
+    data_dict = load_cleaned_data(config)
     df_train = data_dict["df"]
     data_path = data_dict["path"]
 
@@ -69,3 +69,7 @@ def apply_weak_supervision(config: DictConfig) -> dict:
 
     # Return the data dict
     return dict(df=df_train, path=path)
+
+
+if __name__ == "__main__":
+    apply_weak_supervision()

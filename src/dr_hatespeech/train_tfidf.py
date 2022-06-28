@@ -78,3 +78,7 @@ def train_tfidf_model(config: DictConfig) -> Pipeline:
 
     # Return the pipeline
     return pipeline
+
+
+if __name__ == "__main__":
+    train_tfidf_model()

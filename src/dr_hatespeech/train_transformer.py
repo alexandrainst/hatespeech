@@ -165,3 +165,7 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
 
     # Return the model
     return model
+
+
+if __name__ == "__main__":
+    train_transformer_model()
