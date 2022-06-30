@@ -1,12 +1,12 @@
 """Weak supervision module to create labels in an unsupervised setting."""
 
 from pathlib import Path
-from typing import Union
 
+import hydra
+from omegaconf import DictConfig
 from snorkel.labeling import PandasLFApplier
 from snorkel.labeling.model import LabelModel
 
-from .data import load_data
 from .labeling_functions import (
     contains_offensive_word,
     has_been_moderated,
@@ -16,28 +16,26 @@ from .labeling_functions import (
     use_tfidf_model,
     use_transformer_ensemble,
 )
+from .load_data import load_cleaned_data
 
 
-def main(data_dir: Union[str, Path] = "data", test: bool = False):
+@hydra.main(config_path="../../config", config_name="config", version_base=None)
+def apply_weak_supervision(config: DictConfig) -> dict:
     """Generate weakly supervised labels for the data.
 
     Args:
-        data_dir (str or Path, optional):
-            The path to the data directory. Defaults to 'data'.
-        test (bool, optional):
-            Whether to generate labels for the test set. Defaults to False.
+        config (DictConfig):
+            The configuration.
+
+    Returns:
+        dict:
+            A dictionary containing the weakly supervised data and the path where it
+            was saved.
     """
-    # Ensure that `data_dir` is a Path object
-    data_dir = Path(data_dir)
-
-    # Create the path to the processed data directory
-    processed_dir = data_dir / "processed"
-
-    # Ensure that the processed data directory exists
-    processed_dir.mkdir(parents=True, exist_ok=True)
-
-    # Load the data
-    df_train = load_data(data_dir=data_dir, test=test)
+    # Load the cleaned data
+    data_dict = load_cleaned_data(config)
+    df_train = data_dict["df"]
+    data_path = data_dict["path"]
 
     # Define the list of labeling functions
     lfs = [
@@ -65,22 +63,13 @@ def main(data_dir: Union[str, Path] = "data", test: bool = False):
     df_train = df_train[df_train.label != -1]
 
     # Save the dataframe
-    if test:
-        path_str = [
-            str(path)
-            for path in processed_dir.glob("*_cleaned.parquet")
-            if path.name.startswith("test_")
-        ][0]
-    else:
-        path_str = [
-            str(path)
-            for path in processed_dir.glob("*_cleaned.parquet")
-            if not path.name.startswith("test_")
-        ][0]
-
-    path = Path(path_str.replace("_cleaned", "_weakly_supervised"))
+    fname = str(data_path.name).replace("_cleaned", "_weakly_supervised")
+    path = Path(config.data.processed_dir) / fname
     df_train.to_parquet(path)
+
+    # Return the data dict
+    return dict(df=df_train, path=path)
 
 
 if __name__ == "__main__":
-    main()
+    apply_weak_supervision()

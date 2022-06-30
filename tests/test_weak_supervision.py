@@ -4,10 +4,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.dr_hatespeech.weak_supervision import main as apply_weak_supervision
+from src.dr_hatespeech.weak_supervision import apply_weak_supervision
 
 
-def test_weak_supervision():
+def test_weak_supervision(config):
     # Set up path to weakly supervised test dataset
     path = Path("data") / "processed" / "test_data_weakly_supervised.parquet"
 
@@ -15,7 +15,7 @@ def test_weak_supervision():
     path.unlink(missing_ok=True)
 
     # Apply weak supervision, generating the weakly supervised test dataset
-    apply_weak_supervision(test=True)
+    apply_weak_supervision(config)
 
     # Load the weakly supervised test dataset
     df = pd.read_parquet("data/processed/test_data_weakly_supervised.parquet")

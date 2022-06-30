@@ -26,12 +26,17 @@ pipe_params = dict(truncation=True, max_length=512)
 device = 0 if torch.cuda.is_available() else -1
 
 
+# Load TF-IDF hatespeech model
+tfidf = joblib.load("models/tfidf_model.bin")
+
+
 # Load NER model
 ner = pipeline(model="saattrupdan/nbailab-base-ner-scandi", device=device)
 
+
 # Load transformer hatespeech models
 hatespeech_model_ids = [
-    "DaNLP/da-electra-hatespeech-detection",
+    "Guscode/DKbert-hatespeech-detection",
     "DaNLP/da-bert-hatespeech-detection",
     "DaNLP/da-electra-hatespeech-detection",
 ]
@@ -45,8 +50,6 @@ hatespeech_models = [
     for model_id in hatespeech_model_ids
 ]
 
-# Load TF-IDF hatespeech model
-tfidf = joblib.load("models/tfidf_model.bin")
 
 # Load sentiment model
 sent_model_id = "pin/senda"

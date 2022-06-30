@@ -6,13 +6,95 @@ from pathlib import Path
 from typing import Optional, Union
 from unicodedata import normalize
 
+import hydra
 import pandas as pd
+from omegaconf import DictConfig
 from tqdm.auto import tqdm
 
-# Set up logging
-fmt = "%(asctime)s [%(levelname)s] <%(name)s> %(message)s"
-logging.basicConfig(level=logging.INFO, format=fmt)
+from .load_data import load_raw_data
+
 logger = logging.getLogger(__name__)
+
+
+@hydra.main(config_path="../../config", config_name="config", version_base=None)
+def clean_data(config: DictConfig) -> dict:
+    """Process the raw data and store the processed data.
+
+    Args:
+        config (DictConfig):
+            The configuration.
+
+    Returns:
+        dict:
+            A dictionary containing the cleaned data and the path where it was saved.
+    """
+    # Load the raw data
+    data_dict = load_raw_data(config)
+    df = data_dict["df"]
+    data_path = data_dict["path"]
+
+    # Replace the NaN values in `action` by 'none'
+    df.action.fillna(value="none", inplace=True)
+
+    # Cast `date` column as datetime
+    df.date = pd.to_datetime(df.date)
+
+    # Remove NaN values from the `text` and `account` columns
+    num_rows = len(df)
+    df.dropna(subset=["text", "account"], inplace=True)
+    logger.info(f"Removed {num_rows - len(df):,} rows with NaN values")
+
+    # Clean the `text` column
+    tqdm.pandas(desc="Cleaning text")
+    df.text = df.text.progress_apply(clean_text)
+
+    # Clean the `account` column
+    tqdm.pandas(desc="Cleaning account")
+    df.account = df.account.progress_apply(clean_account)
+
+    # Remove NaN values again from the `text` and `account` columns
+    num_rows = len(df)
+    df.dropna(subset=["text", "account"], inplace=True)
+    logger.info(f"Removed {num_rows - len(df):,} rows with NaN values")
+
+    # Extract post_id from the url
+    tqdm.pandas(desc="Extracting post_id")
+    df["post_id"] = df.url.progress_apply(get_post_id)
+
+    # Extract comment_id from the url
+    tqdm.pandas(desc="Extracting comment_id")
+    df["comment_id"] = df.url.progress_apply(get_comment_id)
+
+    # Extract reply_comment_id from the url
+    tqdm.pandas(desc="Extracting reply_comment_id")
+    df["reply_comment_id"] = df.url.progress_apply(get_reply_comment_id)
+
+    # Remove duplicates
+    num_rows = len(df)
+    df.drop_duplicates(subset="text", inplace=True)
+    logger.info(f"Removed {num_rows - len(df):,} duplicates")
+
+    # Cast `account` and `action` columns as categories, and the ID columns as
+    # nullable integers
+    df = df.astype(
+        dict(
+            account="category",
+            action="category",
+            post_id="Int64",
+            comment_id="Int64",
+            reply_comment_id="Int64",
+        )
+    )
+
+    # Save the dataframe as a parquet file
+    processed_path = (
+        Path(config.data.processed_dir) / f"{data_path.stem}_cleaned.parquet"
+    )
+    df.to_parquet(processed_path)
+    logger.info(f"Saved processed data with {len(df):,} rows to {processed_path}")
+
+    # Return the data dictionary
+    return dict(df=df, path=processed_path)
 
 
 def clean_account(account: str) -> str:
@@ -223,166 +305,5 @@ def get_reply_comment_id(url: Optional[str]) -> Union[int, None]:
             return int(matches[0])
 
 
-def process_data(data_dir: Union[str, Path] = "data", test: bool = False):
-    """Process the raw data and store the processed data.
-
-    Args:
-        data_dir (str or Path, optional):
-            The path to the data directory. Defaults to 'data'.
-        test (bool, optional):
-            Whether to process the test data. Defaults to False.
-    """
-    # Ensure that `data_dir` is a Path object
-    data_dir = Path(data_dir)
-
-    # Create the path to the raw data directory
-    raw_dir = data_dir / "raw"
-
-    # Ensure that the raw data directory exists
-    raw_dir.mkdir(parents=True, exist_ok=True)
-
-    # Create the path to the processed data directory
-    processed_dir = data_dir / "processed"
-
-    # Ensure that the processed data directory exists
-    processed_dir.mkdir(parents=True, exist_ok=True)
-
-    # Get the path to the raw data file
-    if test:
-        raw_paths = [
-            path for path in raw_dir.glob("*.csv") if path.name.startswith("test_")
-        ]
-    else:
-        raw_paths = [
-            path for path in raw_dir.glob("*.csv") if not path.name.startswith("test_")
-        ]
-
-    # Read the CSV file
-    logger.info(f"Loading data from {raw_paths[0]}")
-    cols = ["account", "url", "text", "date", "action"]
-    df = pd.read_csv(
-        raw_paths[0], encoding="windows-1252", usecols=cols, low_memory=False
-    )
-    logger.info(f"Loaded {len(df):,} rows")
-
-    # Replace the NaN values in `action` by 'none'
-    df.action.fillna(value="none", inplace=True)
-
-    # Cast `date` column as datetime
-    df.date = pd.to_datetime(df.date)
-
-    # Remove NaN values from the `text` and `account` columns
-    num_rows = len(df)
-    df.dropna(subset=["text", "account"], inplace=True)
-    logger.info(f"Removed {num_rows - len(df):,} rows with NaN values")
-
-    # Clean the `text` column
-    tqdm.pandas(desc="Cleaning text")
-    df.text = df.text.progress_apply(clean_text)
-
-    # Clean the `account` column
-    tqdm.pandas(desc="Cleaning account")
-    df.account = df.account.progress_apply(clean_account)
-
-    # Remove NaN values again from the `text` and `account` columns
-    num_rows = len(df)
-    df.dropna(subset=["text", "account"], inplace=True)
-    logger.info(f"Removed {num_rows - len(df):,} rows with NaN values")
-
-    # Extract post_id from the url
-    tqdm.pandas(desc="Extracting post_id")
-    df["post_id"] = df.url.progress_apply(get_post_id)
-
-    # Extract comment_id from the url
-    tqdm.pandas(desc="Extracting comment_id")
-    df["comment_id"] = df.url.progress_apply(get_comment_id)
-
-    # Extract reply_comment_id from the url
-    tqdm.pandas(desc="Extracting reply_comment_id")
-    df["reply_comment_id"] = df.url.progress_apply(get_reply_comment_id)
-
-    # Remove duplicates
-    num_rows = len(df)
-    df.drop_duplicates(subset="text", inplace=True)
-    logger.info(f"Removed {num_rows - len(df):,} duplicates")
-
-    # Cast `account` and `action` columns as categories, and the ID columns as
-    # nullable integers
-    df = df.astype(
-        dict(
-            account="category",
-            action="category",
-            post_id="Int64",
-            comment_id="Int64",
-            reply_comment_id="Int64",
-        )
-    )
-
-    # Save the dataframe as a parquet file
-    processed_path = processed_dir / f"{raw_paths[0].stem}_cleaned.parquet"
-    df.to_parquet(processed_path)
-    logger.info(f"Saved processed data with {len(df):,} rows to {processed_path}")
-
-
-def load_data(data_dir: Union[str, Path] = "data", test: bool = False) -> pd.DataFrame:
-    """Load the processed data.
-
-    If the data has not been processed then first process it.
-
-    Args:
-        data_dir (str or Path, optional):
-            The path to the data directory. Defaults to 'data'.
-        test (bool, optional):
-            Whether to load the test data. Defaults to False.
-
-    Returns:
-        pd.DataFrame:
-            The processed data.
-    """
-    # Ensure that `data_dir` is a Path object
-    data_dir = Path(data_dir)
-
-    # Create the path to the processed data directory
-    processed_dir = data_dir / "processed"
-
-    # Ensure that the processed data directory exists
-    processed_dir.mkdir(parents=True, exist_ok=True)
-
-    # Get the list of parquet files in the processed data directory
-    if test:
-        parquet_paths = [
-            path
-            for path in processed_dir.glob("*_cleaned.parquet")
-            if path.name.startswith("test_")
-        ]
-    else:
-        parquet_paths = [
-            path
-            for path in processed_dir.glob("*_cleaned.parquet")
-            if not path.name.startswith("test_")
-        ]
-
-    # If there are no parquet files then process the data
-    if len(parquet_paths) == 0:
-        process_data(data_dir=data_dir, test=test)
-        if test:
-            parquet_paths = [
-                path
-                for path in processed_dir.glob("*_cleaned.parquet")
-                if path.name.startswith("test_")
-            ]
-        else:
-            parquet_paths = [
-                path
-                for path in processed_dir.glob("*_cleaned.parquet")
-                if not path.name.startswith("test_")
-            ]
-
-    # Read the parquet file
-    df = pd.read_parquet(parquet_paths[0])
-
-    return df
-
-
 if __name__ == "__main__":
-    load_data()
+    clean_data()

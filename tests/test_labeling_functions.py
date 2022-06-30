@@ -77,7 +77,7 @@ class TestLabelingFunctions:
 
     def test_use_transformer_ensemble(self, fatsvag_record, mention_record):
         assert use_transformer_ensemble(fatsvag_record) == OFFENSIVE
-        assert use_transformer_ensemble(mention_record) == NOT_OFFENSIVE
+        assert use_transformer_ensemble(mention_record) == ABSTAIN
 
     def test_use_tfidf_model(self, fatsvag_record, mention_record):
         assert use_tfidf_model(fatsvag_record) == OFFENSIVE

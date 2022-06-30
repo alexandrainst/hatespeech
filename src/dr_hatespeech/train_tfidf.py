@@ -1,35 +1,48 @@
 """Train a simple TF-IDF + logistic regression model on the DKHate dataset."""
 
 from pathlib import Path
-from typing import Union
 
+import hydra
 import joblib
 from datasets import load_dataset
+from omegaconf import DictConfig
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score, matthews_corrcoef
 from sklearn.pipeline import Pipeline
 
 
-def train_tfidf_model(output_path: Union[str, Path] = "models/tfidf_model.bin"):
+@hydra.main(config_path="../../config", config_name="config", version_base=None)
+def train_tfidf_model(config: DictConfig) -> Pipeline:
     """Train a logitstic regression model with TF-IDF features on DKHate.
 
-    This will save the model to `output_path`.
-
     Args:
-        output_path (str or Path, optional):
-            The path to save the model to. Defaults to
-            'models/tfidf_model.bin'.
+        config (DictConfig):
+            Configuration object.
+
+    Returns:
+        Pipeline:
+            The trained model.
     """
+    # Get model config
+    config = config.transformer_model
+
     # Create the TF-IDF vectorizer
     vectorizer = TfidfVectorizer(
-        analyzer="word",
-        max_features=10_000,
-        norm=None,
+        analyzer=config.analyzer,
+        max_features=config.max_features,
+        norm=config.norm,
+        lowercase=config.lowercase,
+        ngram_range=config.ngram_range,
+        min_df=config.min_df,
+        max_df=config.max_df,
+        smooth_idf=config.smooth_idf,
+        sublinear_tf=config.sublinear_tf,
+        use_idf=config.use_idf,
     )
 
     # Create the logistic regression model
-    model = LogisticRegression(max_iter=10_000)
+    model = LogisticRegression(max_iter=config.max_iter)
 
     # Create the pipeline
     pipeline = Pipeline([("vectorizer", vectorizer), ("model", model)])
@@ -59,9 +72,12 @@ def train_tfidf_model(output_path: Union[str, Path] = "models/tfidf_model.bin"):
     print(f"Test F1: {100 * test_f1:.2f}%")
 
     # Save the pipeline
-    output_path = Path(output_path)
+    output_path = Path(config.models.dir) / config.fname
     output_path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(pipeline, output_path)
+
+    # Return the pipeline
+    return pipeline
 
 
 if __name__ == "__main__":

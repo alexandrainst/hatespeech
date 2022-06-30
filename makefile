@@ -54,3 +54,7 @@ clean-data:
 weak-supervision:
 	@poetry run python -m src.dr_hatespeech.weak_supervision
 	@echo "Finished applying weak supervision."
+
+split-data:
+	@poetry run python -m src.dr_hatespeech.split_data
+	@echo "Finished splitting data."
