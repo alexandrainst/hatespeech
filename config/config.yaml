@@ -7,8 +7,8 @@ data:
   raw_dir: data/raw
   processed_dir: data/processed
   final_dir: data/final
-  val_size: 1_000
-  test_size: 10_000
+  val_size: 256
+  test_size: 1024
 
 models:
   dir: models
