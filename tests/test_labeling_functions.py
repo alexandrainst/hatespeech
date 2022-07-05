@@ -20,6 +20,7 @@ from src.dr_hatespeech.labeling_functions import (
 )
 
 
+@pytest.mark.skip(reason="Snorkel is not supporting Mac M1's yet")
 class TestLabelingFunctions:
     @pytest.fixture(scope="class")
     def fatsvag_record(self):
