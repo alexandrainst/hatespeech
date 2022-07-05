@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from src.dr_hatespeech.weak_supervision import apply_weak_supervision
+ws = pytest.importorskip("src.dr_hatespeech.weak_supervision")
 
 
 @pytest.mark.skip(reason="Snorkel is not supporting Mac M1's yet")
@@ -17,7 +17,7 @@ def test_weak_supervision(config):
     path.unlink(missing_ok=True)
 
     # Apply weak supervision, generating the weakly supervised test dataset
-    apply_weak_supervision(config)
+    ws.apply_weak_supervision(config)
 
     # Load the weakly supervised test dataset
     df = pd.read_parquet("data/processed/test_data_weakly_supervised.parquet")

@@ -134,4 +134,4 @@ class TestCleanedData:
         assert df.account.unique().tolist() == ["dr nyheder"]
 
     def test_df_comment_id(self, df):
-        assert df.comment_id.unique().tolist() == [123]
+        assert list(df.comment_id.unique()) == [123]
