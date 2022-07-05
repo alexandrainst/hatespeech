@@ -3,6 +3,9 @@
   <View style="box-shadow: 2px 2px 5px #999; padding: 20px; margin-top: 2em; border-radius: 5px;">
     <Header value="Choose label"/>
     <Choices name="label" toName="text" choice="single" showInLine="true">
-    <Choice value="Offensive"/><Choice value="Not offensive"/></Choices>
+      <Choice value="Offensive"/>
+      <Choice value="Not offensive"/>
+      <Choice value="Missing context"/>
+    </Choices>
   </View>
 </View>
