@@ -5,7 +5,7 @@
     <Choices name="label" toName="text" choice="single" showInLine="true">
       <Choice value="Offensive"/>
       <Choice value="Not offensive"/>
-      <Choice value="Missing context"/>
+      <Choice value="Could be offensive, depending on context"/>
     </Choices>
   </View>
 </View>
