@@ -95,7 +95,6 @@ outputs
 # Data
 data/
 !data/raw/.gitkeep
-!data/raw/test_data.csv
 !data/processed/.gitkeep
 !data/final/.gitkeep
 
