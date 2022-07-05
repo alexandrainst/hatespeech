@@ -5,27 +5,34 @@
 # Exports all variables defined in the makefile available to scripts
 .EXPORT_ALL_VARIABLES:
 
-# Export all environment variables in .env file
-ifneq (,$(wildcard ./.env))
-    include .env
-    export
-endif
-
 install-poetry:
 	@echo "Installing poetry..."
-	curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+	@curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -
 
-activate:
-	@echo "Activating virtual environment..."
-	@poetry shell
-	@source `poetry env info --path`/bin/activate
+uninstall-poetry:
+	@echo "Installing poetry..."
+	@curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 - --uninstall
 
 install:
 	@echo "Installing..."
-	@git config commit.gpgsign true
-	@git config user.signingkey $(GPG_KEY)
-	@git config user.name $(GIT_NAME)
-	@git config user.email $(GIT_EMAIL)
+	@if [ "$(shell which poetry)" = "" ]; then \
+		make install-poetry; \
+	fi
+	@poetry env use python3
+	@poetry run python3 -m src.scripts.fix_dot_env_file
+	@git init
+	@. .env; \
+		git config --local user.name "$${GIT_NAME}"; \
+		git config --local user.email "$${GIT_EMAIL}"
+	@. .env; \
+		if [ "$${GPG_KEY_ID}" = "" ]; then \
+			echo "No GPG key ID specified. Skipping GPG signing."; \
+			git config --local commit.gpgsign false; \
+		else \
+			echo "Signing with GPG key ID $${GPG_KEY_ID}..."; \
+			git config --local commit.gpgsign true; \
+			git config --local user.signingkey "$${GPG_KEY_ID}"; \
+		fi
 	@poetry install
 	@poetry run pre-commit install
 
@@ -34,12 +41,12 @@ remove-env:
 	@echo "Removed virtual environment."
 
 docs:
-	@poetry run pdoc --html src/dr_hatespeech -o docs --force
+	@poetry run pdoc --html src/test-project -o docs --force
 	@echo "Saved documentation."
 
 view-docs:
 	@echo "Viewing API documentation..."
-	@open docs/dr_hatespeech/index.html
+	@open docs/test-project/index.html
 
 clean:
 	@find . -type f -name "*.py[co]" -delete
@@ -47,14 +54,6 @@ clean:
 	@rm -rf .pytest_cache
 	@echo "Cleaned repository."
 
-clean-data:
-	@poetry run python -m src.dr_hatespeech.data
-	@echo "Cleaned data."
-
-weak-supervision:
-	@poetry run python -m src.dr_hatespeech.weak_supervision
-	@echo "Finished applying weak supervision."
-
-split-data:
-	@poetry run python -m src.dr_hatespeech.split_data
-	@echo "Finished splitting data."
+label-offensive:
+	@label-studio init dr-offensive --label-config config/label-studio-config.xml
+	@label-studio start dr-offensive --label-config config/label-studio-config.xml
