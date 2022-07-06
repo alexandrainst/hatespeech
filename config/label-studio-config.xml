@@ -1,0 +1,12 @@
+<View>
+  <Text name="text" value="$text"/>
+  <View style="box-shadow: 2px 2px 5px #999; padding: 20px; margin-top: 2em; border-radius: 5px;">
+    <Header value="Is the above text offensive?"/>
+    <Text name="p1">By offensive we mean whether the text contains inappropriate language, insults, or threats.</Text>
+    <Choices name="label" toName="text" choice="single" showInLine="true">
+      <Choice value="Offensive"/>
+      <Choice value="Not offensive"/>
+      <Choice value="Could be offensive, depending on context"/>
+    </Choices>
+  </View>
+</View>

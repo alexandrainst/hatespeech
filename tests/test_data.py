@@ -16,7 +16,8 @@ from src.dr_hatespeech.load_data import (
 
 
 class TestRawData:
-    def create_test_data(self):
+    @pytest.fixture(scope="class")
+    def data(self, config):
         base_record = dict(
             platform="facebook",
             account="page: dr nyheder",
@@ -35,15 +36,11 @@ class TestRawData:
         ]
         df = pd.DataFrame.from_records(records)
         df.to_csv(
-            Path("data") / "raw" / "test_data.csv",
+            Path(config.data.raw_dir) / "test_data.csv",
             encoding="windows-1252",
             index=False,
             quoting=csv.QUOTE_ALL,
         )
-
-    @pytest.fixture(scope="class")
-    def data(self, config):
-        self.create_test_data()
         yield load_raw_data(config)
 
     @pytest.fixture(scope="class")
@@ -79,6 +76,10 @@ class TestRawData:
 
 
 class TestCleanedData:
+    @pytest.fixture(scope="class")
+    def data_path(self, config):
+        yield config.data.processed_dir
+
     @pytest.fixture(scope="class")
     def data(self, config):
         clean_data(config)
@@ -134,4 +135,4 @@ class TestCleanedData:
         assert df.account.unique().tolist() == ["dr nyheder"]
 
     def test_df_comment_id(self, df):
-        assert df.comment_id.unique().tolist() == [123]
+        assert list(df.comment_id.unique()) == [123]
