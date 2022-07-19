@@ -37,7 +37,6 @@ ner = pipeline(model="saattrupdan/nbailab-base-ner-scandi", device=device)
 # Load transformer hatespeech models
 hatespeech_model_ids = [
     "Guscode/DKbert-hatespeech-detection",
-    "DaNLP/da-bert-hatespeech-detection",
     "DaNLP/da-electra-hatespeech-detection",
 ]
 hatespeech_toks = [
