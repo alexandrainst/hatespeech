@@ -1,13 +1,13 @@
 name: tfidf_model1
 fname: tfidf_model.bin
-analyzer: word
+analyzer: char
 max_features: 10_000
 norm: None
-max_iter: 10_000
-lowercase: True
-ngram_range: (1, 1)
+max_iter: 100_000
+lowercase: False
+ngram_range: [2, 10]
 min_df: 1
-max_df: 1
+max_df: 0.99
 use_idf: True
 smooth_idf: True
 sublinear_tf: False
