@@ -4,13 +4,18 @@ import re
 import warnings
 
 import joblib
+import nltk
 import torch
 from snorkel.labeling import labeling_function
 from transformers.pipelines import (
     AutoModelForSequenceClassification,
+    AutoModelForTokenClassification,
     AutoTokenizer,
-    pipeline,
 )
+
+# Download word tokenizer
+nltk.download("punkt")
+
 
 # Create label names
 ABSTAIN = -1
@@ -18,12 +23,13 @@ NOT_OFFENSIVE = 0
 OFFENSIVE = 1
 
 
-# Set up parameters for `transformers` pipelines
-pipe_params = dict(truncation=True, max_length=512)
-
-
 # Get device
-device = 0 if torch.cuda.is_available() else -1
+if torch.cuda.is_available():
+    device = "cuda"
+elif torch.backends.mps.is_available():
+    device = "mps"
+else:
+    device = "cpu"
 
 
 # Load TF-IDF hatespeech model
@@ -31,32 +37,28 @@ tfidf = joblib.load("models/tfidf_model.bin")
 
 
 # Load NER model
-ner = pipeline(model="saattrupdan/nbailab-base-ner-scandi", device=device)
+ner_model_id = "saattrupdan/nbailab-base-ner-scandi"
+ner_tok = AutoTokenizer.from_pretrained(ner_model_id)
+ner_model = (
+    AutoModelForTokenClassification.from_pretrained(ner_model_id).eval().to(device)
+)
 
 
 # Load transformer hatespeech models
-hatespeech_model_ids = [
-    "Guscode/DKbert-hatespeech-detection",
-    "DaNLP/da-electra-hatespeech-detection",
-]
-hatespeech_toks = [
-    AutoTokenizer.from_pretrained(model_id) for model_id in hatespeech_model_ids
-]
-hatespeech_models = [
-    AutoModelForSequenceClassification.from_pretrained(model_id)
+hatespeech_model_id = "DaNLP/da-electra-hatespeech-detection"
+hatespeech_tok = AutoTokenizer.from_pretrained(hatespeech_model_id)
+hatespeech_model = (
+    AutoModelForSequenceClassification.from_pretrained(hatespeech_model_id)
     .eval()
-    .to("cuda" if device == 0 else "cpu")
-    for model_id in hatespeech_model_ids
-]
+    .to(device)
+)
 
 
 # Load sentiment model
 sent_model_id = "pin/senda"
 sent_tok = AutoTokenizer.from_pretrained(sent_model_id)
 sent_model = (
-    AutoModelForSequenceClassification.from_pretrained(sent_model_id)
-    .eval()
-    .to("cuda" if device == 0 else "cpu")
+    AutoModelForSequenceClassification.from_pretrained(sent_model_id).eval().to(device)
 )
 
 
@@ -73,57 +75,68 @@ def contains_offensive_word(record) -> int:
 
     Returns:
         int:
-            This value is 1 (offensive) if the document contains an offensive
-            word, and -1 (abstain) otherwise.
+            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+            abstain.
     """
     # Extract the document
     doc = record.text
 
     # Define list of offensive words
     offensive_words = [
-        r"perker",
-        r"snotunge",
-        r"svagpisser",
-        r"pik\W",
-        r"fisse",
-        r"retar?deret",
-        r"asshole",
-        r"retard",
-        r"idiot",
-        r"hold (dog |nu |bare )?k[æ?]ft",
-        r"stodder",
-        r"mongol",
-        r"(m[ø?][gj]|klamme|usselt?) ?(svin|so|kost)",
-        r"klaphat",
-        r"(?<!flue)kneppe",
-        r"liderlig",
-        r"vatpik",
-        r"k[æ?]lling",
-        r"fatsvag",
-        r"gimpe",
-        r"\Wluder",
-        r"dumb +fuck",
-        r"afskum",
-        r"psykopat",
-        r"b[ø?]sser[ø?]v",
-        r"\Wtumpe",
-        r"[åa?]ndss?vag",
-        r"spasser",
-        r"r[ø?]vhul",
+        r"pe+rke+r(\W|$)",
+        r"[sz]no+tu+nge",
+        r"pi+k(\W|$)",
+        r"fi+[sz]+e",
+        r"re+ta+r?deret",
+        r"a+[sz]+ho+le+",
+        r"re+ta+rd",
+        r"i+di+o+t",
+        r"ho+ld (do+g |nu+ |ba+re )?k[æ?]+ft",
+        r"[sz]to+dder",
+        r"mo+ngo+l",
+        r"(m[ø?]+[gj]|kla+mm[eo]|u+[sz]+e+lt?) ?(dy+r|[sz]vi+n|[sz]o+|ko+[sz]t)",
+        r"kla+pha+t",
+        r"(?<!flue)kne+ppe+",
+        r"li+de+rli+g",
+        r"va+tpi+k",
+        r"k[æ?]+ll*i+ng",
+        r"fa+t[sz]va+g",
+        r"gi+mpe",
+        r"(\W|^)lu+der",
+        r"du+mb +fu+ck",
+        r"a+f[sz]ku+m",
+        r"p[sz]y+ko+pa+t",
+        r"b[ø?]+[sz]+er[ø?]+v",
+        r"(\W|^)tu+mpe",
+        r"[åa?]+nd[sz]+va+g",
+        r"[sz]pa+[sz]+e+r",
+        r"r[ø?]+vhu+l",
+        r"t[åa?]+be",
+        r"pe+rve+r[sz]",
+        r"[sz]to+dd*e+r",
+        r"t[åa?]+ge+[sz]na+k",
+        r"(din|den|nogle|nogen) ke+gle+r?",
+        r"[sz][ck]u+m ?ba+g",
+        r"pu+tin ?fa+n",
+        r"fjo+l[sz]",
+        r"h[æ?]+klefejl i+ ky+[sz]en",
+        r"(\W|^)[åa?]+nd[sz]+va+g",
+        r"(\W|^)e+le+ndi+g",
+        r"(\W|^)([sz]va+g)?pi+[sz]+(e|er|ere)?(\W|$)",
     ]
 
     # Mark document as offensive if it contains an offensive word, and abstain
     # otherwise
-    if is_dr_answer(record) == ABSTAIN and any(
-        re.search(regex, doc.lower()) for regex in offensive_words
-    ):
+    if is_dr_answer(record) == NOT_OFFENSIVE:
+        return NOT_OFFENSIVE
+    elif any(re.search(regex, doc.lower()) for regex in offensive_words):
         return OFFENSIVE
     else:
         return ABSTAIN
 
 
 @labeling_function()
-def all_caps(record) -> int:
+def is_all_caps(record) -> int:
     """Check if the document is written in all caps.
 
     This will mark the document as offensive if it is written in all caps , and abstain
@@ -135,16 +148,51 @@ def all_caps(record) -> int:
 
     Returns:
         int:
-            This value is 1 (offensive) if the document contains an offensive
-            word, and -1 (abstain) otherwise.
+            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+            abstain.
     """
     # Extract the document
     doc = record.text
 
-    # Mark document as offensive if it is written in all caps, and abstain
-    # otherwise
+    # Mark document as offensive if it is written in all caps, and abstain otherwise
     if doc.isupper():
         return OFFENSIVE
+    else:
+        return ABSTAIN
+
+
+@labeling_function()
+def contains_positive_swear_word(record) -> int:
+    """Check if the document contains a swear word used in a positive way.
+
+    This will mark the document as not offensive if it contains a swear word used
+    in a positive way, and abstain otherwise.
+
+    Args:
+        record:
+            The record containing the document to be checked.
+
+    Returns:
+        int:
+            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+            abstain.
+    """
+    # Extract the document
+    doc = record.text
+
+    # Define list of offensive words
+    positive_swear_words = [
+        r"(\W|^)(fa+nde?me|fu+ck|fu+cki+ng|k[æ?]+ft|[sz]ate?me) "
+        r"(hvo+r )?(e+r)?((de+t|du+|de+|ha+n|hu+n))?"
+        r"?(vi+ld|ja|fe+d|go+d?|l[æ?]+kk*e+r|ni+ce|[sz]jo+v|[sz]e+j)",
+        r"^f+u+c+k+( m+a+n+)? *[?!.]* *$",
+        r"ho+ld (da+ )?k[æ?]+ft",
+    ]
+
+    # Mark document as not offensive if it contains a positive swear word, and abstain
+    # otherwise
+    if any(re.search(regex, doc.lower()) for regex in positive_swear_words):
+        return NOT_OFFENSIVE
     else:
         return ABSTAIN
 
@@ -162,35 +210,59 @@ def is_mention(record) -> int:
 
     Returns:
         int:
-            This value is 0 (not offensive) if the document consists of only mentions,
-            and -1 (abstain) otherwise.
+            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+            abstain.
     """
     # Extract the document
     doc = record.text
 
-    # Get the PER label indices
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=UserWarning)
-        per_indices = [
-            (dct["start"], dct["end"])
-            for dct in ner(doc, aggregation_strategy="first")
-            if "entity_group" in dct and dct["entity_group"] == "PER"
-        ]
+    # Split up the document into words
+    words = nltk.word_tokenize(doc)
 
-    # Sort the indices, so that the latest mention is first
-    per_indices = sorted(per_indices, key=lambda x: x[0], reverse=True)
+    # Set `model_max_length` if not specified
+    if ner_tok.model_max_length > 100_000:
+        ner_tok.model_max_length = 512
 
-    # Remove all PER labels, by removing them one at a time, starting from the
-    # end of the document
-    for start, end in per_indices:
-        doc = doc[:start] + doc[end:]
+    # Tokenise the words
+    inputs = ner_tok(
+        words, truncation=True, return_tensors="pt", is_split_into_words=True
+    )
 
-    # Strip the document of whitespace
-    doc = doc.strip()
+    # Get the list of word indices
+    word_idxs = inputs.word_ids()
 
-    # If the remaining document is empty then mark it as not offensive,
-    # otherwise abstain
-    if doc == "":
+    # Move the tokens to the desired device
+    inputs = {k: v.to(device) for k, v in inputs.items()}
+
+    # Get the model predictions
+    with torch.no_grad():
+        predictions = ner_model(**inputs).logits[0]
+
+    # Extract the NER tags
+    ner_tags = [
+        ner_model.config.id2label[label_id.item()]
+        for label_id in predictions.argmax(dim=-1)
+    ]
+
+    # Propagate the NER tags from the first token in each word to the rest of the word
+    ner_tag = "O"
+    for idx in range(1, len(ner_tags)):
+        beginning_of_word = word_idxs[idx - 1] != word_idxs[idx]
+        if beginning_of_word:
+            ner_tag = ner_tags[idx]
+        else:
+            ner_tags[idx] = ner_tag
+
+    # Remove the first and last token from the list of NER tags, as they are just
+    # the special tokens <s> and </s>
+    ner_tags = ner_tags[1:-1]
+
+    # Count all the non-person tokens
+    num_non_person_tokens = sum(1 for tag in ner_tags if not tag.endswith("PER"))
+
+    # If all the tokens are person tokens then mark the document as not offensive,
+    # and abstain otherwise
+    if num_non_person_tokens == 0:
         return NOT_OFFENSIVE
     else:
         return ABSTAIN
@@ -209,8 +281,8 @@ def is_dr_answer(record) -> int:
 
     Returns:
         int:
-            This value is 0 (not offensive) if the document contains an
-            official reply from DR, and -1 (abstain) otherwise.
+            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+            abstain.
     """
     # Extract the document
     doc = record.text
@@ -231,18 +303,14 @@ def is_dr_answer(record) -> int:
 
 
 @labeling_function()
-def use_transformer_ensemble(record) -> int:
+def use_hatespeech_model(record) -> int:
     """Apply an ensemble of hatespeech detection transformer models.
 
-    The following models will be applied:
+    This will apply the model DaNLP/Electra-hatespeech-detection.
 
-        - DaNLP/Electra-hatespeech-detection
-        - Guscode/DKbert-hatespeech-detection
-        - DaNLP/da-bert-hatespeech-detection
-
-    This will mark the document as offensive if all models predict the document
-    as offensive with confidence above 70%, as not offensive if all models
-    predict the document as not offensive with confidence above 99.9%, and
+    This will mark the document as offensive if the model predicts the document
+    as offensive with confidence above 70%, as not offensive if the model
+    predicts the document as not offensive with confidence above 99.9%, and
     abstain otherwise.
 
     Args:
@@ -251,44 +319,38 @@ def use_transformer_ensemble(record) -> int:
 
     Returns:
         int:
-            This value is 1 (offensive) if the document is classified as
-            offensive by the ensemble, and 0 (not offensive) if the document is
-            classified as not offensive by the ensemble.
+            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+            abstain.
     """
     # Extract the document
     doc = record.text
+
+    # Set `model_max_length` if not specified
+    if hatespeech_tok.model_max_length > 100_000:
+        hatespeech_tok.model_max_length = 512
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
 
         # Tokenise the document
-        tokenised = [
-            tok(doc, **pipe_params, return_tensors="pt") for tok in hatespeech_toks
-        ]
+        inputs = hatespeech_tok(doc, truncation=True, return_tensors="pt")
 
         # Move the tokens to the desired device
-        tokenised = [
-            {k: v.to("cuda" if device == 0 else "cpu") for k, v in dct.items()}
-            for dct in tokenised
-        ]
+        inputs = {k: v.to(device) for k, v in inputs.items()}
 
         # Get the predictions
-        preds = [
-            model(**tokens).logits[0]
-            for tokens, model in zip(tokenised, hatespeech_models)
-        ]
+        pred = hatespeech_model(**inputs).logits[0]
 
         # Extract the offensive probability
-        offensive_probs = [torch.softmax(pred, dim=-1)[-1].item() for pred in preds]
+        offensive_prob = torch.softmax(pred, dim=-1)[-1].item()
 
-    # If all the models predict that the document is offensive with confidence
-    # above 70% then mark it as offensive, if they all predict it is not
-    # offensive with confidence above 99.9% then mark it as not offensive,
-    # otherwise abstain
-    if all(prob > 0.7 for prob in offensive_probs):
-        return OFFENSIVE
-    elif all(prob < 0.001 for prob in offensive_probs):
+    # If the model predicts that the document is offensive with confidence above 50%
+    # then mark it as offensive, if it predicts it is not offensive with confidence
+    # above 99.9% then mark it as not offensive, otherwise abstain
+    if is_dr_answer(record) == NOT_OFFENSIVE or offensive_prob < 0.001:
         return NOT_OFFENSIVE
+    elif offensive_prob > 0.5:
+        return OFFENSIVE
     else:
         return ABSTAIN
 
@@ -298,7 +360,7 @@ def use_tfidf_model(record) -> int:
     """Apply the TF-IDF offensive speech detection model.
 
     This will mark the document as offensive if the model classifies it as
-    offensive with a positive decision score, and abstains otherwise.
+    offensive with a decision score greater than 2, and abstains otherwise.
 
     Args:
         record:
@@ -306,9 +368,8 @@ def use_tfidf_model(record) -> int:
 
     Returns:
         int:
-            This value is 1 (offensive) if the document is classified as
-            offensive by the model, and 0 (not offensive) if the document is
-            classified as not offensive by the model.
+            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+            abstain.
     """
     # Extract the document
     doc = record.text
@@ -318,7 +379,9 @@ def use_tfidf_model(record) -> int:
 
     # If the predictive score is positive then mark as offensive, and otherwise
     # abstain
-    if predicted_score > 0:
+    if is_dr_answer(record) == NOT_OFFENSIVE:
+        return NOT_OFFENSIVE
+    elif predicted_score > 2:
         return OFFENSIVE
     else:
         return ABSTAIN
@@ -345,18 +408,20 @@ def has_been_moderated(record) -> int:
 
     # If the action is not "none" then mark the document as offensive, and
     # otherwise abstain
-    if action != "none":
+    if is_dr_answer(record) == NOT_OFFENSIVE:
+        return NOT_OFFENSIVE
+    elif action != "none":
         return OFFENSIVE
     else:
         return ABSTAIN
 
 
 @labeling_function()
-def sentiment(record) -> int:
+def has_positive_sentiment(record) -> int:
     """Apply a sentiment analysis model.
 
     This will mark the document as not offensive if the probability of the
-    document being negative is less than 30%, and abstain otherwise.
+    document being negative is less than 10%, and abstain otherwise.
 
     Args:
         record:
@@ -370,18 +435,20 @@ def sentiment(record) -> int:
     # Extract the document
     doc = record.text
 
+    # Set `model_max_length` if not specified
+    if sent_tok.model_max_length > 100_000:
+        sent_tok.model_max_length = 512
+
     # Get the prediction
     with warnings.catch_warnings():
         with torch.no_grad():
             warnings.simplefilter("ignore", category=UserWarning)
 
             # Tokenise the document
-            inputs = sent_tok(doc, **pipe_params, return_tensors="pt")
+            inputs = sent_tok(doc, truncation=True, return_tensors="pt")
 
             # Move the tokens to the desired device
-            inputs = {
-                k: v.to("cuda" if device == 0 else "cpu") for k, v in inputs.items()
-            }
+            inputs = {k: v.to(device) for k, v in inputs.items()}
 
             # Get the prediction
             prediction = sent_model(**inputs).logits[0]
@@ -391,7 +458,7 @@ def sentiment(record) -> int:
 
     # If the probability of the document being negative is below 30% then mark
     # it as not offensive, and otherwise abstain
-    if negative_prob < 0.3:
+    if negative_prob < 0.1:
         return NOT_OFFENSIVE
     else:
         return ABSTAIN
