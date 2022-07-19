@@ -228,9 +228,13 @@ def load_final_data(config: DictConfig) -> dict:
     )
 
     # Read the parquet files
-    train = pd.read_parquet(train_paths[0])
-    val = pd.read_parquet(val_paths[0])
-    test = pd.read_parquet(test_paths[0])
+    train = pd.read_parquet(train_paths[0])[["text", "label"]]
+    val = pd.read_parquet(val_paths[0])[["text", "label"]]
+    test = pd.read_parquet(test_paths[0])[["text", "label"]]
+
+    # Remove the val/test samples from train
+    train = train[~train.text.isin(val.text)]
+    train = train[~train.text.isin(test.text)]
 
     # Log the number of rows in the dataframe
     logger.info(

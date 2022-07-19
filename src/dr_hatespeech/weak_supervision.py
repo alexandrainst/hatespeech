@@ -9,12 +9,13 @@ from snorkel.labeling.model import LabelModel
 
 from .labeling_functions import (
     contains_offensive_word,
+    contains_positive_swear_word,
     has_been_moderated,
+    has_positive_sentiment,
     is_dr_answer,
     is_mention,
-    sentiment,
+    use_hatespeech_model,
     use_tfidf_model,
-    use_transformer_ensemble,
 )
 from .load_data import load_cleaned_data
 
@@ -40,12 +41,13 @@ def apply_weak_supervision(config: DictConfig) -> dict:
     # Define the list of labeling functions
     lfs = [
         contains_offensive_word,
+        contains_positive_swear_word,
         is_mention,
         is_dr_answer,
-        use_transformer_ensemble,
+        use_hatespeech_model,
         use_tfidf_model,
         has_been_moderated,
-        sentiment,
+        has_positive_sentiment,
     ]
 
     # Apply the LFs to the unlabeled training data
@@ -63,8 +65,8 @@ def apply_weak_supervision(config: DictConfig) -> dict:
     df_train = df_train[df_train.label != -1]
 
     # Save the dataframe
-    fname = str(data_path.name).replace("_cleaned", "_weakly_supervised")
-    path = Path(config.data.processed_dir) / fname
+    fname = str(data_path.name).replace("_cleaned", "_train")
+    path = Path(config.data.final_dir) / fname
     df_train.to_parquet(path)
 
     # Return the data dict
