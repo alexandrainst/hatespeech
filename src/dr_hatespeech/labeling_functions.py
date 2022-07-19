@@ -123,6 +123,33 @@ def contains_offensive_word(record) -> int:
 
 
 @labeling_function()
+def all_caps(record) -> int:
+    """Check if the document is written in all caps.
+
+    This will mark the document as offensive if it is written in all caps , and abstain
+    otherwise.
+
+    Args:
+        record:
+            The record containing the document to be checked.
+
+    Returns:
+        int:
+            This value is 1 (offensive) if the document contains an offensive
+            word, and -1 (abstain) otherwise.
+    """
+    # Extract the document
+    doc = record.text
+
+    # Mark document as offensive if it is written in all caps, and abstain
+    # otherwise
+    if doc.isupper():
+        return OFFENSIVE
+    else:
+        return ABSTAIN
+
+
+@labeling_function()
 def is_mention(record) -> int:
     """Check if the document consists of only mentions.
 
