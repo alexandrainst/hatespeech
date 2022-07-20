@@ -25,24 +25,24 @@ def train_tfidf_model(config: DictConfig) -> Pipeline:
             The trained model.
     """
     # Get model config
-    config = config.transformer_model
+    model_config = config.tfidf_model
 
     # Create the TF-IDF vectorizer
     vectorizer = TfidfVectorizer(
-        analyzer=config.analyzer,
-        max_features=config.max_features,
-        norm=config.norm,
-        lowercase=config.lowercase,
-        ngram_range=config.ngram_range,
-        min_df=config.min_df,
-        max_df=config.max_df,
-        smooth_idf=config.smooth_idf,
-        sublinear_tf=config.sublinear_tf,
-        use_idf=config.use_idf,
+        analyzer=model_config.analyzer,
+        max_features=model_config.max_features,
+        norm=None if model_config.norm == "None" else model_config.norm,
+        lowercase=model_config.lowercase,
+        ngram_range=model_config.ngram_range,
+        min_df=model_config.min_df,
+        max_df=model_config.max_df,
+        smooth_idf=model_config.smooth_idf,
+        sublinear_tf=model_config.sublinear_tf,
+        use_idf=model_config.use_idf,
     )
 
     # Create the logistic regression model
-    model = LogisticRegression(max_iter=config.max_iter)
+    model = LogisticRegression(max_iter=model_config.max_iter)
 
     # Create the pipeline
     pipeline = Pipeline([("vectorizer", vectorizer), ("model", model)])
@@ -72,7 +72,7 @@ def train_tfidf_model(config: DictConfig) -> Pipeline:
     print(f"Test F1: {100 * test_f1:.2f}%")
 
     # Save the pipeline
-    output_path = Path(config.models.dir) / config.fname
+    output_path = Path(config.models.dir) / model_config.fname
     output_path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(pipeline, output_path)
 
