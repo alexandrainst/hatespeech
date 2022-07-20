@@ -7,16 +7,7 @@ from omegaconf import DictConfig
 from snorkel.labeling import PandasLFApplier
 from snorkel.labeling.model import LabelModel
 
-from .labeling_functions import (
-    contains_offensive_word,
-    contains_positive_swear_word,
-    has_been_moderated,
-    has_positive_sentiment,
-    is_dr_answer,
-    is_mention,
-    use_hatespeech_model,
-    use_tfidf_model,
-)
+from . import labeling_functions as lfs
 from .load_data import load_cleaned_data
 
 
@@ -35,23 +26,24 @@ def apply_weak_supervision(config: DictConfig) -> dict:
     """
     # Load the cleaned data
     data_dict = load_cleaned_data(config)
-    df_train = data_dict["df"]
+    df_train = data_dict["df"].iloc[:100]
     data_path = data_dict["path"]
 
     # Define the list of labeling functions
-    lfs = [
-        contains_offensive_word,
-        contains_positive_swear_word,
-        is_mention,
-        is_dr_answer,
-        use_hatespeech_model,
-        use_tfidf_model,
-        has_been_moderated,
-        has_positive_sentiment,
+    lf_list = [
+        lfs.contains_offensive_word,
+        lfs.is_all_caps,
+        lfs.contains_positive_swear_word,
+        lfs.is_mention,
+        lfs.is_dr_answer,
+        lfs.use_hatespeech_model,
+        lfs.use_tfidf_model,
+        lfs.has_been_moderated,
+        lfs.has_positive_sentiment,
     ]
 
     # Apply the LFs to the unlabeled training data
-    applier = PandasLFApplier(lfs)
+    applier = PandasLFApplier(lf_list)
     train = applier.apply(df_train)
 
     # Train the label model
