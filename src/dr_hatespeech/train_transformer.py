@@ -12,10 +12,10 @@ from transformers import (
     EarlyStoppingCallback,
     EvalPrediction,
     Trainer,
-    TrainingArguments,
 )
 
 from .load_data import load_final_data
+from .training_args_with_mps_support import TrainingArgumentsWithMPSSupport
 
 
 @hydra.main(config_path="../../config", config_name="config", version_base=None)
@@ -116,7 +116,7 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
         output_dir = f"{config.models.dir}/{model_config.name}"
 
     # Create the training arguments
-    training_args = TrainingArguments(
+    training_args = TrainingArgumentsWithMPSSupport(
         output_dir=output_dir,
         evaluation_strategy=model_config.evaluation_strategy,
         logging_strategy=model_config.logging_strategy,
