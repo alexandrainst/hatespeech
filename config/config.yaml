@@ -1,14 +1,12 @@
 defaults:
   - tfidf_model: tfidf_model1
-  - transformer_model: transformer_model1
+  - transformer_model: transformer_model2
   - _self_
 
 data:
   raw_dir: data/raw
   processed_dir: data/processed
   final_dir: data/final
-  val_size: 256
-  test_size: 1024
 
 models:
   dir: models
