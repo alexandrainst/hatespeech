@@ -177,7 +177,7 @@ positive_swear_word_record = pd.Series(
         (lfs.use_tfidf_model, mention_record, lfs.ABSTAIN),
         (lfs.use_tfidf_model, dr_answer_record, lfs.NOT_OFFENSIVE),
         (lfs.use_tfidf_model, all_caps_record, lfs.ABSTAIN),
-        (lfs.use_tfidf_model, positive_swear_word_record, lfs.ABSTAIN),
+        (lfs.use_tfidf_model, positive_swear_word_record, lfs.OFFENSIVE),
         (lfs.has_been_moderated, offensive_record1, lfs.OFFENSIVE),
         (lfs.has_been_moderated, offensive_record2, lfs.OFFENSIVE),
         (lfs.has_been_moderated, offensive_record3, lfs.OFFENSIVE),
