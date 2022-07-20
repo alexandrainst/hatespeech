@@ -27,7 +27,6 @@ def apply_weak_supervision(config: DictConfig) -> dict:
     # Load the cleaned data
     data_dict = load_cleaned_data(config)
     df_train = data_dict["df"].iloc[:100]
-    data_path = data_dict["path"]
 
     # Define the list of labeling functions
     lf_list = [
@@ -57,8 +56,7 @@ def apply_weak_supervision(config: DictConfig) -> dict:
     df_train = df_train[df_train.label != -1]
 
     # Save the dataframe
-    fname = str(data_path.name).replace("_cleaned", "_train")
-    path = Path(config.data.final_dir) / fname
+    path = Path(config.data.final_dir) / "dr_offensive_train.parquet"
     df_train.to_parquet(path)
 
     # Return the data dict
