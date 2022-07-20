@@ -62,3 +62,6 @@ clean:
 label-offensive:
 	@label-studio init dr-offensive --label-config config/label-studio-config.xml
 	@label-studio start dr-offensive --label-config config/label-studio-config.xml
+
+run:
+	@poetry run python3 -m src.dr_hatespeech.main
