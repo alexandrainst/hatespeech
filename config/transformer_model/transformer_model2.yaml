@@ -1,5 +1,5 @@
 # Model
-name: mps_transformer_model
+name: transformer_model2
 model_id: xlm-roberta-base
 from_flax: False
 use_auth_token: False

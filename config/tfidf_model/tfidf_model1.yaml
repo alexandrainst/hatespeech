@@ -1,4 +1,4 @@
-name: tfidf_model
+name: tfidf_model1
 fname: tfidf_model.bin
 analyzer: char
 max_features: 10_000

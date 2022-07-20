@@ -1,6 +1,6 @@
 defaults:
-  - tfidf_model: tfidf_model
-  - transformer_model: mps_transformer_model
+  - tfidf_model: tfidf_model1
+  - transformer_model: transformer_model1
   - _self_
 
 data:
