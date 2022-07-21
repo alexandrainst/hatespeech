@@ -6,8 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-lfs = pytest.importorskip("src.dr_hatespeech.labeling_functions")
-
+import src.dr_hatespeech.labeling_functions as lfs
 
 offensive_record1 = pd.Series(
     dict(
