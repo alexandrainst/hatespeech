@@ -3,7 +3,6 @@ name: transformer_model2
 model_id: xlm-roberta-base
 from_flax: False
 use_auth_token: False
-cache_dir: .cache
 
 # Tokenizer
 padding: longest

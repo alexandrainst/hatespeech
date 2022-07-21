@@ -64,7 +64,7 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
     model = AutoModelForSequenceClassification.from_pretrained(
         model_config.model_id,
         use_auth_token=model_config.use_auth_token,
-        cache_dir=model_config.cache_dir,
+        cache_dir=".cache",
         from_flax=model_config.from_flax,
         num_labels=2,
     )

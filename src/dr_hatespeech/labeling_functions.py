@@ -38,17 +38,21 @@ tfidf = joblib.load("models/tfidf_model.bin")
 
 # Load NER model
 ner_model_id = "saattrupdan/nbailab-base-ner-scandi"
-ner_tok = AutoTokenizer.from_pretrained(ner_model_id)
+ner_tok = AutoTokenizer.from_pretrained(ner_model_id, cache_dir=".cache")
 ner_model = (
-    AutoModelForTokenClassification.from_pretrained(ner_model_id).eval().to(device)
+    AutoModelForTokenClassification.from_pretrained(ner_model_id, cache_dir=".cache")
+    .eval()
+    .to(device)
 )
 
 
 # Load transformer hatespeech models
 hatespeech_model_id = "DaNLP/da-electra-hatespeech-detection"
-hatespeech_tok = AutoTokenizer.from_pretrained(hatespeech_model_id)
+hatespeech_tok = AutoTokenizer.from_pretrained(hatespeech_model_id, cache_dir=".cache")
 hatespeech_model = (
-    AutoModelForSequenceClassification.from_pretrained(hatespeech_model_id)
+    AutoModelForSequenceClassification.from_pretrained(
+        hatespeech_model_id, cache_dir=".cache"
+    )
     .eval()
     .to(device)
 )
@@ -56,9 +60,13 @@ hatespeech_model = (
 
 # Load sentiment model
 sent_model_id = "pin/senda"
-sent_tok = AutoTokenizer.from_pretrained(sent_model_id)
+sent_tok = AutoTokenizer.from_pretrained(sent_model_id, cache_dir=".cache")
 sent_model = (
-    AutoModelForSequenceClassification.from_pretrained(sent_model_id).eval().to(device)
+    AutoModelForSequenceClassification.from_pretrained(
+        sent_model_id, cache_dir=".cache"
+    )
+    .eval()
+    .to(device)
 )
 
 
