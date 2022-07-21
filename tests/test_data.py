@@ -7,12 +7,7 @@ import pandas as pd
 import pytest
 
 from src.dr_hatespeech.clean_data import clean_data
-from src.dr_hatespeech.load_data import (
-    load_cleaned_data,
-    load_final_data,
-    load_raw_data,
-    load_weakly_supervised_data,
-)
+from src.dr_hatespeech.load_data import load_cleaned_data, load_raw_data
 
 
 class TestRawData:
