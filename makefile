@@ -46,12 +46,12 @@ remove-env:
 	@echo "Removed virtual environment."
 
 docs:
-	@poetry run pdoc --html src/dr_hatespeech -o docs --force
+	@poetry run pdoc --docformat google -o docs src/dr_hatespeech
 	@echo "Saved documentation."
 
 view-docs:
 	@echo "Viewing API documentation..."
-	@open docs/dr_hatespeech/index.html
+	@open docs/dr_hatespeech/dr_hatespeech.html
 
 clean:
 	@find . -type f -name "*.py[co]" -delete
