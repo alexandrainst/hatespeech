@@ -60,8 +60,12 @@ clean:
 	@echo "Cleaned repository."
 
 label-offensive:
-	@label-studio init dr-offensive --label-config config/label-studio-config.xml
-	@label-studio start dr-offensive --label-config config/label-studio-config.xml
+	@label-studio init dr-offensive --label-config config/offensive-label-config.xml
+	@label-studio start dr-offensive --label-config config/offensive-label-config.xml
+
+label-hatespeech:
+	@label-studio init dr-hatespeech --label-config config/hatespeech-label-config.xml
+	@label-studio start dr-hatespeech --label-config config/hatespeech-label-config.xml
 
 run:
 	@poetry run python3 -m src.dr_hatespeech.main
