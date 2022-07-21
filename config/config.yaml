@@ -1,12 +1,8 @@
 defaults:
   - tfidf_model: tfidf_model1
   - transformer_model: transformer_model1
+  - data: offensive
   - _self_
-
-data:
-  raw_dir: data/raw
-  processed_dir: data/processed
-  final_dir: data/final
 
 models:
   dir: models
