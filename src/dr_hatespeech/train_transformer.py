@@ -14,7 +14,7 @@ from transformers import (
     Trainer,
 )
 
-from .load_data import load_final_data
+from .load_data import load_annotated_data
 from .training_args_with_mps_support import TrainingArgumentsWithMPSSupport
 
 
@@ -31,7 +31,7 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
             The trained model.
     """
     # Load the data
-    data_dict = load_final_data(config)
+    data_dict = load_annotated_data(config)
     train_df = data_dict["train"]
     val_df = data_dict["val"]
     test_df = data_dict["test"]
