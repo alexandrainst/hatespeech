@@ -72,3 +72,25 @@ run:
 
 test:
 	@pytest && readme-cov
+
+tree:
+	@tree -a \
+		-I .git \
+		-I .mypy_cache . \
+		-I .env \
+		-I .venv \
+		-I poetry.lock \
+		-I .ipynb_checkpoints \
+		-I dist \
+		-I .gitkeep \
+		-I docs \
+		-I .pytest_cache \
+		-I outputs \
+		-I .DS_Store \
+		-I .cache \
+		-I *.parquet \
+		-I *.csv \
+		-I *.txt \
+		-I checkpoint-* \
+		-I .coverage* \
+		-I *_eda.ipynb
