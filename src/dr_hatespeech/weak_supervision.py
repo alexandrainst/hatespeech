@@ -25,8 +25,7 @@ def apply_weak_supervision(config: DictConfig) -> dict:
             was saved.
     """
     # Load the cleaned data
-    data_dict = load_cleaned_data(config)
-    df_train = data_dict["df"].iloc[:100]
+    df = load_cleaned_data(config)
 
     # Define the list of labeling functions
     lf_list = [
@@ -43,27 +42,28 @@ def apply_weak_supervision(config: DictConfig) -> dict:
 
     # Apply the LFs to the unlabeled training data
     applier = PandasLFApplier(lf_list)
-    train = applier.apply(df_train)
+    lf_df = applier.apply(df)
 
     # Train the label model
     label_model = LabelModel(cardinality=2)
-    label_model.fit(train, n_epochs=100, log_freq=50, seed=4242)
+    label_model.fit(lf_df, n_epochs=100, log_freq=50, seed=4242)
 
     # Compute the training labels and add them to the dataframe
-    df_train["label"] = label_model.predict(L=train, tie_break_policy="abstain")
+    df["label"] = label_model.predict(L=lf_df, tie_break_policy="abstain")
 
     # Remove the abstained data points
-    df_train = df_train[df_train.label != -1]
+    df = df.query("label != -1")
 
     # Save the dataframe
+    data_dir = Path(config.data.weakly_supervised.dir)
     if config.testing:
-        path = Path(config.data.final_dir) / "test_data_train.parquet"
+        path = data_dir / config.data.weakly_supervised.test_fname
     else:
-        path = Path(config.data.final_dir) / "dr_offensive_train.parquet"
-    df_train.to_parquet(path)
+        path = data_dir / config.data.weakly_supervised.fname
+    df.to_parquet(path)
 
-    # Return the data dict
-    return dict(df=df_train, path=path)
+    # Return the dataframe
+    return df
 
 
 if __name__ == "__main__":

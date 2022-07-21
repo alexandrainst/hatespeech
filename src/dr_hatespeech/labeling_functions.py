@@ -165,8 +165,8 @@ def is_all_caps(record) -> int:
 def contains_positive_swear_word(record) -> int:
     """Check if the document contains a swear word used in a positive way.
 
-    This will mark the document as not offensive if it contains a swear word used
-    in a positive way, and abstain otherwise.
+    This will mark the document as not offensive if it contains a swear word used in a
+    positive way, and abstain otherwise.
 
     Args:
         record:
@@ -260,8 +260,8 @@ def is_mention(record) -> int:
     # Count all the non-person tokens
     num_non_person_tokens = sum(1 for tag in ner_tags if not tag.endswith("PER"))
 
-    # If all the tokens are person tokens then mark the document as not offensive,
-    # and abstain otherwise
+    # If all the tokens are person tokens then mark the document as not offensive, and
+    # abstain otherwise
     if num_non_person_tokens == 0:
         return NOT_OFFENSIVE
     else:
@@ -272,8 +272,8 @@ def is_mention(record) -> int:
 def is_dr_answer(record) -> int:
     """Check if the document is an official reply from DR.
 
-    This will mark the document as not offensive if it contains an official
-    reply from DR, and abstain otherwise.
+    This will mark the document as not offensive if it contains an official reply from
+    DR, and abstain otherwise.
 
     Args:
         record:
@@ -308,10 +308,9 @@ def use_hatespeech_model(record) -> int:
 
     This will apply the model DaNLP/Electra-hatespeech-detection.
 
-    This will mark the document as offensive if the model predicts the document
-    as offensive with confidence above 70%, as not offensive if the model
-    predicts the document as not offensive with confidence above 99.9%, and
-    abstain otherwise.
+    This will mark the document as offensive if the model predicts the document as
+    offensive with confidence above 70%, as not offensive if the model predicts the
+    document as not offensive with confidence above 99.9%, and abstain otherwise.
 
     Args:
         record:
@@ -359,8 +358,8 @@ def use_hatespeech_model(record) -> int:
 def use_tfidf_model(record) -> int:
     """Apply the TF-IDF offensive speech detection model.
 
-    This will mark the document as offensive if the model classifies it as
-    offensive with a decision score greater than 2, and abstains otherwise.
+    This will mark the document as offensive if the model classifies it as offensive
+    with a decision score greater than 2, and abstains otherwise.
 
     Args:
         record:
@@ -377,8 +376,7 @@ def use_tfidf_model(record) -> int:
     # Get the prediction score
     predicted_score = tfidf.decision_function([doc])[0]
 
-    # If the predictive score is positive then mark as offensive, and otherwise
-    # abstain
+    # If the predictive score is positive then mark as offensive, and otherwise abstain
     if is_dr_answer(record) == NOT_OFFENSIVE:
         return NOT_OFFENSIVE
     elif predicted_score > 2:
@@ -391,8 +389,8 @@ def use_tfidf_model(record) -> int:
 def has_been_moderated(record) -> int:
     """Check if a document has already been moderated.
 
-    This will mark the document as offensive if it has been moderated, and
-    abstain otherwise.
+    This will mark the document as offensive if it has been moderated, and abstain
+    otherwise.
 
     Args:
         record:
@@ -400,14 +398,14 @@ def has_been_moderated(record) -> int:
 
     Returns:
         int:
-            This value is 1 (offensive) if the document has been moderated,
-            and -1 (abstain) otherwise.
+            This value is 1 (offensive) if the document has been moderated, and -1
+            (abstain) otherwise.
     """
     # Extract the moderation action
     action = record.action
 
-    # If the action is not "none" then mark the document as offensive, and
-    # otherwise abstain
+    # If the action is not "none" then mark the document as offensive, and otherwise
+    # abstain
     if is_dr_answer(record) == NOT_OFFENSIVE:
         return NOT_OFFENSIVE
     elif action != "none":
@@ -420,8 +418,8 @@ def has_been_moderated(record) -> int:
 def has_positive_sentiment(record) -> int:
     """Apply a sentiment analysis model.
 
-    This will mark the document as not offensive if the probability of the
-    document being negative is less than 10%, and abstain otherwise.
+    This will mark the document as not offensive if the probability of the document
+    being negative is less than 10%, and abstain otherwise.
 
     Args:
         record:
@@ -429,8 +427,8 @@ def has_positive_sentiment(record) -> int:
 
     Returns:
         int:
-            This value is 0 (not offensive) if the document is classified as
-            not offensive by the model, and -1 (abstain) otherwise.
+            This value is 0 (not offensive) if the document is classified as not
+            offensive by the model, and -1 (abstain) otherwise.
     """
     # Extract the document
     doc = record.text
@@ -456,8 +454,8 @@ def has_positive_sentiment(record) -> int:
             # Extract the probability of the document being negative
             negative_prob = torch.softmax(prediction, dim=-1)[0].item()
 
-    # If the probability of the document being negative is below 30% then mark
-    # it as not offensive, and otherwise abstain
+    # If the probability of the document being negative is below 30% then mark it as
+    # not offensive, and otherwise abstain
     if negative_prob < 0.1:
         return NOT_OFFENSIVE
     else:

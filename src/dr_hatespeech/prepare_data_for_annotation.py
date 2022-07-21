@@ -14,9 +14,7 @@ def prepare_data_for_annotation(config: DictConfig) -> None:
     """Prepares the weakly supervised data for annotation in LabelStudio."""
 
     # Load the weakly supervised data
-    data_dict = load_weakly_supervised_data(config)
-    df = data_dict["df"]
-    data_path = data_dict["path"]
+    df = load_weakly_supervised_data(config)
 
     # Use the weakly supervised labels to sample a balanced subset of the data
     sample_size = config.data.val_size + config.data.test_size
@@ -28,9 +26,8 @@ def prepare_data_for_annotation(config: DictConfig) -> None:
     texts = df_merged.text.tolist()
 
     # Save the data to a txt file
-    data_dir = Path(config.data.processed_dir)
-    fname = data_path.stem.replace("_weakly_supervised", "_for_annotation") + ".txt"
-    path = data_dir / fname
+    data_dir = Path(config.data.annotation.dir)
+    path = data_dir / config.data.annotation.for_annotation_fname
     path.write_text("\n".join(texts))
 
 

@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 @hydra.main(config_path="../../config", config_name="config", version_base=None)
-def load_raw_data(config: DictConfig) -> dict:
+def load_raw_data(config: DictConfig) -> pd.DataFrame:
     """Loading of raw data.
 
     Args:
@@ -19,50 +19,47 @@ def load_raw_data(config: DictConfig) -> dict:
             Configuration object.
 
     Returns:
-        dict:
-            A dictionary with a key `df`, containing the weakly supervised data, and
-            `path`, being a Path object pointing to the location of the data.
+        Pandas DataFrame:
+            The raw data.
 
     Raises:
         FileNotFoundError:
             If the raw data file does not exist.
     """
     # Set up the path to the data directory
-    data_dir = Path(config.data.raw_dir)
+    data_dir = Path(config.data.raw.dir)
 
     # Ensure that the data directory exists
     data_dir.mkdir(parents=True, exist_ok=True)
 
-    # Get the list of CSV files in the data directory
-    csv_paths = [
-        path
-        for path in data_dir.glob("*.csv")
-        if (config.testing and path.name.startswith("test_"))
-        or (not config.testing and not path.name.startswith("test_"))
-    ]
+    # Define the path to the data file
+    if config.testing:
+        csv_path = data_dir / config.raw.test_fname
+    else:
+        csv_path = data_dir / config.raw.fname
 
-    # If there are no CSV files in the data directory then raise an error
-    if len(csv_paths) == 0:
-        raise FileNotFoundError(f"No CSV files found in {data_dir}.")
+    # If the CSV file was not found in the data directory then raise an error
+    if not csv_path.exists():
+        raise FileNotFoundError(
+            f"The file {csv_path.name} was not  found in {data_dir}."
+        )
 
     # Log loading of dataset
-    logger.info(f"Loading data from {csv_paths[0]}")
+    logger.info(f"Loading data from {csv_path}")
 
     # Read the CSV file
     cols = ["account", "url", "text", "date", "action"]
-    df = pd.read_csv(
-        csv_paths[0], encoding="windows-1252", usecols=cols, low_memory=False
-    )
+    df = pd.read_csv(csv_path, encoding="windows-1252", usecols=cols, low_memory=False)
 
     # Log the number of rows in the dataframe
     logger.info(f"Loaded {len(df):,} rows")
 
-    # Return a dictionary containing both the dataframe and the path to the CSV file
-    return dict(df=df, path=csv_paths[0])
+    # Return the dataframe
+    return df
 
 
 @hydra.main(config_path="../../config", config_name="config", version_base=None)
-def load_cleaned_data(config: DictConfig) -> dict:
+def load_cleaned_data(config: DictConfig) -> pd.DataFrame:
     """Loading of cleaned data.
 
     Args:
@@ -70,48 +67,94 @@ def load_cleaned_data(config: DictConfig) -> dict:
             Configuration object.
 
     Returns:
-        dict:
-            A dictionary with a key `df`, containing the weakly supervised data, and
-            `path`, being a Path object pointing to the location of the data.
+        Pandas DataFrame:
+            The cleaned data.
 
     Raises:
         FileNotFoundError:
             If the cleaned data file does not exist.
     """
     # Set up the path to the data directory
-    data_dir = Path(config.data.processed_dir)
+    data_dir = Path(config.data.cleaned.dir)
 
     # Ensure that the processed data directory exists
     data_dir.mkdir(parents=True, exist_ok=True)
 
-    # Get the list of parquet files in the processed data directory
-    parquet_paths = [
-        path
-        for path in data_dir.glob("*_cleaned.parquet")
-        if (config.testing and path.name.startswith("test_"))
-        or (not config.testing and not path.name.startswith("test_"))
-    ]
+    # Define the path to the data file
+    if config.testing:
+        parquet_path = data_dir / config.cleaned.test_fname
+    else:
+        parquet_path = data_dir / config.cleaned.fname
 
     # If there are no parquet files in the data directory then raise an error
-    if len(parquet_paths) == 0:
-        raise FileNotFoundError(f"No cleaned data files found in {data_dir}.")
+    if not parquet_path.exists():
+        raise FileNotFoundError(
+            f"The file {parquet_path.name} was not found in {data_dir}."
+        )
 
     # Log loading of dataset
-    logger.info(f"Loading data from {parquet_paths[0]}")
+    logger.info(f"Loading data from {parquet_path}")
 
     # Read the parquet file
-    df = pd.read_parquet(parquet_paths[0])
+    df = pd.read_parquet(parquet_path)
 
     # Log the number of rows in the dataframe
     logger.info(f"Loaded {len(df):,} rows")
 
-    # Return a dictionary containing both the dataframe and the path to the parquet file
-    return dict(df=df, path=parquet_paths[0])
+    # Return the dataframe
+    return df
 
 
 @hydra.main(config_path="../../config", config_name="config", version_base=None)
-def load_final_data(config: DictConfig) -> dict:
-    """Loading of final data, split into a training, validation and test set.
+def load_weakly_supervised_data(config: DictConfig) -> pd.DataFrame:
+    """Loading of weakly supervised data.
+
+    Args:
+        config (DictConfig):
+            Configuration object.
+
+    Returns:
+        Pandas DataFrame:
+            The weakly supervised data.
+
+    Raises:
+        FileNotFoundError:
+            If the weakly supervised data file does not exist.
+    """
+    # Set up the path to the data directory
+    data_dir = Path(config.data.weakly_supervised.dir)
+
+    # Ensure that the processed data directory exists
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    # Define the path to the data file
+    if config.testing:
+        parquet_path = data_dir / config.weakly_supervised.test_fname
+    else:
+        parquet_path = data_dir / config.weakly_supervised.fname
+
+    # If there are no parquet files in the data directory then raise an error
+    if not parquet_path.exists():
+        raise FileNotFoundError(
+            f"The file {parquet_path.name} was not found in {data_dir}."
+        )
+
+    # Log loading of dataset
+    logger.info(f"Loading data from {parquet_path}")
+
+    # Read the parquet file
+    df = pd.read_parquet(parquet_path)
+
+    # Log the number of rows in the dataframe
+    logger.info(f"Loaded {len(df):,} rows")
+
+    # Return the dataframe
+    return df
+
+
+@hydra.main(config_path="../../config", config_name="config", version_base=None)
+def load_annotated_data(config: DictConfig) -> dict:
+    """Loading of annotated data, split into a training, validation and test set.
 
     Args:
         config (DictConfig):
@@ -128,49 +171,42 @@ def load_final_data(config: DictConfig) -> dict:
             the final data directory.
     """
     # Set up the path to the data directory
-    data_dir = Path(config.data.final_dir)
+    data_dir = Path(config.data.annotated.dir)
 
     # Ensure that the processed data directory exists
     data_dir.mkdir(parents=True, exist_ok=True)
 
-    # Get the list of training, validation and test parquet files in the final data
-    # directory
-    train_paths = [
-        path
-        for path in data_dir.glob("*train.parquet")
-        if (config.testing and path.name.startswith("test_"))
-        or (not config.testing and not path.name.startswith("test_"))
-    ]
-    val_paths = [
-        path
-        for path in data_dir.glob("*val.parquet")
-        if (config.testing and path.name.startswith("test_"))
-        or (not config.testing and not path.name.startswith("test_"))
-    ]
-    test_paths = [
-        path
-        for path in data_dir.glob("*test.parquet")
-        if (config.testing and path.name.startswith("test_"))
-        or (not config.testing and not path.name.startswith("test_"))
-    ]
+    # Get the training, validation and test parquet file paths
+    if config.testing:
+        train_path = data_dir / config.annotated.train.test_fname
+        val_path = data_dir / config.annotated.val.test_fname
+        test_path = data_dir / config.annotated.test.test_fname
+    else:
+        train_path = data_dir / config.annotated.train.fname
+        val_path = data_dir / config.annotated.val.fname
+        test_path = data_dir / config.annotated.test.fname
 
     # If any of the paths are missing then split the data
-    if len(train_paths) == 0:
-        raise FileNotFoundError(f"No training data file found in {data_dir}.")
-    if len(val_paths) == 0:
-        raise FileNotFoundError(f"No validation data file found in {data_dir}.")
-    if len(test_paths) == 0:
-        raise FileNotFoundError(f"No test data file found in {data_dir}.")
+    if not train_path.exists():
+        raise FileNotFoundError(
+            f"The file {train_path.name} was not found in {data_dir}."
+        )
+    if not val_path.exists():
+        raise FileNotFoundError(
+            f"The file {val_path.name} was not found in {data_dir}."
+        )
+    if not test_path.exists():
+        raise FileNotFoundError(
+            f"The file {test_path.name} was not found in {data_dir}."
+        )
 
     # Log loading of dataset
-    logger.info(
-        f"Loading data from {train_paths[0]}, {val_paths[0]} and {test_paths[0]}"
-    )
+    logger.info(f"Loading data from {train_path}, {val_path} and {test_path}")
 
     # Read the parquet files
-    train = pd.read_parquet(train_paths[0])[["text", "label"]]
-    val = pd.read_parquet(val_paths[0])[["text", "label"]]
-    test = pd.read_parquet(test_paths[0])[["text", "label"]]
+    train = pd.read_parquet(train_path)[["text", "label"]]
+    val = pd.read_parquet(val_path)[["text", "label"]]
+    test = pd.read_parquet(test_path)[["text", "label"]]
 
     # Remove the val/test samples from train
     train = train[~train.text.isin(val.text)]
