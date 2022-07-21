@@ -51,7 +51,7 @@ docs:
 
 view-docs:
 	@echo "Viewing API documentation..."
-	@open docs/dr_hatespeech/dr_hatespeech.html
+	@open docs/dr_hatespeech.html
 
 clean:
 	@find . -type f -name "*.py[co]" -delete
