@@ -108,3 +108,6 @@ notebooks/*_eda.ipynb
 
 # Documentation
 docs/dr_hatespeech/
+docs/index.html
+docs/search.json
+docs/dr_hatespeech.html
