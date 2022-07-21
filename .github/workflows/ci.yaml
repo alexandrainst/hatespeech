@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -16,7 +18,7 @@ jobs:
     strategy:
         matrix:
             os: [macos-latest, ubuntu-latest]
-            python-version: ['3.9', '3.8']
+            python-version: ['3.8', '3.9', '3.10']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -51,4 +53,4 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Test with pytest
-        run: poetry run pytest
+        run: poetry run pytest -n 1
