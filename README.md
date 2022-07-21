@@ -11,7 +11,7 @@ ______________________________________________________________________
 [![Documentation](https://img.shields.io/badge/docs-passing-green)](https://alexadalab.github.io/dr-hatespeech/index.html)
 [![License](https://img.shields.io/github/license/alexadalab/dr-hatespeech)](https://github.com/alexadalab/dr-hatespeech/blob/main/LICENSE)
 [![LastCommit](https://img.shields.io/github/last-commit/alexadalab/dr-hatespeech)](https://github.com/alexadalab/dr-hatespeech/commits/main)
-[![Code Coverage](https://img.shields.io/badge/Coverage-38%25-red.svg)](https://github.com/alexadalab/dr-hatespeech/tree/dev/tests)
+[![Code Coverage](https://img.shields.io/badge/Coverage-68%25-yellow.svg)](https://github.com/alexadalab/dr-hatespeech/tree/dev/tests)
 
 
 ## Setup
