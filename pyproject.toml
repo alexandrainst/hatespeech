@@ -39,7 +39,7 @@ addopts = [
     '-s',
     '-vv',
     '--doctest-modules',
-    '-n 8',
+    '-n 2',
     '--cov=src/dr_hatespeech',
 ]
 xfail_strict = true
