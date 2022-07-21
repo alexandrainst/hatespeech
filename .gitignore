@@ -105,3 +105,6 @@ models/
 
 # EDA notebooks
 notebooks/*_eda.ipynb
+
+# Documentation
+docs/dr_hatespeech/
