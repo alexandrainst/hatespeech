@@ -69,3 +69,6 @@ label-hatespeech:
 
 run:
 	@poetry run python3 -m src.dr_hatespeech.main
+
+test:
+	@pytest && readme-cov
