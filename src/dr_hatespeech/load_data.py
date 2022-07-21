@@ -34,9 +34,9 @@ def load_raw_data(config: DictConfig) -> pd.DataFrame:
 
     # Define the path to the data file
     if config.testing:
-        csv_path = data_dir / config.raw.test_fname
+        csv_path = data_dir / config.data.raw.test_fname
     else:
-        csv_path = data_dir / config.raw.fname
+        csv_path = data_dir / config.data.raw.fname
 
     # If the CSV file was not found in the data directory then raise an error
     if not csv_path.exists():
@@ -82,9 +82,9 @@ def load_cleaned_data(config: DictConfig) -> pd.DataFrame:
 
     # Define the path to the data file
     if config.testing:
-        parquet_path = data_dir / config.cleaned.test_fname
+        parquet_path = data_dir / config.data.cleaned.test_fname
     else:
-        parquet_path = data_dir / config.cleaned.fname
+        parquet_path = data_dir / config.data.cleaned.fname
 
     # If there are no parquet files in the data directory then raise an error
     if not parquet_path.exists():
@@ -129,9 +129,9 @@ def load_weakly_supervised_data(config: DictConfig) -> pd.DataFrame:
 
     # Define the path to the data file
     if config.testing:
-        parquet_path = data_dir / config.weakly_supervised.test_fname
+        parquet_path = data_dir / config.data.weakly_supervised.test_fname
     else:
-        parquet_path = data_dir / config.weakly_supervised.fname
+        parquet_path = data_dir / config.data.weakly_supervised.fname
 
     # If there are no parquet files in the data directory then raise an error
     if not parquet_path.exists():
@@ -178,13 +178,13 @@ def load_annotated_data(config: DictConfig) -> dict:
 
     # Get the training, validation and test parquet file paths
     if config.testing:
-        train_path = data_dir / config.annotated.train.test_fname
-        val_path = data_dir / config.annotated.val.test_fname
-        test_path = data_dir / config.annotated.test.test_fname
+        train_path = data_dir / config.data.annotated.train.test_fname
+        val_path = data_dir / config.data.annotated.val.test_fname
+        test_path = data_dir / config.data.annotated.test.test_fname
     else:
-        train_path = data_dir / config.annotated.train.fname
-        val_path = data_dir / config.annotated.val.fname
-        test_path = data_dir / config.annotated.test.fname
+        train_path = data_dir / config.data.annotated.train.fname
+        val_path = data_dir / config.data.annotated.val.fname
+        test_path = data_dir / config.data.annotated.test.fname
 
     # If any of the paths are missing then split the data
     if not train_path.exists():
