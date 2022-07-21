@@ -24,7 +24,7 @@ def load_raw_data(config: DictConfig) -> pd.DataFrame:
 
     Raises:
         FileNotFoundError:
-            If the raw data file does not exist.
+            If the file is not found.
     """
     # Set up the path to the data directory
     data_dir = Path(config.data.raw.dir)
@@ -33,10 +33,7 @@ def load_raw_data(config: DictConfig) -> pd.DataFrame:
     data_dir.mkdir(parents=True, exist_ok=True)
 
     # Define the path to the data file
-    if config.testing:
-        csv_path = data_dir / config.data.raw.test_fname
-    else:
-        csv_path = data_dir / config.data.raw.fname
+    csv_path = data_dir / config.data.raw.fname
 
     # If the CSV file was not found in the data directory then raise an error
     if not csv_path.exists():
@@ -72,19 +69,16 @@ def load_cleaned_data(config: DictConfig) -> pd.DataFrame:
 
     Raises:
         FileNotFoundError:
-            If the cleaned data file does not exist.
+            If the file is not found.
     """
     # Set up the path to the data directory
     data_dir = Path(config.data.cleaned.dir)
 
-    # Ensure that the processed data directory exists
+    # Ensure that the data directory exists
     data_dir.mkdir(parents=True, exist_ok=True)
 
     # Define the path to the data file
-    if config.testing:
-        parquet_path = data_dir / config.data.cleaned.test_fname
-    else:
-        parquet_path = data_dir / config.data.cleaned.fname
+    parquet_path = data_dir / config.data.cleaned.fname
 
     # If there are no parquet files in the data directory then raise an error
     if not parquet_path.exists():
@@ -119,19 +113,16 @@ def load_weakly_supervised_data(config: DictConfig) -> pd.DataFrame:
 
     Raises:
         FileNotFoundError:
-            If the weakly supervised data file does not exist.
+            If the file is not found.
     """
     # Set up the path to the data directory
     data_dir = Path(config.data.weakly_supervised.dir)
 
-    # Ensure that the processed data directory exists
+    # Ensure that the data directory exists
     data_dir.mkdir(parents=True, exist_ok=True)
 
     # Define the path to the data file
-    if config.testing:
-        parquet_path = data_dir / config.data.weakly_supervised.test_fname
-    else:
-        parquet_path = data_dir / config.data.weakly_supervised.fname
+    parquet_path = data_dir / config.data.weakly_supervised.fname
 
     # If there are no parquet files in the data directory then raise an error
     if not parquet_path.exists():
@@ -153,8 +144,52 @@ def load_weakly_supervised_data(config: DictConfig) -> pd.DataFrame:
 
 
 @hydra.main(config_path="../../config", config_name="config", version_base=None)
-def load_annotated_data(config: DictConfig) -> dict:
-    """Loading of annotated data, split into a training, validation and test set.
+def load_annotated_data(config: DictConfig) -> pd.DataFrame:
+    """Loading of annotated data.
+
+    Args:
+        config (DictConfig):
+            Configuration object.
+
+    Returns:
+        Pandas DataFrame:
+            The annotated data.
+
+    Raises:
+        FileNotFoundError:
+            If the file is not found.
+    """
+    # Set up the path to the data directory
+    data_dir = Path(config.data.annotated.dir)
+
+    # Ensure that the data directory exists
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    # Get the parquet file path
+    parquet_path = data_dir / config.data.annotated.fname
+
+    # If the path is missing then raise an error
+    if not parquet_path.exists():
+        raise FileNotFoundError(
+            f"The file {parquet_path.name} was not found in {data_dir}."
+        )
+
+    # Log loading of dataset
+    logger.info(f"Loading data from {parquet_path}")
+
+    # Read the parquet files
+    df = pd.read_parquet(parquet_path)
+
+    # Log the number of rows in the dataframe
+    logger.info(f"Loaded {len(df):,} rows")
+
+    # Return the dataframe
+    return df
+
+
+@hydra.main(config_path="../../config", config_name="config", version_base=None)
+def load_splits(config: DictConfig) -> dict:
+    """Loading of training splits, split into a training, validation and test set.
 
     Args:
         config (DictConfig):
@@ -167,37 +202,33 @@ def load_annotated_data(config: DictConfig) -> dict:
 
     Raises:
         FileNotFoundError:
-            If one of "train.parquet", "val.parquet" or "test.parquet" do not exist in
-            the final data directory.
+            If one of the files was not found.
     """
-    # Set up the path to the data directory
-    data_dir = Path(config.data.annotated.dir)
+    # Set up the paths to the data directories
+    train_dir = Path(config.data.train.dir)
+    val_dir = Path(config.data.val.dir)
+    test_dir = Path(config.data.test.dir)
 
-    # Ensure that the processed data directory exists
-    data_dir.mkdir(parents=True, exist_ok=True)
+    # Ensure that the data directories exist
+    train_dir.mkdir(parents=True, exist_ok=True)
+    val_dir.mkdir(parents=True, exist_ok=True)
+    test_dir.mkdir(parents=True, exist_ok=True)
 
     # Get the training, validation and test parquet file paths
-    if config.testing:
-        train_path = data_dir / config.data.annotated.train.test_fname
-        val_path = data_dir / config.data.annotated.val.test_fname
-        test_path = data_dir / config.data.annotated.test.test_fname
-    else:
-        train_path = data_dir / config.data.annotated.train.fname
-        val_path = data_dir / config.data.annotated.val.fname
-        test_path = data_dir / config.data.annotated.test.fname
+    train_path = train_dir / config.data.train.fname
+    val_path = val_dir / config.data.val.fname
+    test_path = test_dir / config.data.test.fname
 
     # If any of the paths are missing then split the data
     if not train_path.exists():
         raise FileNotFoundError(
-            f"The file {train_path.name} was not found in {data_dir}."
+            f"The file {train_path.name} was not found in {train_dir}."
         )
     if not val_path.exists():
-        raise FileNotFoundError(
-            f"The file {val_path.name} was not found in {data_dir}."
-        )
+        raise FileNotFoundError(f"The file {val_path.name} was not found in {val_dir}.")
     if not test_path.exists():
         raise FileNotFoundError(
-            f"The file {test_path.name} was not found in {data_dir}."
+            f"The file {test_path.name} was not found in {test_dir}."
         )
 
     # Log loading of dataset
@@ -207,10 +238,6 @@ def load_annotated_data(config: DictConfig) -> dict:
     train = pd.read_parquet(train_path)[["text", "label"]]
     val = pd.read_parquet(val_path)[["text", "label"]]
     test = pd.read_parquet(test_path)[["text", "label"]]
-
-    # Remove the val/test samples from train
-    train = train[~train.text.isin(val.text)]
-    train = train[~train.text.isin(test.text)]
 
     # Log the number of rows in the dataframe
     logger.info(

@@ -85,10 +85,7 @@ def clean_data(config: DictConfig) -> pd.DataFrame:
     )
 
     # Save the dataframe as a parquet file
-    if config.testing:
-        cleaned_path = Path(config.data.cleaned.dir) / config.data.cleaned.test_fname
-    else:
-        cleaned_path = Path(config.data.cleaned.dir) / config.data.cleaned.fname
+    cleaned_path = Path(config.data.cleaned.dir) / config.data.cleaned.fname
     df.to_parquet(cleaned_path)
     logger.info(f"Saved processed data with {len(df):,} rows to {cleaned_path}")
 
