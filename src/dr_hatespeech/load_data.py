@@ -37,12 +37,8 @@ def load_raw_data(config: DictConfig) -> dict:
     csv_paths = [
         path
         for path in data_dir.glob("*.csv")
-        if (
-            config.test
-            and path.name.startswith("test_")
-            or not config.test
-            and not path.name.startswith("test_")
-        )
+        if (config.testing and path.name.startswith("test_"))
+        or (not config.testing and not path.name.startswith("test_"))
     ]
 
     # If there are no CSV files in the data directory then raise an error
@@ -92,69 +88,13 @@ def load_cleaned_data(config: DictConfig) -> dict:
     parquet_paths = [
         path
         for path in data_dir.glob("*_cleaned.parquet")
-        if (
-            config.test
-            and path.name.startswith("test_")
-            or not config.test
-            and not path.name.startswith("test_")
-        )
+        if (config.testing and path.name.startswith("test_"))
+        or (not config.testing and not path.name.startswith("test_"))
     ]
 
     # If there are no parquet files in the data directory then raise an error
     if len(parquet_paths) == 0:
         raise FileNotFoundError(f"No cleaned data files found in {data_dir}.")
-
-    # Log loading of dataset
-    logger.info(f"Loading data from {parquet_paths[0]}")
-
-    # Read the parquet file
-    df = pd.read_parquet(parquet_paths[0])
-
-    # Log the number of rows in the dataframe
-    logger.info(f"Loaded {len(df):,} rows")
-
-    # Return a dictionary containing both the dataframe and the path to the parquet file
-    return dict(df=df, path=parquet_paths[0])
-
-
-@hydra.main(config_path="../../config", config_name="config", version_base=None)
-def load_weakly_supervised_data(config: DictConfig) -> dict:
-    """Loading of weakly supervised data.
-
-    Args:
-        config (DictConfig):
-            Configuration object.
-
-    Returns:
-        dict:
-            A dictionary with a key `df`, containing the weakly supervised data, and
-            `path`, being a Path object pointing to the location of the data.
-
-    Raises:
-        FileNotFoundError:
-            If the weakly supervised data file does not exist.
-    """
-    # Set up the path to the data directory
-    data_dir = Path(config.data.processed_dir)
-
-    # Ensure that the processed data directory exists
-    data_dir.mkdir(parents=True, exist_ok=True)
-
-    # Get the list of parquet files in the processed data directory
-    parquet_paths = [
-        path
-        for path in data_dir.glob("*_weakly_supervised.parquet")
-        if (
-            config.test
-            and path.name.startswith("test_")
-            or not config.test
-            and not path.name.startswith("test_")
-        )
-    ]
-
-    # If there are no parquet files in the data directory then raise an error
-    if len(parquet_paths) == 0:
-        raise FileNotFoundError(f"No weakly supervised data files found in {data_dir}.")
 
     # Log loading of dataset
     logger.info(f"Loading data from {parquet_paths[0]}")
@@ -198,20 +138,20 @@ def load_final_data(config: DictConfig) -> dict:
     train_paths = [
         path
         for path in data_dir.glob("*train.parquet")
-        if (config.test and path.name.startswith("test_"))
-        or (not config.test and not path.name.startswith("test_"))
+        if (config.testing and path.name.startswith("test_"))
+        or (not config.testing and not path.name.startswith("test_"))
     ]
     val_paths = [
         path
         for path in data_dir.glob("*val.parquet")
-        if (config.test and path.name.startswith("test_"))
-        or (not config.test and not path.name.startswith("test_"))
+        if (config.testing and path.name.startswith("test_"))
+        or (not config.testing and not path.name.startswith("test_"))
     ]
     test_paths = [
         path
         for path in data_dir.glob("*test.parquet")
-        if (config.test and path.name.startswith("test_"))
-        or (not config.test and not path.name.startswith("test_"))
+        if (config.testing and path.name.startswith("test_"))
+        or (not config.testing and not path.name.startswith("test_"))
     ]
 
     # If any of the paths are missing then split the data

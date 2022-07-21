@@ -12,4 +12,4 @@ models:
   dir: models
 
 seed: 4242
-test: False
+testing: False

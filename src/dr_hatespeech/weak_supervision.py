@@ -56,7 +56,10 @@ def apply_weak_supervision(config: DictConfig) -> dict:
     df_train = df_train[df_train.label != -1]
 
     # Save the dataframe
-    path = Path(config.data.final_dir) / "dr_offensive_train.parquet"
+    if config.testing:
+        path = Path(config.data.final_dir) / "test_data_train.parquet"
+    else:
+        path = Path(config.data.final_dir) / "dr_offensive_train.parquet"
     df_train.to_parquet(path)
 
     # Return the data dict

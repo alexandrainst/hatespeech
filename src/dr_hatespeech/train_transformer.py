@@ -110,7 +110,7 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
     )
 
     # Set up output directory
-    if config.test:
+    if config.testing:
         output_dir = f"{config.models.dir}/test_{model_config.name}"
     else:
         output_dir = f"{config.models.dir}/{model_config.name}"
