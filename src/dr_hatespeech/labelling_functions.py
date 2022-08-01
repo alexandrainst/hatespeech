@@ -7,15 +7,12 @@ import joblib
 import nltk
 import torch
 from snorkel.labeling import labeling_function
+from tqdm.auto import tqdm
 from transformers.pipelines import (
     AutoModelForSequenceClassification,
     AutoModelForTokenClassification,
     AutoTokenizer,
 )
-
-# Download word tokenizer
-nltk.download("punkt")
-
 
 # Create label names
 ABSTAIN = -1
@@ -25,49 +22,70 @@ OFFENSIVE = 1
 
 # Get device
 if torch.cuda.is_available():
-    device = "cuda"
+    DEVICE = "cuda"
 elif torch.backends.mps.is_available():
-    device = "mps"
+    DEVICE = "mps"
 else:
-    device = "cpu"
+    DEVICE = "cpu"
 
 
-# Load TF-IDF hatespeech model
-tfidf = joblib.load("models/tfidf_model.bin")
+def initialise_models():
+    """Initialise the models used in the weak supervision."""
 
+    # Set global variables
+    global tfidf
+    global ner_tok, ner_model
+    global hatespeech_tok, hatespeech_model
+    global sent_tok, sent_model
 
-# Load NER model
-ner_model_id = "saattrupdan/nbailab-base-ner-scandi"
-ner_tok = AutoTokenizer.from_pretrained(ner_model_id, cache_dir=".cache")
-ner_model = (
-    AutoModelForTokenClassification.from_pretrained(ner_model_id, cache_dir=".cache")
-    .eval()
-    .to(device)
-)
+    # Initialise progress bar
+    with tqdm(desc="Loading models", total=5, leave=False) as pbar:
 
+        # Download word tokenizer
+        nltk.download("punkt", quiet=True)
+        pbar.update()
 
-# Load transformer hatespeech models
-hatespeech_model_id = "DaNLP/da-electra-hatespeech-detection"
-hatespeech_tok = AutoTokenizer.from_pretrained(hatespeech_model_id, cache_dir=".cache")
-hatespeech_model = (
-    AutoModelForSequenceClassification.from_pretrained(
-        hatespeech_model_id, cache_dir=".cache"
-    )
-    .eval()
-    .to(device)
-)
+        # Load TF-IDF hatespeech model
+        tfidf = joblib.load("models/tfidf_model.bin")
+        pbar.update()
 
+        # Load NER model
+        ner_model_id = "saattrupdan/nbailab-base-ner-scandi"
+        ner_tok = AutoTokenizer.from_pretrained(ner_model_id, cache_dir=".cache")
+        ner_model = (
+            AutoModelForTokenClassification.from_pretrained(
+                ner_model_id, cache_dir=".cache"
+            )
+            .eval()
+            .to(DEVICE)
+        )
+        pbar.update()
 
-# Load sentiment model
-sent_model_id = "pin/senda"
-sent_tok = AutoTokenizer.from_pretrained(sent_model_id, cache_dir=".cache")
-sent_model = (
-    AutoModelForSequenceClassification.from_pretrained(
-        sent_model_id, cache_dir=".cache"
-    )
-    .eval()
-    .to(device)
-)
+        # Load transformer hatespeech models
+        hatespeech_model_id = "DaNLP/da-electra-hatespeech-detection"
+        hatespeech_tok = AutoTokenizer.from_pretrained(
+            hatespeech_model_id, cache_dir=".cache"
+        )
+        hatespeech_model = (
+            AutoModelForSequenceClassification.from_pretrained(
+                hatespeech_model_id, cache_dir=".cache"
+            )
+            .eval()
+            .to(DEVICE)
+        )
+        pbar.update()
+
+        # Load sentiment model
+        sent_model_id = "pin/senda"
+        sent_tok = AutoTokenizer.from_pretrained(sent_model_id, cache_dir=".cache")
+        sent_model = (
+            AutoModelForSequenceClassification.from_pretrained(
+                sent_model_id, cache_dir=".cache"
+            )
+            .eval()
+            .to(DEVICE)
+        )
+        pbar.update()
 
 
 @labeling_function()
@@ -227,12 +245,16 @@ def is_mention(record) -> int:
     # Split up the document into words
     words = nltk.word_tokenize(doc)
 
+    # Load model if it has not been loaded yet
+    if "ner_tok" not in globals() or "ner_model" not in globals():
+        initialise_models()
+
     # Set `model_max_length` if not specified
-    if ner_tok.model_max_length > 100_000:
-        ner_tok.model_max_length = 512
+    if ner_tok.model_max_length > 100_000:  # type: ignore [name-defined]
+        ner_tok.model_max_length = 512  # type: ignore [name-defined]
 
     # Tokenise the words
-    inputs = ner_tok(
+    inputs = ner_tok(  # type: ignore [name-defined]
         words, truncation=True, return_tensors="pt", is_split_into_words=True
     )
 
@@ -240,15 +262,15 @@ def is_mention(record) -> int:
     word_idxs = inputs.word_ids()
 
     # Move the tokens to the desired device
-    inputs = {k: v.to(device) for k, v in inputs.items()}
+    inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
 
     # Get the model predictions
     with torch.no_grad():
-        predictions = ner_model(**inputs).logits[0]
+        predictions = ner_model(**inputs).logits[0]  # type: ignore [name-defined]
 
     # Extract the NER tags
     ner_tags = [
-        ner_model.config.id2label[label_id.item()]
+        ner_model.config.id2label[label_id.item()]  # type: ignore [name-defined]
         for label_id in predictions.argmax(dim=-1)
     ]
 
@@ -329,24 +351,30 @@ def use_hatespeech_model(record) -> int:
             The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
             abstain.
     """
+    # Load model if it has not been loaded yet
+    if "hatespeech_tok" not in globals() or "hatespeech_model" not in globals():
+        initialise_models()
+
     # Extract the document
     doc = record.text
 
     # Set `model_max_length` if not specified
-    if hatespeech_tok.model_max_length > 100_000:
-        hatespeech_tok.model_max_length = 512
+    if hatespeech_tok.model_max_length > 100_000:  # type: ignore [name-defined]
+        hatespeech_tok.model_max_length = 512  # type: ignore [name-defined]
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
 
         # Tokenise the document
-        inputs = hatespeech_tok(doc, truncation=True, return_tensors="pt")
+        inputs = hatespeech_tok(  # type: ignore [name-defined]
+            doc, truncation=True, return_tensors="pt"
+        )
 
         # Move the tokens to the desired device
-        inputs = {k: v.to(device) for k, v in inputs.items()}
+        inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
 
         # Get the predictions
-        pred = hatespeech_model(**inputs).logits[0]
+        pred = hatespeech_model(**inputs).logits[0]  # type: ignore [name-defined]
 
         # Extract the offensive probability
         offensive_prob = torch.softmax(pred, dim=-1)[-1].item()
@@ -378,11 +406,15 @@ def use_tfidf_model(record) -> int:
             The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
             abstain.
     """
+    # Load model if it has not been loaded yet
+    if "tfidf" not in globals():
+        initialise_models()
+
     # Extract the document
     doc = record.text
 
     # Get the prediction score
-    predicted_score = tfidf.decision_function([doc])[0]
+    predicted_score = tfidf.decision_function([doc])[0]  # type: ignore [name-defined]
 
     # If the predictive score is positive then mark as offensive, and otherwise abstain
     if is_dr_answer(record) == NOT_OFFENSIVE:
@@ -438,12 +470,16 @@ def has_positive_sentiment(record) -> int:
             This value is 0 (not offensive) if the document is classified as not
             offensive by the model, and -1 (abstain) otherwise.
     """
+    # Load model if it has not been loaded yet
+    if "sent_tok" not in globals() or "sent_model" not in globals():
+        initialise_models()
+
     # Extract the document
     doc = record.text
 
     # Set `model_max_length` if not specified
-    if sent_tok.model_max_length > 100_000:
-        sent_tok.model_max_length = 512
+    if sent_tok.model_max_length > 100_000:  # type: ignore [name-defined]
+        sent_tok.model_max_length = 512  # type: ignore [name-defined]
 
     # Get the prediction
     with warnings.catch_warnings():
@@ -451,13 +487,15 @@ def has_positive_sentiment(record) -> int:
             warnings.simplefilter("ignore", category=UserWarning)
 
             # Tokenise the document
-            inputs = sent_tok(doc, truncation=True, return_tensors="pt")
+            inputs = sent_tok(  # type: ignore [name-defined]
+                doc, truncation=True, return_tensors="pt"
+            )
 
             # Move the tokens to the desired device
-            inputs = {k: v.to(device) for k, v in inputs.items()}
+            inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
 
             # Get the prediction
-            prediction = sent_model(**inputs).logits[0]
+            prediction = sent_model(**inputs).logits[0]  # type: ignore [name-defined]
 
             # Extract the probability of the document being negative
             negative_prob = torch.softmax(prediction, dim=-1)[0].item()

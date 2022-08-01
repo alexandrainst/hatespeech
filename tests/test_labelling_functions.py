@@ -8,10 +8,6 @@ import pytest
 
 import src.dr_hatespeech.labelling_functions as lfs
 
-# Initialise labelling function models
-lfs.initialise_models()
-
-
 offensive_record1 = pd.Series(
     dict(
         account="dr nyheder",
