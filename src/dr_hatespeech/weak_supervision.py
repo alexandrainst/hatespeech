@@ -1,5 +1,6 @@
 """Weak supervision module to create labels in an unsupervised setting."""
 
+import logging
 from pathlib import Path
 
 import hydra
@@ -10,6 +11,8 @@ from snorkel.labeling.model import LabelModel
 
 from . import labeling_functions as lfs
 from .load_data import load_cleaned_data
+
+logger = logging.getLogger(__name__)
 
 
 @hydra.main(config_path="../../config", config_name="config", version_base=None)
@@ -27,7 +30,7 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
     # Load the cleaned data
     df = load_cleaned_data(config)
 
-    # Define the list of labeling functions
+    # Define the list of labelling functions
     lf_list = [
         lfs.contains_offensive_word,
         lfs.is_all_caps,
@@ -39,6 +42,9 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
         lfs.has_been_moderated,
         lfs.has_positive_sentiment,
     ]
+
+    # Log progress
+    logger.info(f"Applying weak supervision with {len(lf_list)} labelling functions.")
 
     # Apply the LFs to the unlabeled training data
     applier = PandasLFApplier(lf_list)
