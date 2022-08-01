@@ -243,7 +243,10 @@ def is_mention(record) -> int:
     doc = record.text
 
     # Split up the document into words
-    words = nltk.word_tokenize(doc)
+    try:
+        words = nltk.word_tokenize(doc)
+    except LookupError:
+        initialise_models()
 
     # Load model if it has not been loaded yet
     if "ner_tok" not in globals() or "ner_model" not in globals():
