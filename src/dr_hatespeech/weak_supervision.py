@@ -30,6 +30,9 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
     # Load the cleaned data
     df = load_cleaned_data(config)
 
+    # Log progress
+    logger.info("Loading models to be used in the weak labelling")
+
     # Define the list of labelling functions
     lf_list = [
         lfs.contains_offensive_word,
@@ -44,7 +47,7 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
     ]
 
     # Log progress
-    logger.info(f"Applying weak supervision with {len(lf_list)} labelling functions.")
+    logger.info(f"Applying weak supervision with {len(lf_list)} labelling functions")
 
     # Apply the LFs to the unlabeled training data
     applier = PandasLFApplier(lf_list)
