@@ -9,7 +9,7 @@ from omegaconf import DictConfig
 from snorkel.labeling import PandasLFApplier
 from snorkel.labeling.model import LabelModel
 
-from . import labeling_functions as lfs
+from . import labelling_functions as lfs
 from .load_data import load_cleaned_data
 
 logger = logging.getLogger(__name__)
