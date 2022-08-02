@@ -1,0 +1,26 @@
+raw:
+  dir: data/raw
+  fname: dr-facebook-data.csv
+cleaned:
+  dir: data/processed
+  fname: cleaned.parquet
+weakly_supervised:
+  dir: data/processed
+  fname: weakly-supervised-off.parquet
+for_annotation:
+  dir: data/processed
+  fname: for-annotation-off.txt
+annotated:
+  dir: data/processed
+  fname: annotated-off.parquet
+train:
+  dir: data/final
+  fname: train-off.parquet
+val:
+  dir: data/final
+  fname: val-off.parquet
+  size: 256
+test:
+  dir: data/final
+  fname: test-off.parquet
+  size: 1024

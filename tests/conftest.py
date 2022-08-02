@@ -9,6 +9,6 @@ initialize(config_path="../config", version_base=None)
 
 @pytest.fixture(scope="session")
 def config():
-    cfg = compose(config_name="config")
-    cfg.test = True
-    return cfg
+    return compose(
+        config_name="config", overrides=["testing=True", "data=test_offensive"]
+    )

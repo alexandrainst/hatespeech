@@ -1,0 +1,26 @@
+raw:
+  dir: data/raw
+  fname: test.csv
+cleaned:
+  dir: data/processed
+  fname: test-cleaned.parquet
+weakly_supervised:
+  dir: data/processed
+  fname: test-weakly-supervised-off.parquet
+for_annotation:
+  dir: data/processed
+  fname: test-for-annotation-off.txt
+annotated:
+  dir: data/processed
+  fname: test-annotated-off.parquet
+train:
+  dir: data/final
+  fname: test-train-off.parquet
+val:
+  dir: data/final
+  fname: test-val-off.parquet
+  size: 2
+test:
+  dir: data/final
+  fname: test-test-off.parquet
+  size: 2

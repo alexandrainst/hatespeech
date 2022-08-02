@@ -17,21 +17,19 @@ logger = logging.getLogger(__name__)
 
 
 @hydra.main(config_path="../../config", config_name="config", version_base=None)
-def clean_data(config: DictConfig) -> dict:
-    """Process the raw data and store the processed data.
+def clean_data(config: DictConfig) -> pd.DataFrame:
+    """Clean the raw data and store the cleaned data.
 
     Args:
         config (DictConfig):
             The configuration.
 
     Returns:
-        dict:
-            A dictionary containing the cleaned data and the path where it was saved.
+        Pandas DataFrame:
+            The cleaned data.
     """
     # Load the raw data
-    data_dict = load_raw_data(config)
-    df = data_dict["df"]
-    data_path = data_dict["path"]
+    df = load_raw_data(config)
 
     # Replace the NaN values in `action` by 'none'
     df.action.fillna(value="none", inplace=True)
@@ -87,14 +85,12 @@ def clean_data(config: DictConfig) -> dict:
     )
 
     # Save the dataframe as a parquet file
-    processed_path = (
-        Path(config.data.processed_dir) / f"{data_path.stem}_cleaned.parquet"
-    )
-    df.to_parquet(processed_path)
-    logger.info(f"Saved processed data with {len(df):,} rows to {processed_path}")
+    cleaned_path = Path(config.data.cleaned.dir) / config.data.cleaned.fname
+    df.to_parquet(cleaned_path)
+    logger.info(f"Saved processed data with {len(df):,} rows to {cleaned_path}")
 
-    # Return the data dictionary
-    return dict(df=df, path=processed_path)
+    # Return the cleaned data
+    return df
 
 
 def clean_account(account: str) -> str:
@@ -144,10 +140,10 @@ def clean_account(account: str) -> str:
 def clean_text(text: str) -> Union[str, None]:
     """Clean a Facebook post.
 
-    This will NFKC normalize the text, remove unwanted symbols, replace
-    hyperlinks with '[LINK]', replace phone numbers with '[PHONE]',
-    replace CPR-numbers with '[CPR]', replace mail adresses with '[EMAIL]',
-    replace CVR-numbers with '[CVR]' and remove superfluous whitespace.
+    This will NFKC normalize the text, remove unwanted symbols, replace hyperlinks with
+    '[LINK]', replace phone numbers with '[PHONE]', replace CPR-numbers with '[CPR]',
+    replace mail adresses with '[EMAIL]', replace CVR-numbers with '[CVR]' and remove
+    superfluous whitespace.
 
     Args:
         text (str):
@@ -155,8 +151,8 @@ def clean_text(text: str) -> Union[str, None]:
 
     Returns:
         str or None:
-            The cleaned text. If the cleaned text is empty or only consists of
-            a hyperlink then None is returned.
+            The cleaned text. If the cleaned text is empty or only consists of a
+            hyperlink then None is returned.
     """
     # Normalize the text
     text = normalize("NFKC", text)
@@ -181,8 +177,8 @@ def clean_text(text: str) -> Union[str, None]:
         text,
     )
 
-    # Replace 8 digits with " [CVR] " if "cvr" is in the text, else replace with " [PHONE] "
-    # Check if an 8 digit number is present in text
+    # Replace 8 digits with " [CVR] " if "cvr" is in the text, else replace with
+    # " [PHONE] " Check if an 8 digit number is present in text
     if re.search(r"(?<!\d)(\d\d ?){4}(?!\d)", text):
 
         # Check if 'cvr' in text

@@ -1,26 +1,19 @@
 """Unit tests related to the weak_supervision module."""
 
-from pathlib import Path
-
-import pandas as pd
 import pytest
+
+from src.dr_hatespeech.load_data import load_weakly_supervised_data
+from src.dr_hatespeech.weak_supervision import apply_weak_supervision
 
 ws = pytest.importorskip("src.dr_hatespeech.weak_supervision")
 
 
-@pytest.mark.skip(reason="Snorkel is not supporting Mac M1's yet")
 def test_weak_supervision(config):
-    # Set up path to weakly supervised test dataset
-    path = Path("data") / "processed" / "test_data_weakly_supervised.parquet"
-
-    # Remove the weakly supervised test dataset if it exists
-    path.unlink(missing_ok=True)
-
     # Apply weak supervision, generating the weakly supervised test dataset
-    ws.apply_weak_supervision(config)
+    apply_weak_supervision(config)
 
     # Load the weakly supervised test dataset
-    df = pd.read_parquet("data/processed/test_data_weakly_supervised.parquet")
+    df = load_weakly_supervised_data(config)
 
     # Check that the weakly supervised test dataset has a "label" column
     assert "label" in df.columns

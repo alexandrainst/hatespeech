@@ -12,10 +12,10 @@ from transformers import (
     EarlyStoppingCallback,
     EvalPrediction,
     Trainer,
-    TrainingArguments,
 )
 
-from .load_data import load_final_data
+from .load_data import load_annotated_data
+from .training_args_with_mps_support import TrainingArgumentsWithMPSSupport
 
 
 @hydra.main(config_path="../../config", config_name="config", version_base=None)
@@ -31,7 +31,7 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
             The trained model.
     """
     # Load the data
-    data_dict = load_final_data(config)
+    data_dict = load_annotated_data(config)
     train_df = data_dict["train"]
     val_df = data_dict["val"]
     test_df = data_dict["test"]
@@ -64,7 +64,7 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
     model = AutoModelForSequenceClassification.from_pretrained(
         model_config.model_id,
         use_auth_token=model_config.use_auth_token,
-        cache_dir=model_config.cache_dir,
+        cache_dir=".cache",
         from_flax=model_config.from_flax,
         num_labels=2,
     )
@@ -110,13 +110,13 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
     )
 
     # Set up output directory
-    if config.test:
+    if config.testing:
         output_dir = f"{config.models.dir}/test_{model_config.name}"
     else:
         output_dir = f"{config.models.dir}/{model_config.name}"
 
     # Create the training arguments
-    training_args = TrainingArguments(
+    training_args = TrainingArgumentsWithMPSSupport(
         output_dir=output_dir,
         evaluation_strategy=model_config.evaluation_strategy,
         logging_strategy=model_config.logging_strategy,

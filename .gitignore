@@ -97,6 +97,7 @@ data/
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/final/.gitkeep
+!config/data
 
 # Models
 models/
@@ -104,3 +105,9 @@ models/
 
 # EDA notebooks
 notebooks/*_eda.ipynb
+
+# Documentation
+docs/dr_hatespeech/
+docs/index.html
+docs/search.json
+docs/dr_hatespeech.html

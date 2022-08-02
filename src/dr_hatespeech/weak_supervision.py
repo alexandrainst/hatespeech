@@ -3,24 +3,17 @@
 from pathlib import Path
 
 import hydra
+import pandas as pd
 from omegaconf import DictConfig
 from snorkel.labeling import PandasLFApplier
 from snorkel.labeling.model import LabelModel
 
-from .labeling_functions import (
-    contains_offensive_word,
-    has_been_moderated,
-    is_dr_answer,
-    is_mention,
-    sentiment,
-    use_tfidf_model,
-    use_transformer_ensemble,
-)
+from . import labeling_functions as lfs
 from .load_data import load_cleaned_data
 
 
 @hydra.main(config_path="../../config", config_name="config", version_base=None)
-def apply_weak_supervision(config: DictConfig) -> dict:
+def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
     """Generate weakly supervised labels for the data.
 
     Args:
@@ -28,47 +21,46 @@ def apply_weak_supervision(config: DictConfig) -> dict:
             The configuration.
 
     Returns:
-        dict:
-            A dictionary containing the weakly supervised data and the path where it
-            was saved.
+        Pandas DataFrame:
+            The data with weakly supervised labels.
     """
     # Load the cleaned data
-    data_dict = load_cleaned_data(config)
-    df_train = data_dict["df"]
-    data_path = data_dict["path"]
+    df = load_cleaned_data(config)
 
     # Define the list of labeling functions
-    lfs = [
-        contains_offensive_word,
-        is_mention,
-        is_dr_answer,
-        use_transformer_ensemble,
-        use_tfidf_model,
-        has_been_moderated,
-        sentiment,
+    lf_list = [
+        lfs.contains_offensive_word,
+        lfs.is_all_caps,
+        lfs.contains_positive_swear_word,
+        lfs.is_mention,
+        lfs.is_dr_answer,
+        lfs.use_hatespeech_model,
+        lfs.use_tfidf_model,
+        lfs.has_been_moderated,
+        lfs.has_positive_sentiment,
     ]
 
     # Apply the LFs to the unlabeled training data
-    applier = PandasLFApplier(lfs)
-    train = applier.apply(df_train)
+    applier = PandasLFApplier(lf_list)
+    lf_df = applier.apply(df)
 
     # Train the label model
     label_model = LabelModel(cardinality=2)
-    label_model.fit(train, n_epochs=100, log_freq=50, seed=4242)
+    label_model.fit(lf_df, n_epochs=100, log_freq=50, seed=4242)
 
     # Compute the training labels and add them to the dataframe
-    df_train["label"] = label_model.predict(L=train, tie_break_policy="abstain")
+    df["label"] = label_model.predict(L=lf_df, tie_break_policy="abstain")
 
     # Remove the abstained data points
-    df_train = df_train[df_train.label != -1]
+    df = df.query("label != -1")
 
     # Save the dataframe
-    fname = str(data_path.name).replace("_cleaned", "_weakly_supervised")
-    path = Path(config.data.processed_dir) / fname
-    df_train.to_parquet(path)
+    data_dir = Path(config.data.weakly_supervised.dir)
+    path = data_dir / config.data.weakly_supervised.fname
+    df.to_parquet(path)
 
-    # Return the data dict
-    return dict(df=df_train, path=path)
+    # Return the dataframe
+    return df
 
 
 if __name__ == "__main__":

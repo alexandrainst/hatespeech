@@ -1,0 +1,12 @@
+<View>
+  <Text name="text" value="$text"/>
+  <View style="box-shadow: 2px 2px 5px #999; padding: 20px; margin-top: 2em; border-radius: 5px;">
+    <Header value="Is the above text hate speech?"/>
+    <Text name="p1">By hate speech we mean offensive text which targets a group or an individual based on inherent characterics, such as race, religion or gender.</Text>
+    <Choices name="label" toName="text" choice="single" showInLine="true">
+      <Choice value="Hate speech"/>
+      <Choice value="Not hate speech"/>
+      <Choice value="Not sure"/>
+    </Choices>
+  </View>
+</View>

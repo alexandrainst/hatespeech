@@ -7,6 +7,12 @@ Developers:
 - Dan Saattrup Nielsen (dan.nielsen@alexandra.dk)
 - Anders Jess Pedersen (anders.j.pedersen@alexandra.dk)
 
+______________________________________________________________________
+[![Documentation](https://img.shields.io/badge/docs-passing-green)](https://alexadalab.github.io/dr-hatespeech/index.html)
+[![License](https://img.shields.io/github/license/alexadalab/dr-hatespeech)](https://github.com/alexadalab/dr-hatespeech/blob/main/LICENSE)
+[![LastCommit](https://img.shields.io/github/last-commit/alexadalab/dr-hatespeech)](https://github.com/alexadalab/dr-hatespeech/commits/main)
+[![Code Coverage](https://img.shields.io/badge/Coverage-68%25-yellow.svg)](https://github.com/alexadalab/dr-hatespeech/tree/dev/tests)
+
 
 ## Setup
 
@@ -19,7 +25,7 @@ Developers:
 
 To install new PyPI packages, run:
 
-```bash
+```
 poetry add <package-name>
 ```
 
@@ -27,13 +33,13 @@ poetry add <package-name>
 
 To auto-generate API document for your project, run:
 
-```bash
+```
 make docs
 ```
 
 To view the documentation, run:
 
-```bash
+```
 make view-docs
 ```
 
@@ -44,42 +50,65 @@ make view-docs
 * [pdoc](https://github.com/pdoc3/pdoc): Automatically create an API documentation for your project
 
 ## Project structure
-```bash
+```
 .
+├── .flake8
+├── .github
+│   └── workflows
+│       ├── ci.yaml
+│       └── docs.yaml
+├── .gitignore
+├── .pre-commit-config.yaml
 ├── README.md
 ├── config
-│   ├── main.yaml
-│   └── model
-│       └── model1.yaml
+│   ├── __init__.py
+│   ├── config.yaml
+│   ├── data
+│   │   ├── offensive.yaml
+│   │   └── test_offensive.yaml
+│   ├── hatespeech-label-config.xml
+│   ├── offensive-label-config.xml
+│   ├── tfidf_model
+│   │   └── tfidf_model1.yaml
+│   └── transformer_model
+│       ├── transformer_model1.yaml
+│       └── transformer_model2.yaml
 ├── data
 │   ├── final
 │   ├── processed
-│   │   ├── test_data_cleaned.parquet
-│   │   └── test_data_weakly_supervised.parquet
 │   └── raw
-│       └── test_data.csv
-├── docs
-│   └── dr_hatespeech
-│       ├── data.html
-│       ├── index.html
-│       ├── labeling_functions.html
-│       ├── tfidf.html
-│       └── weak_supervision.html
 ├── makefile
 ├── models
-│   └── tfidf_model.bin
+│   ├── tfidf_model.bin
+│   └── transformer_model1
+│       ├── config.json
+│       ├── pytorch_model.bin
+│       ├── special_tokens_map.json
+│       ├── tokenizer.json
+│       ├── tokenizer_config.json
+│       └── training_args.bin
 ├── notebooks
-├── poetry.lock
+│   └── evaluate_agreement.ipynb
+├── poetry.toml
 ├── pyproject.toml
 ├── src
-│   └── dr_hatespeech
-│       ├── __init__.py
-│       ├── data.py
-│       ├── labeling_functions.py
-│       ├── tfidf.py
-│       └── weak_supervision.py
+│   ├── dr_hatespeech
+│   │   ├── __init__.py
+│   │   ├── clean_data.py
+│   │   ├── create_train_split.py
+│   │   ├── labeling_functions.py
+│   │   ├── load_data.py
+│   │   ├── main.py
+│   │   ├── prepare_data_for_annotation.py
+│   │   ├── train_tfidf.py
+│   │   ├── train_transformer.py
+│   │   ├── training_args_with_mps_support.py
+│   │   └── weak_supervision.py
+│   └── scripts
+│       └── fix_dot_env_file.py
 └── tests
     ├── __init__.py
+    ├── conftest.py
     ├── test_data.py
     ├── test_labeling_functions.py
     └── test_weak_supervision.py

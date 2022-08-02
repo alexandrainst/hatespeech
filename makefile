@@ -10,13 +10,18 @@ install-poetry:
 	@curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -
 
 uninstall-poetry:
-	@echo "Installing poetry..."
+	@echo "Uninstalling poetry..."
 	@curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 - --uninstall
 
 install:
 	@echo "Installing..."
 	@if [ "$(shell which poetry)" = "" ]; then \
 		make install-poetry; \
+	fi
+	@if [ "$(shell which gpg)" = "" ]; then \
+		echo "GPG not installed, so an error will occur. Install GPG on MacOS with "\
+			 "`brew install gnupg` or on Ubuntu with `apt install gnupg` and run "\
+			 "`make install` again."; \
 	fi
 	@poetry env use python3
 	@poetry run python3 -m src.scripts.fix_dot_env_file
@@ -41,12 +46,12 @@ remove-env:
 	@echo "Removed virtual environment."
 
 docs:
-	@poetry run pdoc --html src/dr_hatespeech -o docs --force
+	@poetry run pdoc --docformat google -o docs src/dr_hatespeech
 	@echo "Saved documentation."
 
 view-docs:
 	@echo "Viewing API documentation..."
-	@open docs/dr_hatespeech/index.html
+	@open docs/dr_hatespeech.html
 
 clean:
 	@find . -type f -name "*.py[co]" -delete
@@ -55,5 +60,37 @@ clean:
 	@echo "Cleaned repository."
 
 label-offensive:
-	@label-studio init dr-offensive --label-config config/label-studio-config.xml
-	@label-studio start dr-offensive --label-config config/label-studio-config.xml
+	@label-studio init dr-offensive --label-config config/offensive-label-config.xml
+	@label-studio start dr-offensive --label-config config/offensive-label-config.xml
+
+label-hatespeech:
+	@label-studio init dr-hatespeech --label-config config/hatespeech-label-config.xml
+	@label-studio start dr-hatespeech --label-config config/hatespeech-label-config.xml
+
+run:
+	@poetry run python3 -m src.dr_hatespeech.main
+
+test:
+	@pytest && readme-cov
+
+tree:
+	@tree -a \
+		-I .git \
+		-I .mypy_cache . \
+		-I .env \
+		-I .venv \
+		-I poetry.lock \
+		-I .ipynb_checkpoints \
+		-I dist \
+		-I .gitkeep \
+		-I docs \
+		-I .pytest_cache \
+		-I outputs \
+		-I .DS_Store \
+		-I .cache \
+		-I *.parquet \
+		-I *.csv \
+		-I *.txt \
+		-I checkpoint-* \
+		-I .coverage* \
+		-I *_eda.ipynb
