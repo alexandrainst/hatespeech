@@ -41,6 +41,11 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
     val_df = val_df[["text", "label"]]
     test_df = test_df[["text", "label"]]
 
+    # Numericalise val/test labels
+    label2id = {"NOT OFFENSIVE": 0, "OFFENSIVE": 1}
+    val_df.label = val_df.label.str.upper().map(label2id)
+    test_df.label = test_df.label.str.upper().map(label2id)
+
     # Truncate training split if necessary
     if config.train_split_truncation_length > 0:
         train_df = train_df.sample(n=config.train_split_truncation_length)
@@ -78,7 +83,7 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
         doc = examples["text"]
         return tokenizer(doc, truncation=True, padding=True)
 
-    dataset = dataset.map(tokenise, batched=True)
+    dataset = dataset.map(tokenise)
 
     # Initialise the metrics
     mcc_metric = load_metric("matthews_correlation")
