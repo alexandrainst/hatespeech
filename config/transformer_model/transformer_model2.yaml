@@ -13,11 +13,11 @@ batch_size: 16
 gradient_accumulation_steps: 2
 learning_rate: 2e-5
 lr_scheduler_type: linear
-warmup_ratio: 0.01
+warmup_ratio: 0.005
 optim: adamw_torch
 full_determinism: True
-fp16: False
-early_stopping_patience: 5
+fp16: True
+early_stopping_patience: 10
 
 # Evaluation
 evaluation_strategy: steps
