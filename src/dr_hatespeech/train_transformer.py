@@ -41,6 +41,10 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
     val_df = val_df[["text", "label"]]
     test_df = test_df[["text", "label"]]
 
+    # Truncate training split if necessary
+    if config.train_split_truncation_length > 0:
+        train_df = train_df.sample(n=config.train_split_truncation_length)
+
     # Convert the data to Hugging Face Dataset objects
     train = Dataset.from_pandas(train_df, split="train", preserve_index=False)
     val = Dataset.from_pandas(val_df, split="val", preserve_index=False)

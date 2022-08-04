@@ -9,3 +9,4 @@ models:
 
 seed: 4242
 testing: False
+train_split_truncation_length: -1
