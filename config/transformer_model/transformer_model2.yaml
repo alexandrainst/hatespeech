@@ -17,7 +17,7 @@ warmup_ratio: 0.01
 optim: adamw_torch
 full_determinism: True
 fp16: True
-early_stopping_patience: 20
+early_stopping_patience: 50
 
 # Evaluation
 evaluation_strategy: steps
