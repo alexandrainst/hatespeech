@@ -1,6 +1,6 @@
 defaults:
   - tfidf_model: tfidf_model1
-  - transformer_model: transformer_model2
+  - transformer_model: xlmr-base2
   - data: offensive
   - _self_
 
