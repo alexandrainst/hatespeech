@@ -243,6 +243,16 @@ def is_mention(record) -> int:
     # Extract the document
     doc = record.text
 
+    # Remove special characters, such as links, by removing all upper case letters
+    # enclosed in square brackets
+    doc = re.sub(r"\[[A-ZÆØÅ]+\]", "", doc)
+
+    # Only preserve characters and spaces
+    doc = re.sub(r"[^A-ZÆØÅa-zæøå ]", "", doc)
+
+    # Remove duplicate spaces
+    doc = re.sub(r" +", " ", doc)
+
     # Split up the document into words
     try:
         words = nltk.word_tokenize(doc)
