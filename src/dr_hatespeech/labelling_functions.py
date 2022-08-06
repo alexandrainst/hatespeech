@@ -304,9 +304,12 @@ def is_mention(record) -> int:
     # Count all the non-person tokens
     num_non_person_tokens = sum(1 for tag in ner_tags if not tag.endswith("PER"))
 
-    # If all the tokens are person tokens then mark the document as not offensive, and
-    # abstain otherwise
-    if num_non_person_tokens == 0:
+    # If all the tokens are person tokens (plus potentially a non-offensive single
+    # word) then mark the document as not offensive, and abstain otherwise
+    contains_single_non_offensive_word = (
+        num_non_person_tokens == 1 and contains_offensive_word(record) != OFFENSIVE
+    )
+    if num_non_person_tokens == 0 or contains_single_non_offensive_word:
         return NOT_OFFENSIVE
     else:
         return ABSTAIN
