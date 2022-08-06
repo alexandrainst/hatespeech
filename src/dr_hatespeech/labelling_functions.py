@@ -211,7 +211,8 @@ def contains_positive_swear_word(record) -> int:
         r"(\W|^)(fa+nde?me|fu+ck|fu+cki+ng|k[æ?]+ft|[sz]ate?me) "
         r"(hvo+r )?(e+r)?((de+t|du+|de+|ha+n|hu+n))?"
         r"?(vi+ld|ja|fe+d|go+d?|l[æ?]+kk*e+r|ni+ce|[sz]jo+v|[sz]e+j)",
-        r"^f+u+c+k+( m+a+n+)? *[?!.]* *$",
+        r"^f+u+c+k+( m+a+n+| j+a+)? *[?!.]* *$",
+        r"f+u+c+k+( m+a+n+| j+a+) *[?!.]* *$",
         r"ho+ld (da+ )?k[æ?]+ft",
     ]
 
