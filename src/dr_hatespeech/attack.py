@@ -20,7 +20,8 @@ def load_attack() -> Tuple[ElectraTokenizer, nn.Module]:
     """
     # Load the tokenizer
     tokenizer = ElectraTokenizer.from_pretrained(
-        "Maltehb/aelaectra-danish-electra-small-cased"
+        "Maltehb/aelaectra-danish-electra-small-cased",
+        cache_dir=".cache",
     )
 
     # Load the model architecture
@@ -53,7 +54,10 @@ class ElectraClassifier(nn.Module):
     def __init__(self, pretrained_model_name, num_labels=2):
         super(ElectraClassifier, self).__init__()
         self.num_labels = num_labels
-        self.electra = ElectraModel.from_pretrained(pretrained_model_name)
+        self.electra = ElectraModel.from_pretrained(
+            pretrained_model_name,
+            cache_dir=".cache",
+        )
         self.dense = nn.Linear(
             self.electra.config.hidden_size, self.electra.config.hidden_size
         )

@@ -14,6 +14,8 @@ from transformers.pipelines import (
     AutoTokenizer,
 )
 
+from .attack import load_attack
+
 # Create label names
 ABSTAIN = -1
 NOT_OFFENSIVE = 0
@@ -35,7 +37,8 @@ def initialise_models():
     # Set global variables
     global tfidf
     global ner_tok, ner_model
-    global hatespeech_tok, hatespeech_model
+    global danlp_tok, danlp_model
+    global attack_tok, attack_model
     global sent_tok, sent_model
 
     # Initialise progress bar
@@ -61,18 +64,21 @@ def initialise_models():
         )
         pbar.update()
 
-        # Load transformer hatespeech models
-        hatespeech_model_id = "DaNLP/da-electra-hatespeech-detection"
-        hatespeech_tok = AutoTokenizer.from_pretrained(
-            hatespeech_model_id, cache_dir=".cache"
-        )
-        hatespeech_model = (
+        # Load DaNLP hatespeech model
+        danlp_model_id = "DaNLP/da-electra-hatespeech-detection"
+        danlp_tok = AutoTokenizer.from_pretrained(danlp_model_id, cache_dir=".cache")
+        danlp_model = (
             AutoModelForSequenceClassification.from_pretrained(
-                hatespeech_model_id, cache_dir=".cache"
+                danlp_model_id, cache_dir=".cache"
             )
             .eval()
             .to(DEVICE)
         )
+        pbar.update()
+
+        # Load A-ttack hatespeech model
+        attack_tok, attack_model = load_attack()
+        attack_model.eval().to(DEVICE)
         pbar.update()
 
         # Load sentiment model
@@ -384,13 +390,13 @@ def is_dr_answer(record) -> int:
 
 
 @labeling_function()
-def use_hatespeech_model(record) -> int:
-    """Apply an ensemble of hatespeech detection transformer models.
+def use_danlp_model(record) -> int:
+    """Apply the DaNLP ELECTRA hatespeech detection transformer model.
 
-    This will apply the model DaNLP/da-bert-hatespeech-classification.
+    This will apply the model DaNLP/da-electra-hatespeech-detection.
 
     This will mark the document as offensive if the model predicts the document as
-    offensive with confidence above 70%, as not offensive if the model predicts the
+    offensive with confidence above 50%, as not offensive if the model predicts the
     document as not offensive with confidence above 99.9%, and abstain otherwise.
 
     Args:
@@ -403,21 +409,21 @@ def use_hatespeech_model(record) -> int:
             abstain.
     """
     # Load model if it has not been loaded yet
-    if "hatespeech_tok" not in globals() or "hatespeech_model" not in globals():
+    if "danlp_tok" not in globals() or "danlp_model" not in globals():
         initialise_models()
 
     # Extract the document
     doc = record.text
 
     # Set `model_max_length` if not specified
-    if hatespeech_tok.model_max_length > 100_000:  # type: ignore [name-defined]
-        hatespeech_tok.model_max_length = 512  # type: ignore [name-defined]
+    if danlp_tok.model_max_length > 100_000:  # type: ignore [name-defined]
+        danlp_tok.model_max_length = 512  # type: ignore [name-defined]
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
 
         # Tokenise the document
-        inputs = hatespeech_tok(  # type: ignore [name-defined]
+        inputs = danlp_tok(  # type: ignore [name-defined]
             doc, truncation=True, return_tensors="pt"
         )
 
@@ -425,7 +431,7 @@ def use_hatespeech_model(record) -> int:
         inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
 
         # Get the predictions
-        pred = hatespeech_model(**inputs).logits[0]  # type: ignore [name-defined]
+        pred = danlp_model(**inputs).logits[0]  # type: ignore [name-defined]
 
         # Extract the offensive probability
         offensive_prob = torch.softmax(pred, dim=-1)[-1].item()
@@ -440,6 +446,60 @@ def use_hatespeech_model(record) -> int:
     ):
         return NOT_OFFENSIVE
     elif offensive_prob > 0.5:
+        return OFFENSIVE
+    else:
+        return ABSTAIN
+
+
+@labeling_function()
+def use_attack_model(record) -> int:
+    """Apply the A-ttack hatespeech detection transformer model.
+
+    This model can be found at https://github.com/ogtal/A-ttack.
+
+    This will mark the document as offensive if the model predicts the document as
+    offensive with confidence above 50%, and abstain otherwise.
+
+    Args:
+        record:
+            The record containing the document to be checked.
+
+    Returns:
+        int:
+            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+            abstain.
+    """
+    # Load model if it has not been loaded yet
+    if "attack_tok" not in globals() or "attack_model" not in globals():
+        initialise_models()
+
+    # Extract the document
+    doc = record.text
+
+    # Set `model_max_length` if not specified
+    if attack_tok.model_max_length > 100_000:  # type: ignore [name-defined]
+        attack_tok.model_max_length = 512  # type: ignore [name-defined]
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+
+        # Tokenise the document
+        inputs = attack_tok(  # type: ignore [name-defined]
+            doc, truncation=True, return_tensors="pt"
+        )
+
+        # Move the tokens to the desired device
+        inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
+
+        # Get the predictions
+        pred = attack_model(**inputs).logits[0]  # type: ignore [name-defined]
+
+        # Extract the offensive probability
+        offensive_prob = torch.softmax(pred, dim=-1)[-1].item()
+
+    # If the model predicts that the document is offensive with confidence above 50%
+    # then mark it as offensive, otherwise abstain
+    if offensive_prob > 0.5:
         return OFFENSIVE
     else:
         return ABSTAIN
