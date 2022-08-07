@@ -187,7 +187,7 @@ def contains_offensive_word(record) -> int:
 
     # Mark document as offensive if it contains an offensive word, and abstain
     # otherwise
-    if is_dr_answer(record) == NOT_OFFENSIVE:
+    if is_dr_answer(record) == NOT_OFFENSIVE or is_spam(record) == NOT_OFFENSIVE:
         return NOT_OFFENSIVE
     elif any(re.search(regex, doc.lower()) for regex in offensive_words):
         return OFFENSIVE
@@ -433,7 +433,11 @@ def use_hatespeech_model(record) -> int:
     # If the model predicts that the document is offensive with confidence above 50%
     # then mark it as offensive, if it predicts it is not offensive with confidence
     # above 99.9% then mark it as not offensive, otherwise abstain
-    if is_dr_answer(record) == NOT_OFFENSIVE or offensive_prob < 0.001:
+    if (
+        is_dr_answer(record) == NOT_OFFENSIVE
+        or is_spam(record) == NOT_OFFENSIVE
+        or offensive_prob < 0.001
+    ):
         return NOT_OFFENSIVE
     elif offensive_prob > 0.5:
         return OFFENSIVE
@@ -468,7 +472,7 @@ def use_tfidf_model(record) -> int:
     predicted_score = tfidf.decision_function([doc])[0]  # type: ignore [name-defined]
 
     # If the predictive score is positive then mark as offensive, and otherwise abstain
-    if is_dr_answer(record) == NOT_OFFENSIVE:
+    if is_dr_answer(record) == NOT_OFFENSIVE or is_spam(record) == NOT_OFFENSIVE:
         return NOT_OFFENSIVE
     elif predicted_score > 2:
         return OFFENSIVE
@@ -497,7 +501,7 @@ def has_been_moderated(record) -> int:
 
     # If the action is not "none" then mark the document as offensive, and otherwise
     # abstain
-    if is_dr_answer(record) == NOT_OFFENSIVE:
+    if is_dr_answer(record) == NOT_OFFENSIVE or is_spam(record) == NOT_OFFENSIVE:
         return NOT_OFFENSIVE
     elif action != "none":
         return OFFENSIVE
