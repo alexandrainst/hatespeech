@@ -44,6 +44,7 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
         lfs.use_tfidf_model,
         lfs.has_been_moderated,
         lfs.has_positive_sentiment,
+        lfs.is_spam,
     ]
 
     # Log progress

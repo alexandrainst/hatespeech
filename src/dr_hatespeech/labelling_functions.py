@@ -89,6 +89,40 @@ def initialise_models():
 
 
 @labeling_function()
+def is_spam(record) -> int:
+    """Check if the document is spam.
+
+    This will mark the document as not offensive if it is spam and abstain otherwise.
+
+    Args:
+        record:
+            The record containing the document to be checked.
+
+    Returns:
+        int:
+            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+            abstain.
+    """
+    # Extract the document
+    doc = record.text
+
+    # Define list of spam phrases
+    spam_phrases = [
+        r"[Jj]eg sendte (dig)? en (venne|venskabs)?anmodning",
+        r"[Jj]eg s[aå?] din profil",
+        r"sende dig en (venne|venskabs)?anmodning",
+        r"kennenlernen",
+    ]
+
+    # Mark document as not offensive if it contains any of the spam phrases and abstain
+    # otherwise
+    if any(re.search(regex, doc.lower()) for regex in spam_phrases):
+        return OFFENSIVE
+    else:
+        return ABSTAIN
+
+
+@labeling_function()
 def contains_offensive_word(record) -> int:
     """Check if the document contains an offensive word.
 
@@ -353,7 +387,7 @@ def is_dr_answer(record) -> int:
 def use_hatespeech_model(record) -> int:
     """Apply an ensemble of hatespeech detection transformer models.
 
-    This will apply the model DaNLP/Electra-hatespeech-detection.
+    This will apply the model DaNLP/da-bert-hatespeech-classification.
 
     This will mark the document as offensive if the model predicts the document as
     offensive with confidence above 70%, as not offensive if the model predicts the
