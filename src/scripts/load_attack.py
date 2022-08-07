@@ -40,7 +40,7 @@ def load_attack() -> Tuple[ElectraTokenizer, nn.Module]:
     # Download the state dict if it doesn't exist
     if not state_dict_path.exists():
         state_dict_url = "https://github.com/ogtal/A-ttack/raw/main/pytorch_model.bin"
-        wget.download(state_dict_url, out=state_dict_path)
+        wget.download(state_dict_url, out=str(state_dict_path))
 
     # Load the state dict
     state_dict = torch.load(state_dict_path, map_location=torch.device("cpu"))
