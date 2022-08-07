@@ -284,8 +284,8 @@ def is_mention(record) -> int:
     # Only preserve characters and spaces
     doc = re.sub(r"[^A-ZÆØÅa-zæøå ]", "", doc)
 
-    # Remove duplicate spaces
-    doc = re.sub(r" +", " ", doc)
+    # Remove duplicate and trailing spaces
+    doc = re.sub(r" +", " ", doc).strip()
 
     # Split up the document into words
     try:
