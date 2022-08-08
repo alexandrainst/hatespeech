@@ -42,7 +42,7 @@ def initialise_models():
     global sent_tok, sent_model
 
     # Initialise progress bar
-    with tqdm(desc="Loading models", total=5, leave=False) as pbar:
+    with tqdm(desc="Loading models", total=6, leave=False) as pbar:
 
         # Download word tokenizer
         nltk.download("punkt", quiet=True)
