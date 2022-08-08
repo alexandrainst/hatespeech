@@ -123,7 +123,7 @@ def is_spam(record) -> int:
     # Mark document as not offensive if it contains any of the spam phrases and abstain
     # otherwise
     if any(re.search(regex, doc.lower()) for regex in spam_phrases):
-        return OFFENSIVE
+        return NOT_OFFENSIVE
     else:
         return ABSTAIN
 
@@ -249,10 +249,10 @@ def contains_positive_swear_word(record) -> int:
     # Define list of offensive words
     positive_swear_words = [
         r"(\W|^)(fa+nde?me|fu+ck|fu+cki+ng|k[æ?]+ft|[sz]ate?me) "
-        r"(hvo+r )?(e+r)?((de+t|du+|de+|ha+n|hu+n))?"
+        r"(hvo+r )?(e+r)?(de+t|du+|de+|ha+n|hu+n)?"
         r"?(vi+ld|ja|fe+d|go+d?|l[æ?]+kk*e+r|ni+ce|[sz]jo+v|[sz]e+j)",
-        r"^f+u+c+k+( m+a+n+| j+a+)? *[?!.]* *$",
-        r"f+u+c+k+( m+a+n+| j+a+) *[?!.]* *$",
+        r"^f+u+c+k+( m+a+n+d?| j+a+)? *[?!.]* *$",
+        r"f+u+c+k+( m+a+n+d?| j+a+) *[?!.]* *$",
         r"ho+ld (da+ )?k[æ?]+ft",
     ]
 
@@ -615,7 +615,7 @@ def has_positive_sentiment(record) -> int:
             # Extract the probability of the document being negative
             negative_prob = torch.softmax(prediction, dim=-1)[0].item()
 
-    # If the probability of the document being negative is below 30% then mark it as
+    # If the probability of the document being negative is below 10% then mark it as
     # not offensive, and otherwise abstain
     if negative_prob < 0.1:
         return NOT_OFFENSIVE
