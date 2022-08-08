@@ -1,0 +1,34 @@
+# Model
+name: xlmr-base3
+model_id: xlm-roberta-base
+from_flax: False
+use_auth_token: False
+
+# Tokenizer
+padding: longest
+
+# Training hyperparameters
+max_steps: 500_000
+batch_size: 32
+gradient_accumulation_steps: 1
+learning_rate: 2e-5
+lr_scheduler_type: linear
+warmup_ratio: 0.01
+optim: adamw_torch
+full_determinism: True
+fp16: True
+early_stopping_patience: 50
+
+# Evaluation
+evaluation_strategy: steps
+eval_steps: 1000
+
+# Logging
+logging_strategy: steps
+logging_steps: 100
+report_to: none
+
+# Model saving
+save_strategy: steps
+save_steps: 1000
+save_total_limit: 1

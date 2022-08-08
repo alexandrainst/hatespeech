@@ -42,7 +42,7 @@ def initialise_models():
     global sent_tok, sent_model
 
     # Initialise progress bar
-    with tqdm(desc="Loading models", total=5, leave=False) as pbar:
+    with tqdm(desc="Loading models", total=6, leave=False) as pbar:
 
         # Download word tokenizer
         nltk.download("punkt", quiet=True)
@@ -115,7 +115,7 @@ def is_spam(record) -> int:
     # Define list of spam phrases
     spam_phrases = [
         r"[Jj]eg sendte (dig)? en (venne|venskabs)?anmodning",
-        r"[Jj]eg s[aå?] din profil",
+        r"[Jj]eg s[aå?] (lige )?din profil",
         r"sende dig en (venne|venskabs)?anmodning",
         r"kennenlernen",
     ]
@@ -157,7 +157,7 @@ def contains_offensive_word(record) -> int:
         r"a+[sz]+ho+le+",
         r"re+ta+rd",
         r"i+di+o+t",
-        r"ho+ld (do+g |nu+ |ba+re )?k[æ?]+ft",
+        r"ho+ld (di+n |do+g |nu+ |ba+re )k[æ?]+ft",
         r"[sz]to+dder",
         r"mo+ngo+l",
         r"(m[ø?]+[gj]|kla+mm[eo]|u+[sz]+e+lt?) ?(dy+r|[sz]vi+n|[sz]o+|ko+[sz]t)",
@@ -253,7 +253,7 @@ def contains_positive_swear_word(record) -> int:
         r"?(vi+ld|ja|fe+d|go+d?|l[æ?]+kk*e+r|ni+ce|[sz]jo+v|[sz]e+j)",
         r"^f+u+c+k+( m+a+n+d?| j+a+)? *[?!.]* *$",
         r"f+u+c+k+( m+a+n+d?| j+a+) *[?!.]* *$",
-        r"ho+ld (da+ )?k[æ?]+ft",
+        r"ho+ld da+ k[æ?]+ft",
     ]
 
     # Mark document as not offensive if it contains a positive swear word, and abstain
@@ -298,6 +298,7 @@ def is_mention(record) -> int:
         words = nltk.word_tokenize(doc)
     except LookupError:
         initialise_models()
+        words = nltk.word_tokenize(doc)
 
     # Load model if it has not been loaded yet
     if "ner_tok" not in globals() or "ner_model" not in globals():
@@ -490,9 +491,10 @@ def use_attack_model(record) -> int:
 
         # Move the tokens to the desired device
         inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
+        inputs.pop("token_type_ids")
 
         # Get the predictions
-        pred = attack_model(**inputs).logits[0]  # type: ignore [name-defined]
+        pred = attack_model(**inputs)[0]  # type: ignore [name-defined]
 
         # Extract the offensive probability
         offensive_prob = torch.softmax(pred, dim=-1)[-1].item()

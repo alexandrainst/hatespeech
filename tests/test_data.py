@@ -6,17 +6,17 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from src.dr_hatespeech.clean_data import clean_data
-from src.dr_hatespeech.create_train_split import create_train_split
-from src.dr_hatespeech.load_data import (
+from src.hatespeech.clean_data import clean_data
+from src.hatespeech.create_train_split import create_train_split
+from src.hatespeech.load_data import (
     load_annotated_data,
     load_cleaned_data,
     load_raw_data,
     load_splits,
     load_weakly_supervised_data,
 )
-from src.dr_hatespeech.prepare_data_for_annotation import prepare_data_for_annotation
-from src.dr_hatespeech.weak_supervision import apply_weak_supervision
+from src.hatespeech.prepare_data_for_annotation import prepare_data_for_annotation
+from src.hatespeech.weak_supervision import apply_weak_supervision
 
 
 class TestRawData:

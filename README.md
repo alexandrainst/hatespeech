@@ -1,4 +1,4 @@
-# DR Hatespeech
+# Hatespeech
 
 Hatespeech detection based on DR Facebook data.
 
@@ -8,10 +8,10 @@ Developers:
 - Anders Jess Pedersen (anders.j.pedersen@alexandra.dk)
 
 ______________________________________________________________________
-[![Documentation](https://img.shields.io/badge/docs-passing-green)](https://alexadalab.github.io/dr-hatespeech/index.html)
-[![License](https://img.shields.io/github/license/alexadalab/dr-hatespeech)](https://github.com/alexadalab/dr-hatespeech/blob/main/LICENSE)
-[![LastCommit](https://img.shields.io/github/last-commit/alexadalab/dr-hatespeech)](https://github.com/alexadalab/dr-hatespeech/commits/main)
-[![Code Coverage](https://img.shields.io/badge/Coverage-68%25-yellow.svg)](https://github.com/alexadalab/dr-hatespeech/tree/dev/tests)
+[![Documentation](https://img.shields.io/badge/docs-passing-green)](https://alexandrainst.github.io/hatespeech/index.html)
+[![License](https://img.shields.io/github/license/alexandrainst/hatespeech)](https://github.com/alexandrainst/hatespeech/blob/main/LICENSE)
+[![LastCommit](https://img.shields.io/github/last-commit/alexandrainst/hatespeech)](https://github.com/alexandrainst/hatespeech/commits/main)
+[![Code Coverage](https://img.shields.io/badge/Coverage-70%25-yellow.svg)](https://github.com/alexandrainst/hatespeech/tree/dev/tests)
 
 
 ## Setup
@@ -92,7 +92,7 @@ make view-docs
 ├── poetry.toml
 ├── pyproject.toml
 ├── src
-│   ├── dr_hatespeech
+│   ├── hatespeech
 │   │   ├── __init__.py
 │   │   ├── clean_data.py
 │   │   ├── create_train_split.py
