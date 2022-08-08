@@ -51,12 +51,12 @@ setup-git:
 	fi
 
 docs:
-	@poetry run pdoc --docformat google -o docs src/dr_hatespeech
+	@poetry run pdoc --docformat google -o docs src/hatespeech
 	@echo "Saved documentation."
 
 view-docs:
 	@echo "Viewing API documentation..."
-	@open docs/dr_hatespeech.html
+	@open docs/hatespeech.html
 
 clean:
 	@find . -type f -name "*.py[co]" -delete
@@ -73,7 +73,7 @@ label-hatespeech:
 	@label-studio start dr-hatespeech --label-config config/hatespeech-label-config.xml
 
 run:
-	@poetry run python3 -m src.dr_hatespeech.main
+	@poetry run python3 -m src.hatespeech.main
 
 test:
 	@pytest && readme-cov
