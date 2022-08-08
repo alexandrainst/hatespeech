@@ -1,6 +1,6 @@
 # DR Hatespeech
 
-Hatespeech detection for DR Facebook data.
+Hatespeech detection based on DR Facebook data.
 
 Developers:
 
