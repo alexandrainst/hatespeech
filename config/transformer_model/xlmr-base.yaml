@@ -1,5 +1,5 @@
 # Model
-name: transformer_model2
+name: xlmr-base
 model_id: xlm-roberta-base
 from_flax: False
 use_auth_token: False
@@ -9,15 +9,15 @@ padding: longest
 
 # Training hyperparameters
 max_steps: 1_000_000
-batch_size: 16
-gradient_accumulation_steps: 2
+batch_size: 8
+gradient_accumulation_steps: 4
 learning_rate: 2e-5
 lr_scheduler_type: linear
 warmup_ratio: 0.01
 optim: adamw_torch
 full_determinism: True
-fp16: False
-early_stopping_patience: 5
+fp16: True
+early_stopping_patience: 10
 
 # Evaluation
 evaluation_strategy: steps

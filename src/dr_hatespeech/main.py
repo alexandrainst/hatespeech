@@ -3,6 +3,7 @@
 import hydra
 from omegaconf import DictConfig
 
+from .create_train_split import create_train_split
 from .train_transformer import train_transformer_model
 
 
@@ -18,27 +19,36 @@ def main(config: DictConfig):
     try:
         train_transformer_model(config)
 
-    # Otherwise there are no training data available, so we perform weak supervision
+    # Otherwise there are no training data available, so we try to generate it
     except FileNotFoundError:
         try:
-            from .weak_supervision import apply_weak_supervision
-
-            apply_weak_supervision(config)
+            create_train_split(config)
             train_transformer_model(config)
 
-        # Otherwise either there is no cleaned data available and/or there is no
-        # trained TF-IDF model, so we clean the data and/or train the TF-IDF model
-        except FileNotFoundError as e:
-            from .clean_data import clean_data
-            from .train_tfidf import train_tfidf_model
-            from .weak_supervision import apply_weak_supervision
+        # Otherwise there is no weakly supervised data available, so we try to generate
+        # it
+        except FileNotFoundError:
+            try:
+                from .weak_supervision import apply_weak_supervision
 
-            if "cleaned" in str(e):
-                clean_data(config)
-            if "tfidf" in str(e):
-                train_tfidf_model(config)
-            apply_weak_supervision(config)
-            train_transformer_model(config)
+                apply_weak_supervision(config)
+                create_train_split(config)
+                train_transformer_model(config)
+
+            # Otherwise, either there is no cleaned data available and/or there is no
+            # trained TF-IDF model, so we clean the data and/or train the TF-IDF model
+            except FileNotFoundError as e:
+                from .clean_data import clean_data
+                from .train_tfidf import train_tfidf_model
+                from .weak_supervision import apply_weak_supervision
+
+                if "cleaned" in str(e):
+                    clean_data(config)
+                if "tfidf" in str(e):
+                    train_tfidf_model(config)
+                apply_weak_supervision(config)
+                create_train_split(config)
+                train_transformer_model(config)
 
 
 if __name__ == "__main__":
