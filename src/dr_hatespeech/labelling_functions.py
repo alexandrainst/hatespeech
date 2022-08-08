@@ -253,7 +253,7 @@ def contains_positive_swear_word(record) -> int:
         r"?(vi+ld|ja|fe+d|go+d?|l[æ?]+kk*e+r|ni+ce|[sz]jo+v|[sz]e+j)",
         r"^f+u+c+k+( m+a+n+d?| j+a+)? *[?!.]* *$",
         r"f+u+c+k+( m+a+n+d?| j+a+) *[?!.]* *$",
-        r"ho+ld (da+ )?k[æ?]+ft",
+        r"ho+ld da+ k[æ?]+ft",
     ]
 
     # Mark document as not offensive if it contains a positive swear word, and abstain
