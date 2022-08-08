@@ -115,7 +115,7 @@ def is_spam(record) -> int:
     # Define list of spam phrases
     spam_phrases = [
         r"[Jj]eg sendte (dig)? en (venne|venskabs)?anmodning",
-        r"[Jj]eg s[aå?] din profil",
+        r"[Jj]eg s[aå?] (lige )?din profil",
         r"sende dig en (venne|venskabs)?anmodning",
         r"kennenlernen",
     ]
@@ -157,7 +157,7 @@ def contains_offensive_word(record) -> int:
         r"a+[sz]+ho+le+",
         r"re+ta+rd",
         r"i+di+o+t",
-        r"ho+ld (do+g |nu+ |ba+re )?k[æ?]+ft",
+        r"ho+ld (di+n |do+g |nu+ |ba+re )k[æ?]+ft",
         r"[sz]to+dder",
         r"mo+ngo+l",
         r"(m[ø?]+[gj]|kla+mm[eo]|u+[sz]+e+lt?) ?(dy+r|[sz]vi+n|[sz]o+|ko+[sz]t)",
