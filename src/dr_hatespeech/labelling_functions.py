@@ -493,7 +493,7 @@ def use_attack_model(record) -> int:
         inputs.pop("token_type_ids")
 
         # Get the predictions
-        pred = attack_model(**inputs).logits[0]  # type: ignore [name-defined]
+        pred = attack_model(**inputs)[0]  # type: ignore [name-defined]
 
         # Extract the offensive probability
         offensive_prob = torch.softmax(pred, dim=-1)[-1].item()
