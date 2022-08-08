@@ -490,6 +490,7 @@ def use_attack_model(record) -> int:
 
         # Move the tokens to the desired device
         inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
+        inputs.pop("token_type_ids")
 
         # Get the predictions
         pred = attack_model(**inputs).logits[0]  # type: ignore [name-defined]
