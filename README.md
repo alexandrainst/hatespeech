@@ -1,4 +1,4 @@
-# DR Hatespeech
+# Hatespeech
 
 Hatespeech detection based on DR Facebook data.
 
@@ -92,7 +92,7 @@ make view-docs
 ├── poetry.toml
 ├── pyproject.toml
 ├── src
-│   ├── dr_hatespeech
+│   ├── hatespeech
 │   │   ├── __init__.py
 │   │   ├── clean_data.py
 │   │   ├── create_train_split.py

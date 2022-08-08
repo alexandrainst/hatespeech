@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "dr-hatespeech"
+name = "hatespeech"
 version = "0.0.1"
-description = "Hatespeech detection for DR Facebook data."
+description = "Hatespeech detection based on Facebook data."
 authors = [
     "Dan Saattrup Nielsen <dan.nielsen@alexandra.dk>",
     "Anders Jess Pedersen <anders.j.pedersen@alexandra.dk>",
@@ -41,12 +41,12 @@ addopts = [
     '-vv',
     '--doctest-modules',
     '-n 2',
-    '--cov=src/dr_hatespeech',
+    '--cov=src/hatespeech',
 ]
 xfail_strict = true
 filterwarnings = ["ignore"]
 log_cli_level = "info"
-testpaths = ["tests", "src/dr_hatespeech"]
+testpaths = ["tests", "src/hatespeech"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
