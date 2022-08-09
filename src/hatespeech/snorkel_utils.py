@@ -4,7 +4,6 @@ import itertools as it
 from functools import partial
 from typing import List, Tuple, Union
 
-import more_itertools as mit
 import numpy as np
 import pandas as pd
 from snorkel.labeling.apply.core import ApplierMetadata, BaseLFApplier
