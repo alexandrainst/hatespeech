@@ -85,6 +85,9 @@ def batched_apply_lfs_to_data_point(
             A list for every row in `batch`, each of which consisting of (LF index,
             label) tuples.
     """
+    if len(batch) == 1:
+        breakpoint()
+
     # Apply all the labelling functions to the batch
     label_values = {lf_idx: lf(batch) for lf_idx, lf in enumerate(lfs)}
 

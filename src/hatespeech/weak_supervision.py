@@ -28,7 +28,7 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
             The data with weakly supervised labels.
     """
     # Load the cleaned data
-    df = load_cleaned_data(config).iloc[10_000]
+    df = load_cleaned_data(config).iloc[1000]
 
     # Load the models to be used in the labelling functions
     logger.info("Loading models to be used in the weak labelling")
