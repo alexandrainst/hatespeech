@@ -45,7 +45,7 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
         # lfs.is_mention,
         lfs.use_danlp_model,
         lfs.use_attack_model,
-        # lfs.use_tfidf_model,
+        lfs.use_tfidf_model,
         # lfs.has_positive_sentiment,
     ]
 
