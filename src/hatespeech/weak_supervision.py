@@ -1,12 +1,13 @@
 """Weak supervision module to create labels in an unsupervised setting."""
 
 import logging
+import multiprocessing as mp
 from pathlib import Path
 
 import hydra
 import pandas as pd
 from omegaconf import DictConfig
-from snorkel.labeling import PandasLFApplier
+from snorkel.labeling.apply.dask import PandasParallelLFApplier
 from snorkel.labeling.model import LabelModel
 
 from . import labelling_functions as lfs
@@ -52,8 +53,8 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
     logger.info(f"Applying weak supervision with {len(lf_list)} labelling functions")
 
     # Apply the LFs to the unlabeled training data
-    applier = PandasLFApplier(lf_list)
-    lf_df = applier.apply(df)
+    applier = PandasParallelLFApplier(lf_list)
+    lf_df = applier.apply(df, n_parallel=mp.cpu_count() - 1)
 
     # Train the label model
     label_model = LabelModel(cardinality=2)
