@@ -478,7 +478,10 @@ def is_dr_answer(record) -> np.ndarray:
         else:
             return ABSTAIN
 
-    labels[:] = [compute_label(doc) for doc in docs]
+    try:
+        labels[:] = [compute_label(doc) for doc in docs]
+    except ValueError:
+        breakpoint()
 
     return labels
 
