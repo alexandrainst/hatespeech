@@ -368,7 +368,7 @@ def is_mention(record) -> np.ndarray:
     )
 
     # Get the list of word indices
-    word_idxs = np.asarray([inputs.word_ids(idx) for idx in range(len(record))])
+    word_idxs = np.asarray([inputs.word_ids(idx) for idx in range(len(docs))])
 
     # Move the tokens to the desired device
     inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
