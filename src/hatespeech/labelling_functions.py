@@ -161,6 +161,10 @@ def contains_offensive_word(record) -> np.ndarray:
     labels = np.maximum(labels, is_dr_answer(record))
     labels = np.maximum(labels, is_spam(record))
 
+    # If there are no more documents to check, return the labels
+    if labels.min() >= 0:
+        return labels
+
     # Extract the documents
     docs = record.iloc[
         [idx for idx, lbl in enumerate(labels) if lbl == ABSTAIN]
@@ -335,6 +339,10 @@ def is_mention(record) -> np.ndarray:
     # documents that needs to be checked
     labels = np.maximum(labels, is_dr_answer(record))
     labels = np.maximum(labels, is_spam(record))
+
+    # If there are no more documents to check, return the labels
+    if labels.min() >= 0:
+        return labels
 
     # Extract the documents
     docs = record.iloc[
@@ -518,6 +526,10 @@ def use_danlp_model(record) -> np.ndarray:
     labels = np.maximum(labels, is_dr_answer(record))
     labels = np.maximum(labels, is_spam(record))
 
+    # If there are no more documents to check, return the labels
+    if labels.min() >= 0:
+        return labels
+
     # Extract the documents
     docs = record.iloc[[idx for idx, lbl in enumerate(labels) if lbl == ABSTAIN]].text
 
@@ -591,6 +603,10 @@ def use_attack_model(record) -> np.ndarray:
     labels = np.maximum(labels, is_dr_answer(record))
     labels = np.maximum(labels, is_spam(record))
 
+    # If there are no more documents to check, return the labels
+    if labels.min() >= 0:
+        return labels
+
     # Extract the documents
     docs = record.iloc[[idx for idx, lbl in enumerate(labels) if lbl == ABSTAIN]].text
 
@@ -657,6 +673,10 @@ def use_tfidf_model(record) -> np.ndarray:
     labels = np.maximum(labels, is_dr_answer(record))
     labels = np.maximum(labels, is_spam(record))
 
+    # If there are no more documents to check, return the labels
+    if labels.min() >= 0:
+        return labels
+
     # Extract the documents
     docs = record.iloc[[idx for idx, lbl in enumerate(labels) if lbl == ABSTAIN]].text
 
@@ -702,6 +722,10 @@ def has_been_moderated(record) -> np.ndarray:
     # documents that needs to be checked
     labels = np.maximum(labels, is_dr_answer(record))
     labels = np.maximum(labels, is_spam(record))
+
+    # If there are no more documents to check, return the labels
+    if labels.min() >= 0:
+        return labels
 
     # Extract the documents
     actions = record.iloc[
