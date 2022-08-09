@@ -512,7 +512,6 @@ def use_danlp_model(record) -> np.ndarray:
     # documents that needs to be checked
     labels = np.maximum(labels, is_dr_answer(record))
     labels = np.maximum(labels, is_spam(record))
-    labels = np.maximum(labels, is_mention(record))
 
     # Extract the documents
     docs = record.iloc[[idx for idx, lbl in enumerate(labels) if lbl == ABSTAIN]].text
@@ -533,7 +532,7 @@ def use_danlp_model(record) -> np.ndarray:
             preds = danlp_model(**inputs).logits  # type: ignore [name-defined]
 
         # Extract the offensive probability
-        offensive_probs = torch.softmax(preds, dim=-1)[:, -1].cpu().numpy()
+        offensive_probs = torch.softmax(preds, dim=-1)[:, -1]  # .cpu().numpy()
 
     # Compute the final labels
     def compute_label(offensive_prob: float):
@@ -586,7 +585,6 @@ def use_attack_model(record) -> np.ndarray:
     # documents that needs to be checked
     labels = np.maximum(labels, is_dr_answer(record))
     labels = np.maximum(labels, is_spam(record))
-    labels = np.maximum(labels, is_mention(record))
 
     # Extract the documents
     docs = record.iloc[[idx for idx, lbl in enumerate(labels) if lbl == ABSTAIN]].text
@@ -653,7 +651,6 @@ def use_tfidf_model(record) -> np.ndarray:
     # documents that needs to be checked
     labels = np.maximum(labels, is_dr_answer(record))
     labels = np.maximum(labels, is_spam(record))
-    labels = np.maximum(labels, is_mention(record))
 
     # Extract the documents
     docs = record.iloc[[idx for idx, lbl in enumerate(labels) if lbl == ABSTAIN]].text
@@ -700,7 +697,6 @@ def has_been_moderated(record) -> np.ndarray:
     # documents that needs to be checked
     labels = np.maximum(labels, is_dr_answer(record))
     labels = np.maximum(labels, is_spam(record))
-    labels = np.maximum(labels, is_mention(record))
 
     # Extract the documents
     actions = record.iloc[
