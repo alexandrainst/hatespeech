@@ -378,7 +378,8 @@ def is_mention(record) -> np.ndarray:
         predictions = ner_model(**inputs).logits.argmax(dim=-1)  # type: ignore [name-defined]
 
     # Extract the NER tags
-    pad_idx = sent_tok.pad_token_id  # type: ignore [name-defined]
+    breakpoint()
+    pad_idx = ner_tok.pad_token_id  # type: ignore [name-defined]
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
         ner_tags_list = [
@@ -532,7 +533,7 @@ def use_danlp_model(record) -> np.ndarray:
             preds = danlp_model(**inputs).logits  # type: ignore [name-defined]
 
         # Extract the offensive probability
-        offensive_probs = torch.softmax(preds, dim=-1)[:, -1]  # .cpu().numpy()
+        offensive_probs = torch.softmax(preds, dim=-1)[:, -1]
 
     # Compute the final labels
     def compute_label(offensive_prob: float):
@@ -606,7 +607,7 @@ def use_attack_model(record) -> np.ndarray:
             pred = attack_model(**inputs)  # type: ignore [name-defined]
 
         # Extract the offensive probability
-        offensive_probs = torch.softmax(pred, dim=-1)[:, -1]  # .cpu().numpy()
+        offensive_probs = torch.softmax(pred, dim=-1)[:, -1]
 
     # Compute the final labels
     def compute_label(offensive_prob: float):
@@ -766,7 +767,7 @@ def has_positive_sentiment(record) -> np.ndarray:
             prediction = sent_model(**inputs).logits  # type: ignore [name-defined]
 
         # Extract the probability of the document being negative
-        negative_probs = torch.softmax(prediction, dim=-1)[:, 0]  # .cpu().numpy()
+        negative_probs = torch.softmax(prediction, dim=-1)[:, 0]
 
     # Compute the final labels
     def compute_label(negative_prob: float):
