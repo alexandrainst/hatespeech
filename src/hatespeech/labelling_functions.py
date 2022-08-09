@@ -439,8 +439,6 @@ def is_mention(record) -> np.ndarray:
             labels[idx] = compute_label(pairs[pair_idx])
             pair_idx += 1
 
-    breakpoint()
-
     return labels
 
 
