@@ -29,7 +29,7 @@ class ImprovedPandasLFApplier(BaseLFApplier):
     def apply(
         self,
         df: pd.DataFrame,
-        batch_size: int = 128,
+        batch_size: int = 1,
         progress_bar: bool = True,
     ) -> Union[np.ndarray, Tuple[np.ndarray, ApplierMetadata]]:
         """Label Pandas DataFrame of data points with LFs.
@@ -51,8 +51,6 @@ class ImprovedPandasLFApplier(BaseLFApplier):
 
         # Split up the dataframe into batches
         batches = np.split(df, np.arange(batch_size, len(df), batch_size))
-
-        breakpoint()
 
         # Apply the function to the dataframe
         itr = batches

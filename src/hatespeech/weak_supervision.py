@@ -66,8 +66,6 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
     # Remove the abstained data points
     df = df.query("label != -1")
 
-    breakpoint()
-
     # Save the dataframe
     data_dir = Path(config.data.weakly_supervised.dir)
     path = data_dir / config.data.weakly_supervised.fname
