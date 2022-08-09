@@ -13,17 +13,7 @@ from tqdm.auto import tqdm
 
 
 class ImprovedPandasLFApplier(BaseLFApplier):
-    """LF applier for a Pandas DataFrame.
-
-    Examples:
-        >>> from snorkel.labeling import labeling_function
-        >>> @labeling_function()
-        ... def is_big_num(x):
-        ...     return 1 if x.num > 42 else 0
-        >>> applier = PandasLFApplier([is_big_num])
-        >>> applier.apply(pd.DataFrame(dict(num=[10, 100], text=["hello", "hi"])))
-        array([[0], [1]])
-    """
+    """LF applier for a Pandas DataFrame."""
 
     def apply(
         self,

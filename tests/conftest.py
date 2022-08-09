@@ -10,5 +10,6 @@ initialize(config_path="../config", version_base=None)
 @pytest.fixture(scope="session")
 def config():
     return compose(
-        config_name="config", overrides=["testing=True", "data=test_offensive"]
+        config_name="config",
+        overrides=["testing=True", "data=test_offensive", "lf_batch_size=2"],
     )

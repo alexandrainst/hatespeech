@@ -286,4 +286,5 @@ positive_swear_word_record = pd.Series(
     ],
 )
 def test_labelling_function(labelling_function, record, expected_result):
-    assert labelling_function(record) == expected_result
+    df = record.to_frame().transpose()
+    assert labelling_function(df)[0] == expected_result
