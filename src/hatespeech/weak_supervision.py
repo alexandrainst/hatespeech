@@ -65,8 +65,6 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
     # Compute the training labels and add them to the dataframe
     df["label"] = label_model.predict(L=lf_output_arr, tie_break_policy="abstain")
 
-    breakpoint()
-
     # Remove the abstained data points
     df = df.query("label != -1")
 
