@@ -28,7 +28,7 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
             The data with weakly supervised labels.
     """
     # Load the cleaned data
-    df = load_cleaned_data(config)
+    df = load_cleaned_data(config).iloc[:100_000]
 
     # Load the models to be used in the labelling functions
     logger.info("Loading models to be used in the weak labelling")
@@ -36,17 +36,17 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
 
     # Define the list of labelling functions
     lf_list = [
-        # lfs.contains_offensive_word,
-        # lfs.is_all_caps,
-        # lfs.contains_positive_swear_word,
+        lfs.contains_offensive_word,
+        lfs.is_all_caps,
+        lfs.contains_positive_swear_word,
         lfs.is_dr_answer,
-        # lfs.has_been_moderated,
+        lfs.has_been_moderated,
         lfs.is_spam,
-        # lfs.is_mention,
+        lfs.is_mention,
         lfs.use_danlp_model,
-        # lfs.use_attack_model,
-        # lfs.use_tfidf_model,
-        # lfs.has_positive_sentiment,
+        lfs.use_attack_model,
+        lfs.use_tfidf_model,
+        lfs.has_positive_sentiment,
     ]
 
     # Log progress
