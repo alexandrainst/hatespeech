@@ -53,8 +53,9 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
     logger.info(f"Applying weak supervision with {len(lf_list)} labelling functions")
 
     # Apply the LFs to the unlabeled training data
+    n_jobs = mp.cpu_count() - 1 if config.n_jobs == -1 else config.n_jobs
     applier = PandasParallelLFApplier(lf_list)
-    lf_df = applier.apply(df, n_parallel=mp.cpu_count() - 1)
+    lf_df = applier.apply(df, n_parallel=n_jobs)
 
     # Train the label model
     label_model = LabelModel(cardinality=2)
