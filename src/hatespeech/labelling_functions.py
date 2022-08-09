@@ -378,17 +378,23 @@ def is_mention(record) -> np.ndarray:
         predictions = ner_model(**inputs).logits.argmax(dim=-1)  # type: ignore [name-defined]
 
     # Extract the NER tags
+    per_tag_idxs = torch.tensor(
+        [
+            idx
+            for idx, lbl in ner_model.config.id2label.items()  # type: ignore [name-defined]
+            if lbl.endswith("PER")
+        ],
+        device=DEVICE,
+    )
     breakpoint()
     pad_idx = ner_tok.pad_token_id  # type: ignore [name-defined]
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
         ner_tags_list = [
-            [
-                ner_model.config.id2label[label_id.item()]  # type: ignore [name-defined]
-                for label_id in label_tensor[label_tensor != pad_idx]
-            ]
+            torch.isin(label_tensor[label_tensor != pad_idx], per_tag_idxs)
             for label_tensor in predictions
         ]
+    breakpoint()
 
     # Propagate the NER tags from the first token in each word to the rest of the word
     for doc_idx, ner_tags in enumerate(ner_tags_list):
