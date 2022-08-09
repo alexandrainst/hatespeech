@@ -7,7 +7,7 @@ defaults:
 models:
   dir: models
 
-lf_batch_size: 32
+lf_batch_size: 512
 seed: 4242
 testing: False
 train_split_truncation_length: -1

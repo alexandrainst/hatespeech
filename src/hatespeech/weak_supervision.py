@@ -1,12 +1,10 @@
 """Weak supervision module to create labels in an unsupervised setting."""
 
 import logging
-import os
 from pathlib import Path
 
 import hydra
 import pandas as pd
-import torch
 from omegaconf import DictConfig
 from snorkel.labeling.model import LabelModel
 

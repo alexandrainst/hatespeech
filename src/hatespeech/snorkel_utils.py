@@ -4,6 +4,7 @@ import itertools as it
 from functools import partial
 from typing import List, Tuple, Union
 
+import more_itertools as mit
 import numpy as np
 import pandas as pd
 from snorkel.labeling.apply.core import ApplierMetadata, BaseLFApplier
@@ -49,12 +50,16 @@ class ImprovedPandasLFApplier(BaseLFApplier):
         apply_fn = partial(batched_apply_lfs_to_data_point, lfs=self._lfs)
 
         # Split up the dataframe into batches
-        batches = np.split(df, np.arange(batch_size, len(df), batch_size))
+        batches = mit.ichunked(df, n=batch_size)
+        num_batches = len(df) // batch_size
+        if len(df) % batch_size != 0:
+            num_batches += 1
+        # batches = np.split(df, np.arange(batch_size, len(df), batch_size))
 
         # Apply the function to the dataframe
         itr = batches
         if progress_bar:
-            itr = tqdm(itr, total=len(batches), desc="Applying LFs to batches")
+            itr = tqdm(itr, total=num_batches, desc="Applying LFs to batches")
         labels = list(it.chain(*[apply_fn(batch) for batch in itr]))
 
         # Add row indices to the labels
