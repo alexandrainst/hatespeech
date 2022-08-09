@@ -43,7 +43,7 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
         # lfs.has_been_moderated,
         lfs.is_spam,
         # lfs.is_mention,
-        # lfs.use_danlp_model,
+        lfs.use_danlp_model,
         # lfs.use_attack_model,
         # lfs.use_tfidf_model,
         # lfs.has_positive_sentiment,
@@ -65,6 +65,8 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
 
     # Remove the abstained data points
     df = df.query("label != -1")
+
+    breakpoint()
 
     # Save the dataframe
     data_dir = Path(config.data.weakly_supervised.dir)
