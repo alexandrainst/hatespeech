@@ -390,35 +390,31 @@ def is_mention(record) -> np.ndarray:
     pad_idx = ner_tok.pad_token_id  # type: ignore [name-defined]
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
-        ner_tags_list = [
+        tag_list = [
             torch.isin(
                 label_tensor[inputs["input_ids"][doc_idx] != pad_idx], per_tag_idxs
             )
             for doc_idx, label_tensor in enumerate(predictions)
         ]
-    breakpoint()
 
-    # Propagate the NER tags from the first token in each word to the rest of the word
-    for doc_idx, ner_tags in enumerate(ner_tags_list):
-        ner_tag = "O"
+    # Propagate the PER tags from the first token in each word to the rest of the word
+    for doc_idx, ner_tags in enumerate(tag_list):
+        is_per_tag = False
         for token_idx in range(1, len(ner_tags)):
             beginning_of_word = (
                 word_idxs[doc_idx, token_idx - 1] != word_idxs[doc_idx, token_idx]
             )
             if beginning_of_word:
-                ner_tag = ner_tags_list[doc_idx][token_idx]
+                is_per_tag = tag_list[doc_idx][token_idx]
             else:
-                ner_tags_list[doc_idx][token_idx] = ner_tag
+                tag_list[doc_idx][token_idx] = is_per_tag
 
     # Remove the first and last token from the list of NER tags, as they are just
     # the special tokens <s> and </s>
-    ner_tags_list = [ner_tags[1:-1] for ner_tags in ner_tags_list]
+    tag_list = [ner_tags[1:-1] for ner_tags in tag_list]
 
     # Count all the non-person tokens
-    num_non_person_tokens_list = [
-        sum(1 for tag in ner_tags if not tag.endswith("PER"))
-        for ner_tags in ner_tags_list
-    ]
+    num_non_person_tokens_list = [torch.sum(tensor == 0) for tensor in tag_list]
 
     # Get the documents with offensive words
     offensive_words = contains_offensive_word(record)
@@ -442,6 +438,8 @@ def is_mention(record) -> np.ndarray:
         if labels[idx] == ABSTAIN:
             labels[idx] = compute_label(pairs[pair_idx])
             pair_idx += 1
+
+    breakpoint()
 
     return labels
 
