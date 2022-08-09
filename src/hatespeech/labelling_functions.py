@@ -158,6 +158,7 @@ def contains_offensive_word(record) -> np.ndarray:
 
     # Check if any of the documents are DR answers or spam, and mark the remaining
     # documents that needs to be checked
+    breakpoint()
     labels = np.maximum(labels, is_dr_answer(record))
     labels = np.maximum(labels, is_spam(record))
 
@@ -458,6 +459,7 @@ def is_dr_answer(record) -> np.ndarray:
             The assigned labels, where 0 is not offensive, 1 is offensive, and -1 is
             abstain.
     """
+    breakpoint()
     # Initialise the array of labels
     labels = np.full(shape=len(record), fill_value=ABSTAIN, dtype=np.int8)
 
