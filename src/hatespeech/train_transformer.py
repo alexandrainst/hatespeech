@@ -1,5 +1,6 @@
 """Training of a transformer-based offensive speech classifier."""
 
+import os
 from typing import Dict
 
 import hydra
@@ -30,6 +31,10 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
         AutoModelForSequenceClassification:
             The trained model.
     """
+    # Deal with full determinism
+    if config.transformer_model.full_determinism:
+        os.environ["CUBLAS_WORKSPACE_CONFIG"] = "4096:8"
+
     # Load the data
     data_dict = load_splits(config)
     train_df = data_dict["train"]
