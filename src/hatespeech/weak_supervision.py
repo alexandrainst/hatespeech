@@ -2,6 +2,7 @@
 
 import logging
 import multiprocessing as mp
+import os
 from pathlib import Path
 
 import hydra
@@ -52,8 +53,13 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
     # Log progress
     logger.info(f"Applying weak supervision with {len(lf_list)} labelling functions")
 
-    # Apply the LFs to the unlabeled training data
+    # Disable tokenizer parallelism
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
+    # Set the number of parallel jobs
     n_jobs = mp.cpu_count() - 1 if config.n_jobs == -1 else config.n_jobs
+
+    # Apply the LFs to the unlabeled training data
     applier = PandasParallelLFApplier(lf_list)
     lf_df = applier.apply(df, n_parallel=n_jobs)
 
