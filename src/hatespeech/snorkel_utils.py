@@ -52,6 +52,8 @@ class ImprovedPandasLFApplier(BaseLFApplier):
         # Split up the dataframe into batches
         batches = np.split(df, np.arange(batch_size, len(df), batch_size))
 
+        breakpoint()
+
         # Apply the function to the dataframe
         itr = batches
         if progress_bar:
