@@ -376,9 +376,7 @@ def is_mention(record) -> np.ndarray:
     # Get the model predictions
     with torch.no_grad():
         logits = ner_model(**inputs).logits  # type: ignore [name-defined]
-        breakpoint()
         predictions = logits.argmax(dim=-1)
-    breakpoint()
 
     # Extract the NER tags
     per_tag_idxs = torch.tensor(
@@ -389,13 +387,14 @@ def is_mention(record) -> np.ndarray:
         ],
         device=DEVICE,
     )
-    breakpoint()
     pad_idx = ner_tok.pad_token_id  # type: ignore [name-defined]
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
         ner_tags_list = [
-            torch.isin(label_tensor[label_tensor != pad_idx], per_tag_idxs)
-            for label_tensor in predictions
+            torch.isin(
+                label_tensor[inputs["input_ids"][doc_idx] != pad_idx], per_tag_idxs
+            )
+            for doc_idx, label_tensor in enumerate(predictions)
         ]
     breakpoint()
 
