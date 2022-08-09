@@ -375,7 +375,9 @@ def is_mention(record) -> np.ndarray:
 
     # Get the model predictions
     with torch.no_grad():
-        predictions = ner_model(**inputs).logits.argmax(dim=-1)  # type: ignore [name-defined]
+        logits = ner_model(**inputs).logits  # type: ignore [name-defined]
+        breakpoint()
+        predictions = logits.argmax(dim=-1)
     breakpoint()
 
     # Extract the NER tags
