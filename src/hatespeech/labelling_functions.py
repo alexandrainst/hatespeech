@@ -606,7 +606,7 @@ def use_attack_model(record) -> np.ndarray:
             pred = attack_model(**inputs)  # type: ignore [name-defined]
 
         # Extract the offensive probability
-        offensive_probs = torch.softmax(pred, dim=-1)[:, -1].cpu().numpy()
+        offensive_probs = torch.softmax(pred, dim=-1)[:, -1]  # .cpu().numpy()
 
     # Compute the final labels
     def compute_label(offensive_prob: float):
@@ -766,7 +766,7 @@ def has_positive_sentiment(record) -> np.ndarray:
             prediction = sent_model(**inputs).logits  # type: ignore [name-defined]
 
         # Extract the probability of the document being negative
-        negative_probs = torch.softmax(prediction, dim=-1)[:, 0].cpu().numpy()
+        negative_probs = torch.softmax(prediction, dim=-1)[:, 0]  # .cpu().numpy()
 
     # Compute the final labels
     def compute_label(negative_prob: float):
