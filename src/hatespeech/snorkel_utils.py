@@ -50,7 +50,10 @@ class ImprovedPandasLFApplier(BaseLFApplier):
         apply_fn = partial(batched_apply_lfs_to_data_point, lfs=self._lfs)
 
         # Split up the dataframe into batches
-        batches = mit.chunked(df, n=batch_size)
+        batches = iter(
+            [df.iloc[idx : idx + batch_size] for idx in range(0, len(df), batch_size)]
+            + [df.iloc[-batch_size:]]
+        )
         num_batches = len(df) // batch_size
         if len(df) % batch_size != 0:
             num_batches += 1
