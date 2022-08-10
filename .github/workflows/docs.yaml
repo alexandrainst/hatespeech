@@ -53,7 +53,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Build documentation
-        run: poetry run pdoc --docformat google src/dr_hatespeech -o docs
+        run: poetry run pdoc --docformat google src/hatespeech -o docs
 
       - name: Compress documentation
         run: tar --directory docs/ -hcf artifact.tar .
