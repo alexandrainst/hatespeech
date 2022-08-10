@@ -476,7 +476,7 @@ def is_dr_answer(record) -> np.ndarray:
     dr_phrases = [
         r"vi har slettet din kommentar",
         r"overskrider vores retningslinjer",
-        r"\W(m?vh\.?|/+) *[a-zæøå]+ *[/,]+ *dr",
+        r"\W(m?vh\.?|/+) *[a-zæøå]* *[/,]* *dr",
     ]
 
     # Compute the final labels
