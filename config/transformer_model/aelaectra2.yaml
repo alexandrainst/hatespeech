@@ -1,5 +1,5 @@
 # Model
-name: aelaectra
+name: aelaectra2
 model_id: Maltehb/aelaectra-danish-electra-small-cased
 from_flax: False
 use_auth_token: False
