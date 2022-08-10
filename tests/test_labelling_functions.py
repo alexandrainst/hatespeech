@@ -150,7 +150,7 @@ positive_swear_word_record = pd.Series(
         (lfs.is_mention, offensive_record3, lfs.ABSTAIN),
         (lfs.is_mention, positive_record, lfs.ABSTAIN),
         (lfs.is_mention, mention_record, lfs.NOT_OFFENSIVE),
-        (lfs.is_mention, dr_answer_record, lfs.ABSTAIN),
+        (lfs.is_mention, dr_answer_record, lfs.NOT_OFFENSIVE),
         (lfs.is_mention, all_caps_record, lfs.ABSTAIN),
         (lfs.is_mention, positive_swear_word_record, lfs.ABSTAIN),
         (lfs.is_dr_answer, offensive_record1, lfs.ABSTAIN),
@@ -174,7 +174,7 @@ positive_swear_word_record = pd.Series(
         (lfs.use_attack_model, offensive_record3, lfs.ABSTAIN),
         (lfs.use_attack_model, positive_record, lfs.ABSTAIN),
         (lfs.use_attack_model, mention_record, lfs.ABSTAIN),
-        (lfs.use_attack_model, dr_answer_record, lfs.ABSTAIN),
+        (lfs.use_attack_model, dr_answer_record, lfs.NOT_OFFENSIVE),
         (lfs.use_attack_model, all_caps_record, lfs.ABSTAIN),
         (lfs.use_attack_model, positive_swear_word_record, lfs.ABSTAIN),
         (lfs.use_tfidf_model, offensive_record1, lfs.ABSTAIN),
@@ -286,4 +286,5 @@ positive_swear_word_record = pd.Series(
     ],
 )
 def test_labelling_function(labelling_function, record, expected_result):
-    assert labelling_function(record) == expected_result
+    df = record.to_frame().transpose()
+    assert labelling_function(df)[0] == expected_result

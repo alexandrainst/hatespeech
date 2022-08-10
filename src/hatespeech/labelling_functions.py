@@ -2,9 +2,11 @@
 
 import re
 import warnings
+from typing import Tuple
 
 import joblib
 import nltk
+import numpy as np
 import torch
 from snorkel.labeling import labeling_function
 from tqdm.auto import tqdm
@@ -95,7 +97,7 @@ def initialise_models():
 
 
 @labeling_function()
-def is_spam(record) -> int:
+def is_spam(record) -> np.ndarray:
     """Check if the document is spam.
 
     This will mark the document as not offensive if it is spam and abstain otherwise.
@@ -105,12 +107,15 @@ def is_spam(record) -> int:
             The record containing the document to be checked.
 
     Returns:
-        int:
-            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+        NumPy array:
+            The assigned labels, where 0 is not offensive, 1 is offensive, and -1 is
             abstain.
     """
-    # Extract the document
-    doc = record.text
+    # Initialise the array of labels
+    labels = np.full(shape=len(record), fill_value=ABSTAIN, dtype=np.int8)
+
+    # Extract the documents
+    docs = record.text
 
     # Define list of spam phrases
     spam_phrases = [
@@ -120,16 +125,20 @@ def is_spam(record) -> int:
         r"kennenlernen",
     ]
 
-    # Mark document as not offensive if it contains any of the spam phrases and abstain
-    # otherwise
-    if any(re.search(regex, doc.lower()) for regex in spam_phrases):
-        return NOT_OFFENSIVE
-    else:
-        return ABSTAIN
+    # Compute the final labels
+    def compute_label(doc: str):
+        if any(re.search(regex, doc.lower()) for regex in spam_phrases):
+            return NOT_OFFENSIVE
+        else:
+            return ABSTAIN
+
+    labels[:] = [compute_label(doc) for doc in docs]
+
+    return labels
 
 
 @labeling_function()
-def contains_offensive_word(record) -> int:
+def contains_offensive_word(record) -> np.ndarray:
     """Check if the document contains an offensive word.
 
     This will mark the document as offensive if it contains an offensive word
@@ -140,12 +149,26 @@ def contains_offensive_word(record) -> int:
             The record containing the document to be checked.
 
     Returns:
-        int:
-            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+        NumPy array of the same shape as the input:
+            The assigned labels, where 0 is not offensive, 1 is offensive, and -1 is
             abstain.
     """
-    # Extract the document
-    doc = record.text
+    # Initialise the array of labels
+    labels = np.full(shape=len(record), fill_value=ABSTAIN, dtype=np.int8)
+
+    # Check if any of the documents are DR answers or spam, and mark the remaining
+    # documents that needs to be checked
+    labels = np.maximum(labels, is_dr_answer(record))
+    labels = np.maximum(labels, is_spam(record))
+
+    # If there are no more documents to check, return the labels
+    if labels.min() >= 0:
+        return labels
+
+    # Extract the documents
+    docs = record.iloc[
+        [idx for idx, lbl in enumerate(labels) if lbl == ABSTAIN]
+    ].text.tolist()
 
     # Define list of offensive words
     offensive_words = [
@@ -191,18 +214,24 @@ def contains_offensive_word(record) -> int:
         r"(\W|^)([sz]va+g)?pi+[sz]+(e|er|ere)?(\W|$)",
     ]
 
-    # Mark document as offensive if it contains an offensive word, and abstain
-    # otherwise
-    if is_dr_answer(record) == NOT_OFFENSIVE or is_spam(record) == NOT_OFFENSIVE:
-        return NOT_OFFENSIVE
-    elif any(re.search(regex, doc.lower()) for regex in offensive_words):
-        return OFFENSIVE
-    else:
-        return ABSTAIN
+    # Compute the final labels
+    def compute_label(doc: str):
+        if any(re.search(regex, doc.lower()) for regex in offensive_words):
+            return OFFENSIVE
+        else:
+            return ABSTAIN
+
+    doc_idx = 0
+    for idx in range(len(record)):
+        if labels[idx] == ABSTAIN:
+            labels[idx] = compute_label(docs[doc_idx])
+            doc_idx += 1
+
+    return labels
 
 
 @labeling_function()
-def is_all_caps(record) -> int:
+def is_all_caps(record) -> np.ndarray:
     """Check if the document is written in all caps.
 
     This will mark the document as offensive if it is written in all caps , and abstain
@@ -213,22 +242,30 @@ def is_all_caps(record) -> int:
             The record containing the document to be checked.
 
     Returns:
-        int:
-            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+        NumPy array:
+            The assigned labels, where 0 is not offensive, 1 is offensive, and -1 is
             abstain.
     """
-    # Extract the document
-    doc = record.text
+    # Initialise the array of labels
+    labels = np.full(shape=len(record), fill_value=ABSTAIN, dtype=np.int8)
 
-    # Mark document as offensive if it is written in all caps, and abstain otherwise
-    if doc.isupper():
-        return OFFENSIVE
-    else:
-        return ABSTAIN
+    # Extract the documents
+    docs = record.text
+
+    # Compute the final labels
+    def compute_label(doc: str):
+        if doc.isupper():
+            return OFFENSIVE
+        else:
+            return ABSTAIN
+
+    labels[:] = [compute_label(doc) for doc in docs]
+
+    return labels
 
 
 @labeling_function()
-def contains_positive_swear_word(record) -> int:
+def contains_positive_swear_word(record) -> np.ndarray:
     """Check if the document contains a swear word used in a positive way.
 
     This will mark the document as not offensive if it contains a swear word used in a
@@ -239,12 +276,15 @@ def contains_positive_swear_word(record) -> int:
             The record containing the document to be checked.
 
     Returns:
-        int:
-            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+        NumPy array:
+            The assigned labels, where 0 is not offensive, 1 is offensive, and -1 is
             abstain.
     """
-    # Extract the document
-    doc = record.text
+    # Initialise the array of labels
+    labels = np.full(shape=len(record), fill_value=ABSTAIN, dtype=np.int8)
+
+    # Extract the documents
+    docs = record.text
 
     # Define list of offensive words
     positive_swear_words = [
@@ -256,16 +296,20 @@ def contains_positive_swear_word(record) -> int:
         r"ho+ld da+ k[æ?]+ft",
     ]
 
-    # Mark document as not offensive if it contains a positive swear word, and abstain
-    # otherwise
-    if any(re.search(regex, doc.lower()) for regex in positive_swear_words):
-        return NOT_OFFENSIVE
-    else:
-        return ABSTAIN
+    # Compute the final labels
+    def compute_label(doc: str):
+        if any(re.search(regex, doc.lower()) for regex in positive_swear_words):
+            return NOT_OFFENSIVE
+        else:
+            return ABSTAIN
+
+    labels[:] = [compute_label(doc) for doc in docs]
+
+    return labels
 
 
 @labeling_function()
-def is_mention(record) -> int:
+def is_mention(record) -> np.ndarray:
     """Check if the document consists of only mentions.
 
     This will mark the document as not offensive if it consists of only mentions, and
@@ -276,30 +320,10 @@ def is_mention(record) -> int:
             The record containing the document to be checked.
 
     Returns:
-        int:
-            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+        NumPy array:
+            The assigned labels, where 0 is not offensive, 1 is offensive, and -1 is
             abstain.
     """
-    # Extract the document
-    doc = record.text
-
-    # Remove special characters, such as links, by removing all upper case letters
-    # enclosed in square brackets
-    doc = re.sub(r"\[[A-ZÆØÅ]+\]", "", doc)
-
-    # Only preserve characters and spaces
-    doc = re.sub(r"[^A-ZÆØÅa-zæøå ]", "", doc)
-
-    # Remove duplicate and trailing spaces
-    doc = re.sub(r" +", " ", doc).strip()
-
-    # Split up the document into words
-    try:
-        words = nltk.word_tokenize(doc)
-    except LookupError:
-        initialise_models()
-        words = nltk.word_tokenize(doc)
-
     # Load model if it has not been loaded yet
     if "ner_tok" not in globals() or "ner_model" not in globals():
         initialise_models()
@@ -308,56 +332,126 @@ def is_mention(record) -> int:
     if ner_tok.model_max_length > 100_000:  # type: ignore [name-defined]
         ner_tok.model_max_length = 512  # type: ignore [name-defined]
 
+    # Initialise the array of labels
+    labels = np.full(shape=len(record), fill_value=ABSTAIN, dtype=np.int8)
+
+    # Check if any of the documents are DR answers or spam, and mark the remaining
+    # documents that needs to be checked
+    labels = np.maximum(labels, is_dr_answer(record))
+    labels = np.maximum(labels, is_spam(record))
+
+    # If there are no more documents to check, return the labels
+    if labels.min() >= 0:
+        return labels
+
+    # Extract the documents
+    docs = record.iloc[
+        [idx for idx, lbl in enumerate(labels) if lbl == ABSTAIN]
+    ].text.tolist()
+
+    # Remove special characters, such as links, by removing all upper case letters
+    # enclosed in square brackets
+    docs = [re.sub(r"\[[A-ZÆØÅ]+\]", "", doc) for doc in docs]
+
+    # Only preserve characters and spaces
+    docs = [re.sub(r"[^A-ZÆØÅa-zæøå ]", "", doc) for doc in docs]
+
+    # Remove duplicate and trailing spaces
+    docs = [re.sub(r" +", " ", doc).strip() for doc in docs]
+
+    # Split up the document into words
+    try:
+        words = [nltk.word_tokenize(doc) for doc in docs]
+    except LookupError:
+        initialise_models()
+        words = [nltk.word_tokenize(doc) for doc in docs]
+
     # Tokenise the words
     inputs = ner_tok(  # type: ignore [name-defined]
-        words, truncation=True, return_tensors="pt", is_split_into_words=True
+        words,
+        truncation=True,
+        padding=True,
+        return_tensors="pt",
+        is_split_into_words=True,
     )
 
     # Get the list of word indices
-    word_idxs = inputs.word_ids()
+    word_idxs = np.asarray([inputs.word_ids(idx) for idx in range(len(docs))])
 
     # Move the tokens to the desired device
     inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
 
     # Get the model predictions
     with torch.no_grad():
-        predictions = ner_model(**inputs).logits[0]  # type: ignore [name-defined]
+        logits = ner_model(**inputs).logits  # type: ignore [name-defined]
+        predictions = logits.argmax(dim=-1)
 
     # Extract the NER tags
-    ner_tags = [
-        ner_model.config.id2label[label_id.item()]  # type: ignore [name-defined]
-        for label_id in predictions.argmax(dim=-1)
-    ]
+    per_tag_idxs = torch.tensor(
+        [
+            idx
+            for idx, lbl in ner_model.config.id2label.items()  # type: ignore [name-defined]
+            if lbl.endswith("PER")
+        ],
+        device=DEVICE,
+    )
+    pad_idx = ner_tok.pad_token_id  # type: ignore [name-defined]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        tag_list = [
+            torch.isin(
+                label_tensor[inputs["input_ids"][doc_idx] != pad_idx], per_tag_idxs
+            )
+            for doc_idx, label_tensor in enumerate(predictions)
+        ]
 
-    # Propagate the NER tags from the first token in each word to the rest of the word
-    ner_tag = "O"
-    for idx in range(1, len(ner_tags)):
-        beginning_of_word = word_idxs[idx - 1] != word_idxs[idx]
-        if beginning_of_word:
-            ner_tag = ner_tags[idx]
-        else:
-            ner_tags[idx] = ner_tag
+    # Propagate the PER tags from the first token in each word to the rest of the word
+    for doc_idx, ner_tags in enumerate(tag_list):
+        is_per_tag = False
+        for token_idx in range(1, len(ner_tags)):
+            beginning_of_word = (
+                word_idxs[doc_idx, token_idx - 1] != word_idxs[doc_idx, token_idx]
+            )
+            if beginning_of_word:
+                is_per_tag = tag_list[doc_idx][token_idx]
+            else:
+                tag_list[doc_idx][token_idx] = is_per_tag
 
     # Remove the first and last token from the list of NER tags, as they are just
     # the special tokens <s> and </s>
-    ner_tags = ner_tags[1:-1]
+    tag_list = [ner_tags[1:-1] for ner_tags in tag_list]
 
     # Count all the non-person tokens
-    num_non_person_tokens = sum(1 for tag in ner_tags if not tag.endswith("PER"))
+    num_non_person_tokens_list = [torch.sum(tensor == 0) for tensor in tag_list]
 
-    # If all the tokens are person tokens (plus potentially a non-offensive single
-    # word) then mark the document as not offensive, and abstain otherwise
-    contains_single_non_offensive_word = (
-        num_non_person_tokens == 1 and contains_offensive_word(record) != OFFENSIVE
-    )
-    if num_non_person_tokens == 0 or contains_single_non_offensive_word:
-        return NOT_OFFENSIVE
-    else:
-        return ABSTAIN
+    # Get the documents with offensive words
+    offensive_words = contains_offensive_word(record)
+
+    # Zip up the counts and the offensive word labels
+    pairs = list(zip(num_non_person_tokens_list, offensive_words))
+
+    # Compute the final labels
+    def compute_label(pair: Tuple[int, int]):
+        num_non_person_tokens, offensive_word = pair
+        contains_single_non_offensive_word = (
+            num_non_person_tokens == 1 and offensive_word != OFFENSIVE
+        )
+        if num_non_person_tokens == 0 or contains_single_non_offensive_word:
+            return NOT_OFFENSIVE
+        else:
+            return ABSTAIN
+
+    pair_idx = 0
+    for idx in range(labels.shape[0]):
+        if labels[idx] == ABSTAIN:
+            labels[idx] = compute_label(pairs[pair_idx])
+            pair_idx += 1
+
+    return labels
 
 
 @labeling_function()
-def is_dr_answer(record) -> int:
+def is_dr_answer(record) -> np.ndarray:
     """Check if the document is an official reply from DR.
 
     This will mark the document as not offensive if it contains an official reply from
@@ -368,30 +462,37 @@ def is_dr_answer(record) -> int:
             The record containing the document to be checked.
 
     Returns:
-        int:
-            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+        NumPy array:
+            The assigned labels, where 0 is not offensive, 1 is offensive, and -1 is
             abstain.
     """
-    # Extract the document
-    doc = record.text
+    # Initialise the array of labels
+    labels = np.full(shape=len(record), fill_value=ABSTAIN, dtype=np.int8)
+
+    # Extract the documents
+    docs = record.text
 
     # Define phrases the DR employees tend to use
     dr_phrases = [
         r"vi har slettet din kommentar",
         r"overskrider vores retningslinjer",
-        r"\W(m?vh\.?|/+) *[a-zæøå]+ *[/,]+ *dr",
+        r"\W(m?vh\.?|/+) *[a-zæøå]* *[/,]* *dr",
     ]
 
-    # If the document contains any of the phrases then mark it as not
-    # offensive, otherwise abstain
-    if any(re.search(regex, doc.lower()) for regex in dr_phrases):
-        return NOT_OFFENSIVE
-    else:
-        return ABSTAIN
+    # Compute the final labels
+    def compute_label(doc: str):
+        if any(re.search(regex, doc.lower()) for regex in dr_phrases):
+            return NOT_OFFENSIVE
+        else:
+            return ABSTAIN
+
+    labels[:] = [compute_label(doc) for doc in docs]
+
+    return labels
 
 
 @labeling_function()
-def use_danlp_model(record) -> int:
+def use_danlp_model(record) -> np.ndarray:
     """Apply the DaNLP ELECTRA hatespeech detection transformer model.
 
     This will apply the model DaNLP/da-electra-hatespeech-detection.
@@ -405,55 +506,71 @@ def use_danlp_model(record) -> int:
             The record containing the document to be checked.
 
     Returns:
-        int:
-            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+        NumPy array of the same shape as the input:
+            The assigned labels, where 0 is not offensive, 1 is offensive, and -1 is
             abstain.
     """
     # Load model if it has not been loaded yet
     if "danlp_tok" not in globals() or "danlp_model" not in globals():
         initialise_models()
 
-    # Extract the document
-    doc = record.text
-
     # Set `model_max_length` if not specified
     if danlp_tok.model_max_length > 100_000:  # type: ignore [name-defined]
         danlp_tok.model_max_length = 512  # type: ignore [name-defined]
+
+    # Initialise the array of labels
+    labels = np.full(shape=len(record), fill_value=ABSTAIN, dtype=np.int8)
+
+    # Check if any of the documents are DR answers or spam, and mark the remaining
+    # documents that needs to be checked
+    labels = np.maximum(labels, is_dr_answer(record))
+    labels = np.maximum(labels, is_spam(record))
+
+    # If there are no more documents to check, return the labels
+    if labels.min() >= 0:
+        return labels
+
+    # Extract the documents
+    docs = record.iloc[[idx for idx, lbl in enumerate(labels) if lbl == ABSTAIN]].text
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
 
         # Tokenise the document
         inputs = danlp_tok(  # type: ignore [name-defined]
-            doc, truncation=True, return_tensors="pt"
+            docs.tolist(), truncation=True, padding=True, return_tensors="pt"
         )
 
         # Move the tokens to the desired device
         inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
 
         # Get the predictions
-        pred = danlp_model(**inputs).logits[0]  # type: ignore [name-defined]
+        with torch.no_grad():
+            preds = danlp_model(**inputs).logits  # type: ignore [name-defined]
 
         # Extract the offensive probability
-        offensive_prob = torch.softmax(pred, dim=-1)[-1].item()
+        offensive_probs = torch.softmax(preds, dim=-1)[:, -1]
 
-    # If the model predicts that the document is offensive with confidence above 50%
-    # then mark it as offensive, if it predicts it is not offensive with confidence
-    # above 99.9% then mark it as not offensive, otherwise abstain
-    if (
-        is_dr_answer(record) == NOT_OFFENSIVE
-        or is_spam(record) == NOT_OFFENSIVE
-        or offensive_prob < 0.001
-    ):
-        return NOT_OFFENSIVE
-    elif offensive_prob > 0.5:
-        return OFFENSIVE
-    else:
-        return ABSTAIN
+    # Compute the final labels
+    def compute_label(offensive_prob: float):
+        if offensive_prob < 0.001:
+            return NOT_OFFENSIVE
+        elif offensive_prob > 0.5:
+            return OFFENSIVE
+        else:
+            return ABSTAIN
+
+    prob_idx = 0
+    for idx in range(labels.shape[0]):
+        if labels[idx] == ABSTAIN:
+            labels[idx] = compute_label(offensive_probs[prob_idx])
+            prob_idx += 1
+
+    return labels
 
 
 @labeling_function()
-def use_attack_model(record) -> int:
+def use_attack_model(record) -> np.ndarray:
     """Apply the A-ttack hatespeech detection transformer model.
 
     This model can be found at https://github.com/ogtal/A-ttack.
@@ -466,27 +583,39 @@ def use_attack_model(record) -> int:
             The record containing the document to be checked.
 
     Returns:
-        int:
-            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+        NumPy array:
+            The assigned labels, where 0 is not offensive, 1 is offensive, and -1 is
             abstain.
     """
     # Load model if it has not been loaded yet
     if "attack_tok" not in globals() or "attack_model" not in globals():
         initialise_models()
 
-    # Extract the document
-    doc = record.text
-
     # Set `model_max_length` if not specified
     if attack_tok.model_max_length > 100_000:  # type: ignore [name-defined]
         attack_tok.model_max_length = 512  # type: ignore [name-defined]
+
+    # Initialise the array of labels
+    labels = np.full(shape=len(record), fill_value=ABSTAIN, dtype=np.int8)
+
+    # Check if any of the documents are DR answers or spam, and mark the remaining
+    # documents that needs to be checked
+    labels = np.maximum(labels, is_dr_answer(record))
+    labels = np.maximum(labels, is_spam(record))
+
+    # If there are no more documents to check, return the labels
+    if labels.min() >= 0:
+        return labels
+
+    # Extract the documents
+    docs = record.iloc[[idx for idx, lbl in enumerate(labels) if lbl == ABSTAIN]].text
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
 
         # Tokenise the document
         inputs = attack_tok(  # type: ignore [name-defined]
-            doc, truncation=True, return_tensors="pt"
+            docs.tolist(), truncation=True, padding=True, return_tensors="pt"
         )
 
         # Move the tokens to the desired device
@@ -494,21 +623,30 @@ def use_attack_model(record) -> int:
         inputs.pop("token_type_ids")
 
         # Get the predictions
-        pred = attack_model(**inputs)[0]  # type: ignore [name-defined]
+        with torch.no_grad():
+            pred = attack_model(**inputs)  # type: ignore [name-defined]
 
         # Extract the offensive probability
-        offensive_prob = torch.softmax(pred, dim=-1)[-1].item()
+        offensive_probs = torch.softmax(pred, dim=-1)[:, -1]
 
-    # If the model predicts that the document is offensive with confidence above 50%
-    # then mark it as offensive, otherwise abstain
-    if offensive_prob > 0.5:
-        return OFFENSIVE
-    else:
-        return ABSTAIN
+    # Compute the final labels
+    def compute_label(offensive_prob: float):
+        if offensive_prob > 0.5:
+            return OFFENSIVE
+        else:
+            return ABSTAIN
+
+    prob_idx = 0
+    for idx in range(labels.shape[0]):
+        if labels[idx] == ABSTAIN:
+            labels[idx] = compute_label(offensive_probs[prob_idx])
+            prob_idx += 1
+
+    return labels
 
 
 @labeling_function()
-def use_tfidf_model(record) -> int:
+def use_tfidf_model(record) -> np.ndarray:
     """Apply the TF-IDF offensive speech detection model.
 
     This will mark the document as offensive if the model classifies it as offensive
@@ -519,31 +657,50 @@ def use_tfidf_model(record) -> int:
             The record containing the document to be checked.
 
     Returns:
-        int:
-            The assigned label, where 0 is not offensive, 1 is offensive, and -1 is
+        NumPy array of the same shape as the input:
+            The assigned labels, where 0 is not offensive, 1 is offensive, and -1 is
             abstain.
     """
     # Load model if it has not been loaded yet
     if "tfidf" not in globals():
         initialise_models()
 
-    # Extract the document
-    doc = record.text
+    # Initialise the array of labels
+    labels = np.full(shape=len(record), fill_value=ABSTAIN, dtype=np.int8)
+
+    # Check if any of the documents are DR answers or spam, and mark the remaining
+    # documents that needs to be checked
+    labels = np.maximum(labels, is_dr_answer(record))
+    labels = np.maximum(labels, is_spam(record))
+
+    # If there are no more documents to check, return the labels
+    if labels.min() >= 0:
+        return labels
+
+    # Extract the documents
+    docs = record.iloc[[idx for idx, lbl in enumerate(labels) if lbl == ABSTAIN]].text
 
     # Get the prediction score
-    predicted_score = tfidf.decision_function([doc])[0]  # type: ignore [name-defined]
+    predicted_scores = tfidf.decision_function(docs)  # type: ignore [name-defined]
 
-    # If the predictive score is positive then mark as offensive, and otherwise abstain
-    if is_dr_answer(record) == NOT_OFFENSIVE or is_spam(record) == NOT_OFFENSIVE:
-        return NOT_OFFENSIVE
-    elif predicted_score > 2:
-        return OFFENSIVE
-    else:
-        return ABSTAIN
+    # Compute the final labels
+    def compute_label(predicted_score: float):
+        if predicted_score > 2:
+            return OFFENSIVE
+        else:
+            return ABSTAIN
+
+    score_idx = 0
+    for idx in range(len(record)):
+        if labels[idx] == ABSTAIN:
+            labels[idx] = compute_label(predicted_scores[score_idx])
+            score_idx += 1
+
+    return labels
 
 
 @labeling_function()
-def has_been_moderated(record) -> int:
+def has_been_moderated(record) -> np.ndarray:
     """Check if a document has already been moderated.
 
     This will mark the document as offensive if it has been moderated, and abstain
@@ -554,25 +711,45 @@ def has_been_moderated(record) -> int:
             The record containing the document to be checked.
 
     Returns:
-        int:
-            This value is 1 (offensive) if the document has been moderated, and -1
-            (abstain) otherwise.
+        NumPy array of the same shape as the input:
+            The assigned labels, where 0 is not offensive, 1 is offensive, and -1 is
+            abstain.
     """
-    # Extract the moderation action
-    action = record.action
+    # Initialise the array of labels
+    labels = np.full(shape=len(record), fill_value=ABSTAIN, dtype=np.int8)
 
-    # If the action is not "none" then mark the document as offensive, and otherwise
-    # abstain
-    if is_dr_answer(record) == NOT_OFFENSIVE or is_spam(record) == NOT_OFFENSIVE:
-        return NOT_OFFENSIVE
-    elif action != "none":
-        return OFFENSIVE
-    else:
-        return ABSTAIN
+    # Check if any of the documents are DR answers or spam, and mark the remaining
+    # documents that needs to be checked
+    labels = np.maximum(labels, is_dr_answer(record))
+    labels = np.maximum(labels, is_spam(record))
+
+    # If there are no more documents to check, return the labels
+    if labels.min() >= 0:
+        return labels
+
+    # Extract the documents
+    actions = record.iloc[
+        [idx for idx, lbl in enumerate(labels) if lbl == ABSTAIN]
+    ].action.tolist()
+
+    # Compute the final labels
+    def compute_label(action: str):
+        if action != "none":
+            return OFFENSIVE
+        else:
+            return ABSTAIN
+
+    action_idx = 0
+    for idx in range(len(record)):
+        if labels[idx] == ABSTAIN:
+            labels[idx] = compute_label(actions[action_idx])
+            action_idx += 1
+
+    return labels
 
 
 @labeling_function()
-def has_positive_sentiment(record) -> int:
+def has_positive_sentiment(record) -> np.ndarray:
     """Apply a sentiment analysis model.
 
     This will mark the document as not offensive if the probability of the document
@@ -583,43 +760,50 @@ def has_positive_sentiment(record) -> int:
             The record containing the document to be checked.
 
     Returns:
-        int:
-            This value is 0 (not offensive) if the document is classified as not
-            offensive by the model, and -1 (abstain) otherwise.
+        NumPy array:
+            The assigned labels, where 0 is not offensive, 1 is offensive, and -1 is
+            abstain.
     """
     # Load model if it has not been loaded yet
     if "sent_tok" not in globals() or "sent_model" not in globals():
         initialise_models()
 
-    # Extract the document
-    doc = record.text
-
     # Set `model_max_length` if not specified
     if sent_tok.model_max_length > 100_000:  # type: ignore [name-defined]
         sent_tok.model_max_length = 512  # type: ignore [name-defined]
 
+    # Initialise the array of labels
+    labels = np.full(shape=len(record), fill_value=ABSTAIN, dtype=np.int8)
+
+    # Extract the documents
+    docs = record.text
+
     # Get the prediction
     with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+
+        # Tokenise the document
+        inputs = sent_tok(  # type: ignore [name-defined]
+            docs.tolist(), truncation=True, padding=True, return_tensors="pt"
+        )
+
+        # Move the tokens to the desired device
+        inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
+
+        # Get the prediction
         with torch.no_grad():
-            warnings.simplefilter("ignore", category=UserWarning)
+            prediction = sent_model(**inputs).logits  # type: ignore [name-defined]
 
-            # Tokenise the document
-            inputs = sent_tok(  # type: ignore [name-defined]
-                doc, truncation=True, return_tensors="pt"
-            )
+        # Extract the probability of the document being negative
+        negative_probs = torch.softmax(prediction, dim=-1)[:, 0]
 
-            # Move the tokens to the desired device
-            inputs = {k: v.to(DEVICE) for k, v in inputs.items()}
+    # Compute the final labels
+    def compute_label(negative_prob: float):
+        if negative_prob < 0.1:
+            return NOT_OFFENSIVE
+        else:
+            return ABSTAIN
 
-            # Get the prediction
-            prediction = sent_model(**inputs).logits[0]  # type: ignore [name-defined]
+    labels[:] = [compute_label(prob) for prob in negative_probs]
 
-            # Extract the probability of the document being negative
-            negative_prob = torch.softmax(prediction, dim=-1)[0].item()
-
-    # If the probability of the document being negative is below 10% then mark it as
-    # not offensive, and otherwise abstain
-    if negative_prob < 0.1:
-        return NOT_OFFENSIVE
-    else:
-        return ABSTAIN
+    return labels
