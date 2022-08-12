@@ -8,7 +8,7 @@ Developers:
 - Anders Jess Pedersen (anders.j.pedersen@alexandra.dk)
 
 ______________________________________________________________________
-[![Documentation](https://img.shields.io/badge/docs-passing-green)](https://alexandrainst.github.io/hatespeech/index.html)
+[![Documentation](https://img.shields.io/badge/docs-passing-green)](https://alexandrainst.github.io/hatespeech/hatespeech.html)
 [![License](https://img.shields.io/github/license/alexandrainst/hatespeech)](https://github.com/alexandrainst/hatespeech/blob/main/LICENSE)
 [![LastCommit](https://img.shields.io/github/last-commit/alexandrainst/hatespeech)](https://github.com/alexandrainst/hatespeech/commits/main)
 [![Code Coverage](https://img.shields.io/badge/Coverage-70%25-yellow.svg)](https://github.com/alexandrainst/hatespeech/tree/main/tests)
