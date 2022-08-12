@@ -38,7 +38,7 @@ def load_raw_data(config: DictConfig) -> pd.DataFrame:
     # If the CSV file was not found in the data directory then raise an error
     if not csv_path.exists():
         raise FileNotFoundError(
-            f"The file {csv_path.name} was not  found in {data_dir}."
+            f"The file {csv_path.name} was not found in {data_dir}."
         )
 
     # Log loading of dataset
