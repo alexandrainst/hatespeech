@@ -1,6 +1,7 @@
 """Unit tests related to the data module."""
 
 import csv
+import time
 from pathlib import Path
 
 import pandas as pd
@@ -45,6 +46,7 @@ class TestRawData:
             index=False,
             quoting=csv.QUOTE_ALL,
         )
+        time.sleep(0.1)
         yield load_raw_data(config)
 
     def test_is_dataframe(self, data):
