@@ -59,6 +59,7 @@ make view-docs
 │       └── docs.yaml
 ├── .gitignore
 ├── .pre-commit-config.yaml
+├── LICENSE
 ├── README.md
 ├── config
 │   ├── __init__.py
@@ -69,40 +70,42 @@ make view-docs
 │   ├── hatespeech-label-config.xml
 │   ├── offensive-label-config.xml
 │   ├── tfidf_model
-│   │   └── tfidf_model1.yaml
+│   │   └── tfidf_model.yaml
 │   └── transformer_model
-│       ├── transformer_model1.yaml
-│       └── transformer_model2.yaml
+│       ├── aelaectra.yaml
+│       ├── aelaectra2.yaml
+│       ├── xlmr-base.yaml
+│       ├── xlmr-base2.yaml
+│       ├── xlmr-base3.yaml
+│       └── xlmr-large.yaml
 ├── data
 │   ├── final
 │   ├── processed
 │   └── raw
+│       └── scores.xlsx
 ├── makefile
 ├── models
-│   ├── tfidf_model.bin
-│   └── transformer_model1
-│       ├── config.json
-│       ├── pytorch_model.bin
-│       ├── special_tokens_map.json
-│       ├── tokenizer.json
-│       ├── tokenizer_config.json
-│       └── training_args.bin
+│   └── tfidf_model.bin
 ├── notebooks
-│   └── evaluate_agreement.ipynb
+│   ├── analyse-weak-labels.ipynb
+│   ├── compare_models.ipynb
+│   ├── evaluate_agreement.ipynb
+│   └── evaluate_models.ipynb
 ├── poetry.toml
 ├── pyproject.toml
 ├── src
 │   ├── hatespeech
 │   │   ├── __init__.py
+│   │   ├── attack.py
 │   │   ├── clean_data.py
 │   │   ├── create_train_split.py
-│   │   ├── labeling_functions.py
+│   │   ├── labelling_functions.py
 │   │   ├── load_data.py
 │   │   ├── main.py
 │   │   ├── prepare_data_for_annotation.py
+│   │   ├── snorkel_utils.py
 │   │   ├── train_tfidf.py
 │   │   ├── train_transformer.py
-│   │   ├── training_args_with_mps_support.py
 │   │   └── weak_supervision.py
 │   └── scripts
 │       └── fix_dot_env_file.py
@@ -110,6 +113,6 @@ make view-docs
     ├── __init__.py
     ├── conftest.py
     ├── test_data.py
-    ├── test_labeling_functions.py
+    ├── test_labelling_functions.py
     └── test_weak_supervision.py
 ```

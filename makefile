@@ -98,4 +98,11 @@ tree:
 		-I *.txt \
 		-I checkpoint-* \
 		-I .coverage* \
-		-I *_eda.ipynb
+		-I *_eda.ipynb \
+		-I aelaectra \
+		-I aelaectra2 \
+		-I attack \
+		-I xlmr-base1 \
+		-I xlmr-base2 \
+		-I xlmr-base3 \
+		-I xlmr-large
