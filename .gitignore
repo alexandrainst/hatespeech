@@ -97,6 +97,7 @@ data/
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/final/.gitkeep
+!data/raw/scores.xlsx
 !config/data
 
 # Models
