@@ -14,6 +14,6 @@ def config():
         overrides=[
             "testing=True",
             "data=test_offensive",
-            "label_model.lf_batch_size=2",
+            "label_model=test_label_model",
         ],
     )
