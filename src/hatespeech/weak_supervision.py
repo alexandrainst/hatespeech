@@ -1,11 +1,13 @@
 """Weak supervision module to create labels in an unsupervised setting."""
 
 import logging
+from functools import partial
 from pathlib import Path
 
 import hydra
 import pandas as pd
 from omegaconf import DictConfig
+from snorkel.labeling import LabelingFunction
 from snorkel.labeling.model import LabelModel
 
 from . import labelling_functions as lfs
@@ -35,18 +37,41 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
     lfs.initialise_models()
 
     # Define mapping from config options to their associated labelling functions
+    params = dict(
+        filter_dr_answer=not config.label_model.ignore_is_dr_answer,
+        filter_spam=not config.label_model.ignore_is_spam,
+    )
     lf_mapping = dict(
-        ignore_contains_offensive_word=lfs.contains_offensive_word,
-        ignore_is_all_caps=lfs.is_all_caps,
-        ignore_contains_positive_swear_word=lfs.contains_positive_swear_word,
-        ignore_is_dr_answer=lfs.is_dr_answer,
-        ignore_has_been_moderated=lfs.has_been_moderated,
-        ignore_is_spam=lfs.is_spam,
-        ignore_is_mention=lfs.is_mention,
-        ignore_use_danlp_model=lfs.use_danlp_model,
-        ignore_use_attack_model=lfs.use_attack_model,
-        ignore_use_tfidf_model=lfs.use_tfidf_model,
-        ignore_has_positive_sentiment=lfs.has_positive_sentiment,
+        ignore_contains_offensive_word=LabelingFunction(
+            name="contains_offensive_word",
+            f=partial(lfs.contains_offensive_word, **params),
+        ),
+        ignore_is_all_caps=LabelingFunction(name="is_all_caps", f=lfs.is_all_caps),
+        ignore_contains_positive_swear_word=LabelingFunction(
+            name="contains_positive_swear_word",
+            f=lfs.contains_positive_swear_word,
+        ),
+        ignore_is_dr_answer=LabelingFunction(name="is_dr_answer", f=lfs.is_dr_answer),
+        ignore_has_been_moderated=LabelingFunction(
+            name="has_been_moderated", f=partial(lfs.has_been_moderated, **params)
+        ),
+        ignore_is_spam=LabelingFunction(name="is_spam", f=lfs.is_spam),
+        ignore_is_mention=LabelingFunction(
+            name="is_mention", f=partial(lfs.is_mention, **params)
+        ),
+        ignore_use_danlp_model=LabelingFunction(
+            name="use_danlp_model", f=partial(lfs.use_danlp_model, **params)
+        ),
+        ignore_use_attack_model=LabelingFunction(
+            name="use_attack_model", f=partial(lfs.use_attack_model, **params)
+        ),
+        ignore_use_tfidf_model=LabelingFunction(
+            name="use_tfidf_model", f=partial(lfs.use_tfidf_model, **params)
+        ),
+        ignore_has_positive_sentiment=LabelingFunction(
+            name="has_positive_sentiment",
+            f=lfs.has_positive_sentiment,
+        ),
     )
 
     # Define the list of labelling functions
