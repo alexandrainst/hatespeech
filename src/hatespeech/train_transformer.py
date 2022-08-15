@@ -124,10 +124,11 @@ def train_transformer_model(config: DictConfig) -> AutoModelForSequenceClassific
     )
 
     # Set up output directory
+    model_name = f"{config.label_model.name}_{model_config.name}"
     if config.testing:
-        output_dir = f"{config.models.dir}/test_{model_config.name}"
+        output_dir = f"{config.models.dir}/test_{model_name}"
     else:
-        output_dir = f"{config.models.dir}/{model_config.name}"
+        output_dir = f"{config.models.dir}/{model_name}"
 
     # Create the training arguments
     training_args = TrainingArguments(
