@@ -216,7 +216,7 @@ def load_splits(config: DictConfig) -> dict:
     test_dir.mkdir(parents=True, exist_ok=True)
 
     # Get the training, validation and test parquet file paths
-    train_path = train_dir / config.data.train.fname
+    train_path = train_dir / config.data.train.fname.format(config.label_model.name)
     val_path = val_dir / config.data.val.fname
     test_path = test_dir / config.data.test.fname
 

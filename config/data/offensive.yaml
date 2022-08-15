@@ -15,7 +15,7 @@ annotated:
   fname: annotated-off.parquet
 train:
   dir: data/final
-  fname: train-off.parquet
+  fname: train-off-{}.parquet
 val:
   dir: data/final
   fname: val-off.parquet
