@@ -131,7 +131,7 @@ def is_spam(record) -> np.ndarray:
 
 
 def contains_offensive_word(
-    record, filter_dr_answer: bool, filter_spam: bool
+    record, filter_dr_answer: bool = True, filter_spam: bool = True
 ) -> np.ndarray:
     """Check if the document contains an offensive word.
 
@@ -141,10 +141,10 @@ def contains_offensive_word(
     Args:
         record:
             The record containing the document to be checked.
-        filter_dr_answer (bool):
-            Whether to filter out official DR answers.
-        filter_spam (bool):
-            Whether to filter out spam.
+        filter_dr_answer (bool, optional):
+            Whether to filter out official DR answers. Defaults to True.
+        filter_spam (bool, optional):
+            Whether to filter out spam. Defaults to True.
 
     Returns:
         NumPy array of the same shape as the input:
@@ -306,7 +306,9 @@ def contains_positive_swear_word(record) -> np.ndarray:
     return labels
 
 
-def is_mention(record, filter_dr_answer: bool, filter_spam: bool) -> np.ndarray:
+def is_mention(
+    record, filter_dr_answer: bool = True, filter_spam: bool = True
+) -> np.ndarray:
     """Check if the document consists of only mentions.
 
     This will mark the document as not offensive if it consists of only mentions, and
@@ -315,10 +317,10 @@ def is_mention(record, filter_dr_answer: bool, filter_spam: bool) -> np.ndarray:
     Args:
         record:
             The record containing the document to be checked.
-        filter_dr_answer (bool):
-            Whether to filter out official DR answers.
-        filter_spam (bool):
-            Whether to filter out spam.
+        filter_dr_answer (bool, optional):
+            Whether to filter out official DR answers. Defaults to True.
+        filter_spam (bool, optional):
+            Whether to filter out spam. Defaults to True.
 
     Returns:
         NumPy array:
@@ -497,7 +499,9 @@ def is_dr_answer(record) -> np.ndarray:
     return labels
 
 
-def use_danlp_model(record, filter_dr_answer: bool, filter_spam: bool) -> np.ndarray:
+def use_danlp_model(
+    record, filter_dr_answer: bool = True, filter_spam: bool = True
+) -> np.ndarray:
     """Apply the DaNLP ELECTRA hatespeech detection transformer model.
 
     This will apply the model DaNLP/da-electra-hatespeech-detection.
@@ -509,10 +513,10 @@ def use_danlp_model(record, filter_dr_answer: bool, filter_spam: bool) -> np.nda
     Args:
         record:
             The record containing the document to be checked.
-        filter_dr_answer (bool):
-            Whether to filter out official DR answers.
-        filter_spam (bool):
-            Whether to filter out spam.
+        filter_dr_answer (bool, optional):
+            Whether to filter out official DR answers. Defaults to True.
+        filter_spam (bool, optional):
+            Whether to filter out spam. Defaults to True.
 
     Returns:
         NumPy array of the same shape as the input:
@@ -580,7 +584,9 @@ def use_danlp_model(record, filter_dr_answer: bool, filter_spam: bool) -> np.nda
     return labels
 
 
-def use_attack_model(record, filter_dr_answer: bool, filter_spam: bool) -> np.ndarray:
+def use_attack_model(
+    record, filter_dr_answer: bool = True, filter_spam: bool = True
+) -> np.ndarray:
     """Apply the A-ttack hatespeech detection transformer model.
 
     This model can be found at https://github.com/ogtal/A-ttack.
@@ -591,10 +597,10 @@ def use_attack_model(record, filter_dr_answer: bool, filter_spam: bool) -> np.nd
     Args:
         record:
             The record containing the document to be checked.
-        filter_dr_answer (bool):
-            Whether to filter out official DR answers.
-        filter_spam (bool):
-            Whether to filter out spam.
+        filter_dr_answer (bool, optional):
+            Whether to filter out official DR answers. Defaults to True.
+        filter_spam (bool, optional):
+            Whether to filter out spam. Defaults to True.
 
     Returns:
         NumPy array:
@@ -661,7 +667,9 @@ def use_attack_model(record, filter_dr_answer: bool, filter_spam: bool) -> np.nd
     return labels
 
 
-def use_tfidf_model(record, filter_dr_answer: bool, filter_spam: bool) -> np.ndarray:
+def use_tfidf_model(
+    record, filter_dr_answer: bool = True, filter_spam: bool = True
+) -> np.ndarray:
     """Apply the TF-IDF offensive speech detection model.
 
     This will mark the document as offensive if the model classifies it as offensive
@@ -670,10 +678,10 @@ def use_tfidf_model(record, filter_dr_answer: bool, filter_spam: bool) -> np.nda
     Args:
         record:
             The record containing the document to be checked.
-        filter_dr_answer (bool):
-            Whether to filter out official DR answers.
-        filter_spam (bool):
-            Whether to filter out spam.
+        filter_dr_answer (bool, optional):
+            Whether to filter out official DR answers. Defaults to True.
+        filter_spam (bool, optional):
+            Whether to filter out spam. Defaults to True.
 
     Returns:
         NumPy array of the same shape as the input:
@@ -720,7 +728,9 @@ def use_tfidf_model(record, filter_dr_answer: bool, filter_spam: bool) -> np.nda
     return labels
 
 
-def has_been_moderated(record, filter_dr_answer: bool, filter_spam: bool) -> np.ndarray:
+def has_been_moderated(
+    record, filter_dr_answer: bool = True, filter_spam: bool = True
+) -> np.ndarray:
     """Check if a document has already been moderated.
 
     This will mark the document as offensive if it has been moderated, and abstain
@@ -729,10 +739,10 @@ def has_been_moderated(record, filter_dr_answer: bool, filter_spam: bool) -> np.
     Args:
         record:
             The record containing the document to be checked.
-        filter_dr_answer (bool):
-            Whether to filter out official DR answers.
-        filter_spam (bool):
-            Whether to filter out spam.
+        filter_dr_answer (bool, optional):
+            Whether to filter out official DR answers. Defaults to True.
+        filter_spam (bool, optional):
+            Whether to filter out spam. Defaults to True.
 
     Returns:
         NumPy array of the same shape as the input:
