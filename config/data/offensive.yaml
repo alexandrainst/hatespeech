@@ -6,7 +6,7 @@ cleaned:
   fname: cleaned.parquet
 weakly_supervised:
   dir: data/processed
-  fname: weakly-supervised-off.parquet
+  fname: weakly-supervised-off-{}.parquet
 for_annotation:
   dir: data/processed
   fname: for-annotation-off.txt

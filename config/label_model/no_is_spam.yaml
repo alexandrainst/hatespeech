@@ -1,0 +1,16 @@
+name: no_is_spam
+lf_batch_size: 512
+epochs: 100
+log_freq: 50
+
+ignore_contains_offensive_word: False
+ignore_is_all_caps: False
+ignore_contains_positive_swear_word: False
+ignore_is_dr_answer: False
+ignore_has_been_moderated: False
+ignore_is_spam: True
+ignore_is_mention: False
+ignore_use_danlp_model: False
+ignore_use_attack_model: False
+ignore_use_tfidf_model: False
+ignore_has_positive_sentiment: False

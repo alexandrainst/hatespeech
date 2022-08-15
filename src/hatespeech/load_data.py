@@ -122,7 +122,8 @@ def load_weakly_supervised_data(config: DictConfig) -> pd.DataFrame:
     data_dir.mkdir(parents=True, exist_ok=True)
 
     # Define the path to the data file
-    parquet_path = data_dir / config.data.weakly_supervised.fname
+    fname = config.data.weakly_supervised.fname.format(config.label_model.name)
+    parquet_path = data_dir / fname
 
     # If there are no parquet files in the data directory then raise an error
     if not parquet_path.exists():
