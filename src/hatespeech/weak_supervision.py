@@ -50,7 +50,9 @@ def apply_weak_supervision(config: DictConfig) -> pd.DataFrame:
     )
 
     # Define the list of labelling functions
-    lf_list = [lf for lf_name, lf in lf_mapping.items() if config.label_model[lf_name]]
+    lf_list = [
+        lf for ignore_lf, lf in lf_mapping.items() if not config.label_model[ignore_lf]
+    ]
 
     # Log progress
     logger.info(f"Applying weak supervision with {len(lf_list)} labelling functions")
