@@ -36,7 +36,8 @@ def create_train_split(config: DictConfig) -> pd.DataFrame:
     train = train[~train.text.isin(annotated.text)]
 
     # Save the training data
-    train_path = Path(config.data.train.dir) / config.data.train.fname
+    train_fname = config.data.train.fname.format(config.label_model.name)
+    train_path = Path(config.data.train.dir) / train_fname
     train.to_parquet(train_path)
 
     # Return the filtered training data
