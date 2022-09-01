@@ -11,5 +11,9 @@ initialize(config_path="../config", version_base=None)
 def config():
     return compose(
         config_name="config",
-        overrides=["testing=True", "data=test_offensive", "lf_batch_size=2"],
+        overrides=[
+            "testing=True",
+            "data=test_offensive",
+            "label_model=test_label_model",
+        ],
     )

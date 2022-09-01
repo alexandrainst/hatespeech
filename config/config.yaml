@@ -1,4 +1,5 @@
 defaults:
+  - label_model: label_model
   - tfidf_model: tfidf_model
   - transformer_model: xlmr-base3
   - data: offensive
@@ -7,7 +8,6 @@ defaults:
 models:
   dir: models
 
-lf_batch_size: 512
 seed: 4242
 testing: False
 train_split_truncation_length: -1

@@ -8,7 +8,6 @@ import joblib
 import nltk
 import numpy as np
 import torch
-from snorkel.labeling import labeling_function
 from tqdm.auto import tqdm
 from transformers.pipelines import (
     AutoModelForSequenceClassification,
@@ -91,7 +90,6 @@ def initialise_models():
         pbar.update()
 
 
-@labeling_function()
 def is_spam(record) -> np.ndarray:
     """Check if the document is spam.
 
@@ -132,8 +130,9 @@ def is_spam(record) -> np.ndarray:
     return labels
 
 
-@labeling_function()
-def contains_offensive_word(record) -> np.ndarray:
+def contains_offensive_word(
+    record, filter_dr_answer: bool = True, filter_spam: bool = True
+) -> np.ndarray:
     """Check if the document contains an offensive word.
 
     This will mark the document as offensive if it contains an offensive word
@@ -142,6 +141,10 @@ def contains_offensive_word(record) -> np.ndarray:
     Args:
         record:
             The record containing the document to be checked.
+        filter_dr_answer (bool, optional):
+            Whether to filter out official DR answers. Defaults to True.
+        filter_spam (bool, optional):
+            Whether to filter out spam. Defaults to True.
 
     Returns:
         NumPy array of the same shape as the input:
@@ -153,8 +156,10 @@ def contains_offensive_word(record) -> np.ndarray:
 
     # Check if any of the documents are DR answers or spam, and mark the remaining
     # documents that needs to be checked
-    labels = np.maximum(labels, is_dr_answer(record))
-    labels = np.maximum(labels, is_spam(record))
+    if filter_dr_answer:
+        labels = np.maximum(labels, is_dr_answer(record))
+    if filter_spam:
+        labels = np.maximum(labels, is_spam(record))
 
     # If there are no more documents to check, return the labels
     if labels.min() >= 0:
@@ -225,7 +230,6 @@ def contains_offensive_word(record) -> np.ndarray:
     return labels
 
 
-@labeling_function()
 def is_all_caps(record) -> np.ndarray:
     """Check if the document is written in all caps.
 
@@ -259,7 +263,6 @@ def is_all_caps(record) -> np.ndarray:
     return labels
 
 
-@labeling_function()
 def contains_positive_swear_word(record) -> np.ndarray:
     """Check if the document contains a swear word used in a positive way.
 
@@ -303,8 +306,9 @@ def contains_positive_swear_word(record) -> np.ndarray:
     return labels
 
 
-@labeling_function()
-def is_mention(record) -> np.ndarray:
+def is_mention(
+    record, filter_dr_answer: bool = True, filter_spam: bool = True
+) -> np.ndarray:
     """Check if the document consists of only mentions.
 
     This will mark the document as not offensive if it consists of only mentions, and
@@ -313,6 +317,10 @@ def is_mention(record) -> np.ndarray:
     Args:
         record:
             The record containing the document to be checked.
+        filter_dr_answer (bool, optional):
+            Whether to filter out official DR answers. Defaults to True.
+        filter_spam (bool, optional):
+            Whether to filter out spam. Defaults to True.
 
     Returns:
         NumPy array:
@@ -332,8 +340,10 @@ def is_mention(record) -> np.ndarray:
 
     # Check if any of the documents are DR answers or spam, and mark the remaining
     # documents that needs to be checked
-    labels = np.maximum(labels, is_dr_answer(record))
-    labels = np.maximum(labels, is_spam(record))
+    if filter_dr_answer:
+        labels = np.maximum(labels, is_dr_answer(record))
+    if filter_spam:
+        labels = np.maximum(labels, is_spam(record))
 
     # If there are no more documents to check, return the labels
     if labels.min() >= 0:
@@ -420,7 +430,11 @@ def is_mention(record) -> np.ndarray:
     num_non_person_tokens_list = [torch.sum(tensor == 0) for tensor in tag_list]
 
     # Get the documents with offensive words
-    offensive_words = contains_offensive_word(record)
+    offensive_words = contains_offensive_word(
+        record=record,
+        filter_dr_answer=filter_dr_answer,
+        filter_spam=filter_spam,
+    )
 
     # Zip up the counts and the offensive word labels
     pairs = list(zip(num_non_person_tokens_list, offensive_words))
@@ -445,7 +459,6 @@ def is_mention(record) -> np.ndarray:
     return labels
 
 
-@labeling_function()
 def is_dr_answer(record) -> np.ndarray:
     """Check if the document is an official reply from DR.
 
@@ -486,8 +499,9 @@ def is_dr_answer(record) -> np.ndarray:
     return labels
 
 
-@labeling_function()
-def use_danlp_model(record) -> np.ndarray:
+def use_danlp_model(
+    record, filter_dr_answer: bool = True, filter_spam: bool = True
+) -> np.ndarray:
     """Apply the DaNLP ELECTRA hatespeech detection transformer model.
 
     This will apply the model DaNLP/da-electra-hatespeech-detection.
@@ -499,6 +513,10 @@ def use_danlp_model(record) -> np.ndarray:
     Args:
         record:
             The record containing the document to be checked.
+        filter_dr_answer (bool, optional):
+            Whether to filter out official DR answers. Defaults to True.
+        filter_spam (bool, optional):
+            Whether to filter out spam. Defaults to True.
 
     Returns:
         NumPy array of the same shape as the input:
@@ -518,8 +536,10 @@ def use_danlp_model(record) -> np.ndarray:
 
     # Check if any of the documents are DR answers or spam, and mark the remaining
     # documents that needs to be checked
-    labels = np.maximum(labels, is_dr_answer(record))
-    labels = np.maximum(labels, is_spam(record))
+    if filter_dr_answer:
+        labels = np.maximum(labels, is_dr_answer(record))
+    if filter_spam:
+        labels = np.maximum(labels, is_spam(record))
 
     # If there are no more documents to check, return the labels
     if labels.min() >= 0:
@@ -564,8 +584,9 @@ def use_danlp_model(record) -> np.ndarray:
     return labels
 
 
-@labeling_function()
-def use_attack_model(record) -> np.ndarray:
+def use_attack_model(
+    record, filter_dr_answer: bool = True, filter_spam: bool = True
+) -> np.ndarray:
     """Apply the A-ttack hatespeech detection transformer model.
 
     This model can be found at https://github.com/ogtal/A-ttack.
@@ -576,6 +597,10 @@ def use_attack_model(record) -> np.ndarray:
     Args:
         record:
             The record containing the document to be checked.
+        filter_dr_answer (bool, optional):
+            Whether to filter out official DR answers. Defaults to True.
+        filter_spam (bool, optional):
+            Whether to filter out spam. Defaults to True.
 
     Returns:
         NumPy array:
@@ -595,8 +620,10 @@ def use_attack_model(record) -> np.ndarray:
 
     # Check if any of the documents are DR answers or spam, and mark the remaining
     # documents that needs to be checked
-    labels = np.maximum(labels, is_dr_answer(record))
-    labels = np.maximum(labels, is_spam(record))
+    if filter_dr_answer:
+        labels = np.maximum(labels, is_dr_answer(record))
+    if filter_spam:
+        labels = np.maximum(labels, is_spam(record))
 
     # If there are no more documents to check, return the labels
     if labels.min() >= 0:
@@ -640,8 +667,9 @@ def use_attack_model(record) -> np.ndarray:
     return labels
 
 
-@labeling_function()
-def use_tfidf_model(record) -> np.ndarray:
+def use_tfidf_model(
+    record, filter_dr_answer: bool = True, filter_spam: bool = True
+) -> np.ndarray:
     """Apply the TF-IDF offensive speech detection model.
 
     This will mark the document as offensive if the model classifies it as offensive
@@ -650,6 +678,10 @@ def use_tfidf_model(record) -> np.ndarray:
     Args:
         record:
             The record containing the document to be checked.
+        filter_dr_answer (bool, optional):
+            Whether to filter out official DR answers. Defaults to True.
+        filter_spam (bool, optional):
+            Whether to filter out spam. Defaults to True.
 
     Returns:
         NumPy array of the same shape as the input:
@@ -665,8 +697,10 @@ def use_tfidf_model(record) -> np.ndarray:
 
     # Check if any of the documents are DR answers or spam, and mark the remaining
     # documents that needs to be checked
-    labels = np.maximum(labels, is_dr_answer(record))
-    labels = np.maximum(labels, is_spam(record))
+    if filter_dr_answer:
+        labels = np.maximum(labels, is_dr_answer(record))
+    if filter_spam:
+        labels = np.maximum(labels, is_spam(record))
 
     # If there are no more documents to check, return the labels
     if labels.min() >= 0:
@@ -694,8 +728,9 @@ def use_tfidf_model(record) -> np.ndarray:
     return labels
 
 
-@labeling_function()
-def has_been_moderated(record) -> np.ndarray:
+def has_been_moderated(
+    record, filter_dr_answer: bool = True, filter_spam: bool = True
+) -> np.ndarray:
     """Check if a document has already been moderated.
 
     This will mark the document as offensive if it has been moderated, and abstain
@@ -704,6 +739,10 @@ def has_been_moderated(record) -> np.ndarray:
     Args:
         record:
             The record containing the document to be checked.
+        filter_dr_answer (bool, optional):
+            Whether to filter out official DR answers. Defaults to True.
+        filter_spam (bool, optional):
+            Whether to filter out spam. Defaults to True.
 
     Returns:
         NumPy array of the same shape as the input:
@@ -715,8 +754,10 @@ def has_been_moderated(record) -> np.ndarray:
 
     # Check if any of the documents are DR answers or spam, and mark the remaining
     # documents that needs to be checked
-    labels = np.maximum(labels, is_dr_answer(record))
-    labels = np.maximum(labels, is_spam(record))
+    if filter_dr_answer:
+        labels = np.maximum(labels, is_dr_answer(record))
+    if filter_spam:
+        labels = np.maximum(labels, is_spam(record))
 
     # If there are no more documents to check, return the labels
     if labels.min() >= 0:
@@ -743,7 +784,6 @@ def has_been_moderated(record) -> np.ndarray:
     return labels
 
 
-@labeling_function()
 def has_positive_sentiment(record) -> np.ndarray:
     """Apply a sentiment analysis model.
 
