@@ -41,7 +41,10 @@ def initialise_models():
     with tqdm(desc="Loading models", total=6, leave=False) as pbar:
 
         # Download word tokenizer if not already downloaded
-        nltk.download("punkt", quiet=True, halt_on_error=False)
+        try:
+            nltk.download("punkt", quiet=True)
+        except FileExistsError:
+            pass
         pbar.update()
 
         # Load TF-IDF hatespeech model
