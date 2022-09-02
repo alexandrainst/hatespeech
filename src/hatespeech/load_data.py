@@ -91,9 +91,9 @@ def load_cleaned_data(config: DictConfig) -> pd.DataFrame:
 
     # Read the parquet file
     try:
-        df = pd.read_parquet(parquet_path, engine="fastparquet")
+        df = pd.read_parquet(parquet_path)
     except (TypeError, OSError):
-        df = pd.read_parquet(parquet_path, engine="pyarrow")
+        df = pd.read_parquet(parquet_path, engine="fastparquet")
 
     # Log the number of rows in the dataframe
     logger.info(f"Loaded {len(df):,} rows")
@@ -139,9 +139,9 @@ def load_weakly_supervised_data(config: DictConfig) -> pd.DataFrame:
 
     # Read the parquet file
     try:
-        df = pd.read_parquet(parquet_path, engine="fastparquet")
+        df = pd.read_parquet(parquet_path)
     except (TypeError, OSError):
-        df = pd.read_parquet(parquet_path, engine="pyarrow")
+        df = pd.read_parquet(parquet_path, engine="fastparquet")
 
     # Log the number of rows in the dataframe
     logger.info(f"Loaded {len(df):,} rows")
@@ -186,9 +186,9 @@ def load_annotated_data(config: DictConfig) -> pd.DataFrame:
 
     # Read the parquet files
     try:
-        df = pd.read_parquet(parquet_path, engine="fastparquet")
+        df = pd.read_parquet(parquet_path)
     except (TypeError, OSError):
-        df = pd.read_parquet(parquet_path, engine="pyarrow")
+        df = pd.read_parquet(parquet_path, engine="fastparquet")
 
     # Log the number of rows in the dataframe
     logger.info(f"Loaded {len(df):,} rows")
@@ -246,13 +246,13 @@ def load_splits(config: DictConfig) -> dict:
 
     # Read the parquet files
     try:
+        train = pd.read_parquet(train_path)[["text", "label"]]
+        val = pd.read_parquet(val_path)[["text", "label"]]
+        test = pd.read_parquet(test_path)[["text", "label"]]
+    except (TypeError, OSError):
         train = pd.read_parquet(train_path, engine="fastparquet")[["text", "label"]]
         val = pd.read_parquet(val_path, engine="fastparquet")[["text", "label"]]
         test = pd.read_parquet(test_path, engine="fastparquet")[["text", "label"]]
-    except (TypeError, OSError):
-        train = pd.read_parquet(train_path, engine="pyarrow")[["text", "label"]]
-        val = pd.read_parquet(val_path, engine="pyarrow")[["text", "label"]]
-        test = pd.read_parquet(test_path, engine="pyarrow")[["text", "label"]]
 
     # Log the number of rows in the dataframe
     logger.info(
