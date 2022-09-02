@@ -11,7 +11,7 @@ ______________________________________________________________________
 [![Documentation](https://img.shields.io/badge/docs-passing-green)](https://alexandrainst.github.io/hatespeech/hatespeech.html)
 [![License](https://img.shields.io/github/license/alexandrainst/hatespeech)](https://github.com/alexandrainst/hatespeech/blob/main/LICENSE)
 [![LastCommit](https://img.shields.io/github/last-commit/alexandrainst/hatespeech)](https://github.com/alexandrainst/hatespeech/commits/main)
-[![Code Coverage](https://img.shields.io/badge/Coverage-81%25-yellowgreen.svg)](https://github.com/alexandrainst/hatespeech/tree/main/tests)
+[![Code Coverage](https://img.shields.io/badge/Coverage-80%25-yellowgreen.svg)](https://github.com/alexandrainst/hatespeech/tree/main/tests)
 
 
 ## Setup
