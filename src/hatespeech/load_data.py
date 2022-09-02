@@ -92,7 +92,7 @@ def load_cleaned_data(config: DictConfig) -> pd.DataFrame:
     # Read the parquet file
     try:
         df = pd.read_parquet(parquet_path, engine="fastparquet")
-    except TypeError:
+    except (TypeError, OSError):
         df = pd.read_parquet(parquet_path, engine="pyarrow")
 
     # Log the number of rows in the dataframe
@@ -140,7 +140,7 @@ def load_weakly_supervised_data(config: DictConfig) -> pd.DataFrame:
     # Read the parquet file
     try:
         df = pd.read_parquet(parquet_path, engine="fastparquet")
-    except TypeError:
+    except (TypeError, OSError):
         df = pd.read_parquet(parquet_path, engine="pyarrow")
 
     # Log the number of rows in the dataframe
@@ -187,7 +187,7 @@ def load_annotated_data(config: DictConfig) -> pd.DataFrame:
     # Read the parquet files
     try:
         df = pd.read_parquet(parquet_path, engine="fastparquet")
-    except TypeError:
+    except (TypeError, OSError):
         df = pd.read_parquet(parquet_path, engine="pyarrow")
 
     # Log the number of rows in the dataframe
@@ -249,7 +249,7 @@ def load_splits(config: DictConfig) -> dict:
         train = pd.read_parquet(train_path, engine="fastparquet")[["text", "label"]]
         val = pd.read_parquet(val_path, engine="fastparquet")[["text", "label"]]
         test = pd.read_parquet(test_path, engine="fastparquet")[["text", "label"]]
-    except TypeError:
+    except (TypeError, OSError):
         train = pd.read_parquet(train_path, engine="pyarrow")[["text", "label"]]
         val = pd.read_parquet(val_path, engine="pyarrow")[["text", "label"]]
         test = pd.read_parquet(test_path, engine="pyarrow")[["text", "label"]]
