@@ -40,8 +40,8 @@ def initialise_models():
     # Initialise progress bar
     with tqdm(desc="Loading models", total=6, leave=False) as pbar:
 
-        # Download word tokenizer
-        nltk.download("punkt", quiet=True)
+        # Download word tokenizer if not already downloaded
+        nltk.download("punkt", quiet=True, halt_on_error=False)
         pbar.update()
 
         # Load TF-IDF hatespeech model
