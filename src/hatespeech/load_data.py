@@ -6,8 +6,26 @@ from pathlib import Path
 import hydra
 import pandas as pd
 from omegaconf import DictConfig
+from pyarrow import ArrowInvalid
 
 logger = logging.getLogger(__name__)
+
+
+def load_parquet_file(path: Path) -> pd.DataFrame:
+    """Load a parquet file.
+
+    Args:
+        path (Path):
+            Path to the parquet file.
+
+    Returns:
+        pd.DataFrame:
+            Dataframe with the data.
+    """
+    try:
+        return pd.read_parquet(path)
+    except (TypeError, OSError, ArrowInvalid):
+        return pd.read_parquet(path, engine="fastparquet")
 
 
 @hydra.main(config_path="../../config", config_name="config", version_base=None)
@@ -90,10 +108,7 @@ def load_cleaned_data(config: DictConfig) -> pd.DataFrame:
     logger.info(f"Loading data from {parquet_path}")
 
     # Read the parquet file
-    try:
-        df = pd.read_parquet(parquet_path)
-    except (TypeError, OSError):
-        df = pd.read_parquet(parquet_path, engine="fastparquet")
+    df = load_parquet_file(parquet_path)
 
     # Log the number of rows in the dataframe
     logger.info(f"Loaded {len(df):,} rows")
@@ -138,10 +153,7 @@ def load_weakly_supervised_data(config: DictConfig) -> pd.DataFrame:
     logger.info(f"Loading data from {parquet_path}")
 
     # Read the parquet file
-    try:
-        df = pd.read_parquet(parquet_path)
-    except (TypeError, OSError):
-        df = pd.read_parquet(parquet_path, engine="fastparquet")
+    df = load_parquet_file(parquet_path)
 
     # Log the number of rows in the dataframe
     logger.info(f"Loaded {len(df):,} rows")
@@ -185,10 +197,7 @@ def load_annotated_data(config: DictConfig) -> pd.DataFrame:
     logger.info(f"Loading data from {parquet_path}")
 
     # Read the parquet files
-    try:
-        df = pd.read_parquet(parquet_path)
-    except (TypeError, OSError):
-        df = pd.read_parquet(parquet_path, engine="fastparquet")
+    df = load_parquet_file(parquet_path)
 
     # Log the number of rows in the dataframe
     logger.info(f"Loaded {len(df):,} rows")
@@ -245,14 +254,9 @@ def load_splits(config: DictConfig) -> dict:
     logger.info(f"Loading data from {train_path}, {val_path} and {test_path}")
 
     # Read the parquet files
-    try:
-        train = pd.read_parquet(train_path)[["text", "label"]]
-        val = pd.read_parquet(val_path)[["text", "label"]]
-        test = pd.read_parquet(test_path)[["text", "label"]]
-    except (TypeError, OSError):
-        train = pd.read_parquet(train_path, engine="fastparquet")[["text", "label"]]
-        val = pd.read_parquet(val_path, engine="fastparquet")[["text", "label"]]
-        test = pd.read_parquet(test_path, engine="fastparquet")[["text", "label"]]
+    train = load_parquet_file(train_path)[["text", "label"]]
+    val = load_parquet_file(val_path)[["text", "label"]]
+    test = load_parquet_file(test_path)[["text", "label"]]
 
     # Log the number of rows in the dataframe
     logger.info(
