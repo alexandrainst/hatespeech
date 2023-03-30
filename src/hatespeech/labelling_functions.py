@@ -39,7 +39,6 @@ def initialise_models():
 
     # Initialise progress bar
     with tqdm(desc="Loading models", total=6, leave=False) as pbar:
-
         # Download word tokenizer if not already downloaded
         try:
             nltk.download("punkt", quiet=True)

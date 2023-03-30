@@ -180,7 +180,6 @@ def clean_text(text: str) -> Union[str, None]:
     # Replace 8 digits with " [CVR] " if "cvr" is in the text, else replace with
     # " [PHONE] " Check if an 8 digit number is present in text
     if re.search(r"(?<!\d)(\d\d ?){4}(?!\d)", text):
-
         # Check if 'cvr' in text
         if "cvr" in text.lower():
             text = re.sub(r"(?<!\d)(\d\d ?){4}(?!\d)", " [CVR] ", text)
