@@ -36,7 +36,6 @@ def prepare_data_for_annotation(config: DictConfig) -> List[str]:
     # resulting dataframe in the annotated directory, and split up the dataframe into a
     # validation and test split, and store those too
     if config.testing:
-
         # Create test annotated data
         labels = [np.random.choice(["Offensive", "Not Offensive"]) for _ in texts]
         df_test = pd.DataFrame({"text": texts, "label": labels})
